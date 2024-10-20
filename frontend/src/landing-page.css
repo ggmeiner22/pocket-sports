@@ -1,0 +1,309 @@
+/* Global App styling */
+.landing-page {
+    text-align: center;
+    overflow: hidden; /* Prevent any unwanted scrolling */
+  }
+  
+  body {
+    background-color: black;
+    color: white;
+  }
+  
+  /* Header Styling */
+  .landing-page-header {
+    background-color: black;
+    min-height: 10vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow under the header */
+  }
+  
+  .logo {
+    font-size: 2em;
+    font-weight: bold;
+    color: white; 
+  }
+  
+  .button-container {
+    display: flex;
+    gap: 15px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .playerButton {
+    background-color: orange;
+    color: black;
+  }
+  
+  .coachButton {
+    background-color: orange;
+    color: black;
+  }
+  
+  .contactButton {
+    background-color: black;
+    color: white;
+    border: 2px solid white;
+  }
+  
+  .contactButton:hover {
+    background-color: white;
+    color:black;
+  }
+  
+  .playerButton:hover {
+    background-color: black;
+    color: orange;
+    border: 2px solid orange;
+  }
+  
+  .coachButton:hover {
+    background-color: black;
+    color: orange;
+    border: 2px solid orange;
+  }
+  
+  .featuresButtons:hover {
+    background-color: black;
+    color: white;
+    border: 2px solid white;
+    align-items: center; 
+  }
+  
+  .featuresButtons {
+    justify-content: center; /* Horizontally centers the item */
+    align-items: center;  
+    display: flex;
+  }
+  
+  
+  /* Video Styling */
+  video {
+    position: absolute;
+    top: 40%;
+    left: 60%;
+    min-width: 100%;
+    min-height: 100%;
+    transform: translate(-50%, -50%);
+    object-fit: cover; /* Ensures the video covers the entire area without distortion */
+    z-index: -1; /* Pushes the video behind the content */
+  }
+  
+  /* Image Screen Container */
+  .image-screen {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    color: white;
+    margin: 0;
+    box-sizing: border-box; 
+    overflow: hidden; /* Prevent scrolling caused by overflow */
+  }
+  
+  .content {
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    padding: 50px;
+    position: relative;
+    width: 100%;
+    height: 500px;
+    color: white;
+    margin: 0;
+    box-sizing: border-box; 
+    overflow: hidden; 
+  }
+  
+  
+  
+  .img-text {
+    font-size: 56px;
+    font-weight: bold;
+    font-family: 'Gill Sans', sans-serif;
+    text-align: left;
+  }
+  
+  .img-text2 {
+    font-size: 30px;
+    font-family: 'Gill Sans', sans-serif;
+    text-align: center;
+    justify-content: left;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+  }
+  
+  .cardsFeatureCoach {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box; 
+    overflow: hidden; 
+    background-color: white; 
+    color: black;
+    padding-bottom: 50px;
+  }
+
+  .cardsFeature{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box; 
+    overflow: hidden; 
+    background-color: black; 
+    color: white;
+    
+
+  }
+  
+  .cardsSports {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box; 
+    overflow: hidden; 
+    background-color: black; 
+    align-items: center; 
+    color:white;
+    
+
+  }
+  
+  .cardCoach {
+    border: 2px solid black;
+    width: 45%;
+    justify-content: center;
+    padding-top: 40px;
+    margin: 20px;
+    background-color: white; 
+    align-items: center; 
+    color:black;
+  
+  }
+  
+  .cardPlayer {
+    border: 2px solid orange;
+    width: 30%;
+    justify-content: center;
+    padding-top: 40px;
+    margin: 20px;
+    background-color: black; 
+    align-items: center; 
+    color:white;
+  
+  }
+  
+  .cardSport {
+    border: 2px solid white;
+    width: 25%;
+    justify-content: center;
+    padding: 40px;
+    margin: 20px;
+    background-color: black;
+    align-items: center; 
+    color: white;
+    margin-bottom: 50px;
+
+  }
+  
+  .cardSport:hover .bounce-icon {
+    animation: bounce 0.5s; /* Trigger the bounce animation on the icon */
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .cardTitles {
+    font-size: 2em;
+    padding-top: 10px;
+  }
+  
+  .custom-list-item {
+    font-size: 1em;
+    padding: 10px;
+    justify-content: center;
+  }
+  
+  .text-icon-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; /* Adjust as necessary */
+  }
+  
+  .text-icon-container p {
+    margin: 0;
+  }
+  
+  .description {
+    font-size: large;
+    padding: 20px 80px;
+  }
+  
+  .demo {
+    width: 100%;  /* or a specific width like '600px' */
+    height: auto;
+    display: block;  /* Ensure it's not set to 'none' */
+  }
+  
+  .footer {
+    background-color: black; 
+    color: #f8f9fa;
+    padding: 40px 20px;
+    border-top: 2px solid orange;
+  }
+  
+  .footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .footer-column {
+    flex: 1;
+    min-width: 250px;
+    margin: 10px 0;
+  }
+  .background-shape {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    width: 100vw; /* Full viewport width */
+    background-color: white;
+    border-radius: 0 0 50% 50%; /* Bottom half of a circle */
+    transition: height 0.3s ease, border-radius 0.3s ease;
+    z-index: -1; /* Keeps it behind the content */
+    color: black;
+  }
+  
+  .background-shape.rectangle {
+    border-radius: 0; /* No rounded edges when it becomes a rectangle */
+    height: 50px; /* Set fixed height for the rectangle */
+    width: 100vw; /* Make sure the width remains full screen */
+    margin-bottom: 50px;
+  }
+  
+  .coach {
+    background-color: white;
+  }
