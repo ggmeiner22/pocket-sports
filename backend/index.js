@@ -1,29 +1,39 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors')
-const RegisterModel = require('./models/Register') 
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bcrypt = require('bcrypt'); // Import bcrypt
+const RegisterModel = require('./models/Register');
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-mongoose.connect('mongodb://127.0.0.1:27017/test')
+mongoose.connect('mongodb://127.0.0.1:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.post('/register', (req, res) => {
-    const {name, email, password} = req.body;
-    RegisterModel.findOne({email: email})
-    .then(user => {
-        if(user) {
-            res.json("Already have an account")
-        } else {
-            RegisterModel.create({name: name, email: email, password: password})
-            .then(result => res.json("Account created"))
-            .catch(err => res.json(err))
+// Registration endpoint
+app.post('/register', async (req, res) => {
+    const { name, email, password } = req.body;
+
+    try {
+        // Check if the user already exists
+        const user = await RegisterModel.findOne({ email: email });
+        if (user) {
+            return res.status(400).json("Already have an account");
         }
-    }).catch(err => res.json(err))
 
-})
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-app.listen(3001, () =>  {
-    console.log("Server is Running")
-})
+        // Create a new user with the hashed password
+        await RegisterModel.create({ name: name, email: email, password: hashedPassword });
+        res.status(201).json("Account created");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+
+app.listen(3001, () => {
+    console.log("Server is Running on port 3001");
+});
