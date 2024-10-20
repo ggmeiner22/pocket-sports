@@ -1,40 +1,42 @@
 import { useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import axios from 'axios'
+import axios from 'axios';
 
 function App() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    axios.post('http://localhost:3001/register', {name, email, password})
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
+
+    axios.post('http://localhost:3001/register', { name, email, password })
       .then(result => {
         console.log(result);
         console.log('Registration successful!');
-
-        console.log('Before clearing:', { name, email, password });
         setName('');
         setEmail('');
         setPassword('');
-        console.log('After clearing:', { name, email, password }); // Log cleared values
-
-
       })
-    .catch(err => {
-      console.log(err)
-      alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
-    })
-
-
-  }
+      .catch(err => {
+        console.log(err);
+        setErrorMessage(err.response?.data?.error || 'Registration failed. Please try again.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center bg-primary vh-100"> 
-      <div className="bg-white p-4 rounded w-75 m-3"> {/* Wider and added margin */}
+      <div className="bg-white p-4 rounded w-75 m-3">
         <h2 className="text-center">Register</h2>
+        {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
         <form onSubmit={handleSubmit}>
           <div className="mb-3"> 
             <label htmlFor="name">
@@ -76,8 +78,8 @@ function App() {
             />
           </div>
 
-          <button type="submit" className="btn btn-success w-100 rounded-0">
-            Register
+          <button type="submit" className="btn btn-success w-100 rounded-0" disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
           </button>
           <p className="text-center mt-2">Already Have an Account?</p>
           <button type="button" className="btn btn-light border w-100 rounded-0">
