@@ -23,7 +23,7 @@ app.post("/login", (req, res) => {
         } else {
             res.json('No record existed')
         }
-    }).catch(err = res.json(err))
+    }).catch(err => res.json(err));
 })
 
 app.post('/register', (req, res) => {
@@ -38,7 +38,6 @@ app.post('/register', (req, res) => {
             .catch(err => res.json(err))
         }
     }).catch(err => res.json(err))
-
 })
 
 app.listen(3001, () =>  {

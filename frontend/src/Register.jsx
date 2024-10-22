@@ -1,12 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios'
+import { Modal, Button } from 'react-bootstrap';
 
 function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -14,6 +18,7 @@ function Register() {
       .then(result => {
         console.log(result);
         console.log('Registration successful!');
+        setShowModal(true)
 
         console.log('Before clearing:', { name, email, password });
         setName('');
@@ -27,9 +32,17 @@ function Register() {
       console.log(err)
       alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
     })
-
-
   }
+
+  const goToLogin = () => {
+    navigate('/login'); // Navigate to the login page
+  };
+
+  const handleClose = () => {
+    
+    setShowModal(false);
+    navigate('/');  // Optionally navigate after closing the modal
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center bg-primary vh-100"> 
@@ -80,10 +93,21 @@ function Register() {
             Register
           </button>
           <p className="text-center mt-2">Already Have an Account?</p>
-          <button type="button" className="btn btn-light border w-100 rounded-0">
+          <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToLogin}>
             Login
           </button>
         </form>
+        <Modal show={showModal} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Registration Successful</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>You are now registered!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={handleClose}>
+              OK
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
