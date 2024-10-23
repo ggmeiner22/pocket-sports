@@ -23,6 +23,7 @@ function Login() {
         // Clear input fields
         setEmail('');
         setPassword('');
+        goToTempPage();
       })
       .catch(err => {
         console.log(err);
@@ -30,8 +31,8 @@ function Login() {
       });
   };
 
-  const goToLandingPage = () => {
-    navigate('/');  // Navigate to the register page
+  const goToTempPage = () => {
+    navigate('/temp');  // Navigate to the register page
   };
 
   const goToRegister = () => {
@@ -79,7 +80,7 @@ function Login() {
               value={password}
             />
           </div>
-          <button type="submit" className="submit-button" onClick={goToLandingPage}>
+          <button type="submit" className="submit-button">
             Login
           </button>
           <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToRegister}>
