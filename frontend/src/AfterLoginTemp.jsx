@@ -1,7 +1,10 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom';
 
 function AfterLoginTemp() {
+  const navigate = useNavigate();
+  
   const goToRegister = () => {
     navigate('/registration');  // Navigate to the register page
   };
@@ -12,7 +15,7 @@ function AfterLoginTemp() {
             <source src="Arrows.mp4" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
-        <button type="submit" className="submit-button" onClick={goToRegister}>
+        <button type="button" className="submit-button" onClick={goToRegister}>
             Back to Registration
         </button>
       <footer className="footer">
