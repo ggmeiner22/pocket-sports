@@ -8,6 +8,7 @@ import { FaVolleyballBall } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Login from './Login';
 
 function LandingPage() {
 
@@ -16,6 +17,10 @@ function LandingPage() {
   const register = () => {
     navigate('/registration'); // Corrected the route path
   };
+
+  const login = () => {
+    navigate('/login');
+  }
 
   const [circleSize, setCircleSize] = useState(100); // Initial size of the bottom half-circle
   const [isRectangle, setIsRectangle] = useState(false); // To trigger the rectangle state
@@ -49,7 +54,7 @@ function LandingPage() {
       <header className="landing-page-header">
         <div className="logo">PocketSports</div>
         <div className="button-container">
-          <button className="coachButton">Login</button>
+          <button onClick={login} className="coachButton">Login</button>
           <button className="contactButton">Contact Us</button>
         </div>
       </header>

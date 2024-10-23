@@ -34,6 +34,28 @@ app.post('/register', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await RegisterModel.findOne({ email: email });
+        if (!user) {
+            return res.status(400).json("User not found");
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json("Invalid credentials");
+        }
+
+        res.status(200).json("Login successful");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+
+
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });
