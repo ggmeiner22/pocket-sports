@@ -4,26 +4,38 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function RegistrationPage() {
-  const [name, setName] = useState('');
+  const [fname, setFName] = useState('');
+  const [lname, setLName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:3001/register', { name, email, password })
+  
+    // Regular expression to validate the password
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  
+    if (!passwordPattern.test(password)) {
+      alert('Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.');
+      return; // Prevent form submission
+    }
+  
+    axios.post('http://localhost:3001/register', { fname, lname, email, password })
       .then(result => {
         console.log(result);
         console.log('Registration successful!');
-        setName('');
+        setFName('');
+        setLName('');
         setEmail('');
         setPassword('');
-        navigate('/login')
+        navigate('/login');
       })
       .catch(err => {
         console.log(err);
         alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
       });
   };
+  
 
   return (
     <div className="registration-container">
@@ -35,12 +47,22 @@ function RegistrationPage() {
       <h2>Registration</h2>
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
-            <label htmlFor="username">Username:</label>
+            <label htmlFor="fname">First Name:</label>
             <input
               type="text"
-              id="username"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="fname"
+              value={fname}
+              onChange={(e) => setFName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="lname">Last Name:</label>
+            <input
+              type="text"
+              id="lname"
+              value={lname}
+              onChange={(e) => setLName(e.target.value)}
               required
             />
           </div>
