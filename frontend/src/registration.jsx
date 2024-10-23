@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './registration.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function RegistrationPage() {
   const [name, setName] = useState('');
@@ -16,6 +17,7 @@ function RegistrationPage() {
         setName('');
         setEmail('');
         setPassword('');
+        navigate('/login')
       })
       .catch(err => {
         console.log(err);
