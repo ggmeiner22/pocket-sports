@@ -8,19 +8,20 @@ function RegistrationPage() {
   const [lname, setLName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [password2, retypePassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
   
     // Regular expression to validate the password
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
   
     if (!passwordPattern.test(password)) {
       alert('Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.');
       return; // Prevent form submission
     }
   
-    axios.post('http://localhost:3001/register', { fname, lname, email, password })
+    axios.post('http://localhost:3001/register', { fname, lname, email, password, password2 })
       .then(result => {
         console.log(result);
         console.log('Registration successful!');
@@ -28,6 +29,7 @@ function RegistrationPage() {
         setLName('');
         setEmail('');
         setPassword('');
+        retypePassword('');
         navigate('/login');
       })
       .catch(err => {
@@ -83,6 +85,16 @@ function RegistrationPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password2">Retype Password:</label>
+            <input
+              type="password"
+              id="password2"
+              value={password2}
+              onChange={(e) => retypePassword(e.target.value)}
               required
             />
           </div>
