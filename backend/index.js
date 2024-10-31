@@ -12,7 +12,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/test', { useNewUrlParser: true, useU
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { fname, lname, email, password } = req.body;
+    const { fname, lname, email, password, password2 } = req.body;
 
     try {
         // Check if the user already exists
@@ -21,12 +21,16 @@ app.post('/register', async (req, res) => {
             return res.status(400).json("Already have an account");
         }
 
+        if (password !== password2) {
+            return res.status(400).json("Passwords do not match!");
+        }
+
         // Hash the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Create a new user with the hashed password
-        await RegisterModel.create({ fname: fname, lname: lname, email: email, password: hashedPassword });
+        await RegisterModel.create({ fname: fname, lname: lname, email: email, password: hashedPassword});
         res.status(201).json("Account created");
     } catch (err) {
         console.error(err);

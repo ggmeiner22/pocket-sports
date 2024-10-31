@@ -4,7 +4,8 @@ const RegisterSchema = new mongoose.Schema({
     fname: String,
     lname: String,
     email: String,
-    password: String
+    password: String,
+    password2: String
 })
 
 const RegisterModel = mongoose.model("register", RegisterSchema);
