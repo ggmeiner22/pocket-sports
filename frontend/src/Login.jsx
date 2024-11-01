@@ -8,8 +8,11 @@ import { Modal, Button } from 'react-bootstrap';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);  // State to control password visibility
   const [showModal, setShowModal] = useState(false);  // State to control modal visibility
   const navigate = useNavigate();
+
+  const toggleShowPassword = () => setShowPassword(!showPassword);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,27 +35,26 @@ function Login() {
   };
 
   const goToTempPage = () => {
-    navigate('/temp');  // Navigate to the register page
+    navigate('/temp');  // Navigate to the temp page
   };
 
   const goToRegister = () => {
     navigate('/registration');  // Navigate to the register page
   };
 
+  // PUT CONNECTION TO LANDING PAGE HERE
   const handleClose = () => {
-
-    // PUT CONNECTION TO LANDING PAGE HERE
     setShowModal(false);
     navigate('/');  // Optionally navigate after closing the modal
   };
 
   return (
     <div className="registration-container"> 
-        <video autoPlay loop muted playsInline className="background-video">
-            <source src="Arrows.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-        </video>
-        <div className="card">
+      <video autoPlay loop muted playsInline className="background-video">
+          <source src="Arrows.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+      </video>
+      <div className="card">
         <h2>Login</h2>
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
@@ -72,13 +74,18 @@ function Login() {
             <label htmlFor="password">
               <strong>Password</strong>
             </label>
-            <input
-              type="password"
-              placeholder="Enter Password"
-              name="password"
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
+            <div className="password-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter Password"
+                name="password"
+                onChange={(e) => setPassword(e.target.value)}
+                value={password}
+              />
+              <span onClick={toggleShowPassword} className="toggle-password">
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
           <button type="submit" className="submit-button">
             Login
