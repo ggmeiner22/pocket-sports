@@ -9,21 +9,24 @@ function RegistrationPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, retypePassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
+  const navigate = useNavigate();
+
+  const toggleShowPassword = () => setShowPassword(!showPassword);
+  const toggleShowPassword2 = () => setShowPassword2(!showPassword2);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
-    // Regular expression to validate the password
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
-  
+
     if (!passwordPattern.test(password)) {
       alert('Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.');
-      return; // Prevent form submission
+      return;
     }
-  
+
     axios.post('http://localhost:3001/register', { fname, lname, email, password, password2 })
       .then(result => {
-        console.log(result);
         console.log('Registration successful!');
         setFName('');
         setLName('');
@@ -37,16 +40,15 @@ function RegistrationPage() {
         alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
       });
   };
-  
 
   return (
     <div className="registration-container">
-        <video autoPlay loop muted playsInline className="background-video">
-          <source src="Arrows.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+      <video autoPlay loop muted playsInline className="background-video">
+        <source src="Arrows.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
       <div className="card">
-      <h2>Registration</h2>
+        <h2>Registration</h2>
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
             <label htmlFor="fname">First Name:</label>
@@ -80,23 +82,33 @@ function RegistrationPage() {
           </div>
           <div className="form-group">
             <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <span onClick={toggleShowPassword} className="toggle-password">
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="password2">Retype Password:</label>
-            <input
-              type="password"
-              id="password2"
-              value={password2}
-              onChange={(e) => retypePassword(e.target.value)}
-              required
-            />
+            <div className="password-container">
+              <input
+                type={showPassword2 ? "text" : "password"}
+                id="password2"
+                value={password2}
+                onChange={(e) => retypePassword(e.target.value)}
+                required
+              />
+              <span onClick={toggleShowPassword2} className="toggle-password">
+                {showPassword2 ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
           <button type="submit" className="submit-button">Register</button>
         </form>
