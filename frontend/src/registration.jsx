@@ -11,7 +11,12 @@ function RegistrationPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, retypePassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
   const navigate = useNavigate();
+
+  const toggleShowPassword = () => setShowPassword(!showPassword);
+  const toggleShowPassword2 = () => setShowPassword2(!showPassword2);
 
   const landing = () => {
     navigate('/'); // Corrected the route path
@@ -22,17 +27,15 @@ function RegistrationPage() {
   }
   const handleSubmit = (e) => {
     e.preventDefault();
-  
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
-  
+
     if (!passwordPattern.test(password)) {
       alert('Password must meet requirments.');
       return;
     }
-  
+
     axios.post('http://localhost:3001/register', { fname, lname, email, password, password2 })
       .then(result => {
-        console.log(result);
         console.log('Registration successful!');
         setFName('');
         setLName('');
@@ -46,7 +49,6 @@ function RegistrationPage() {
         alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
       });
   };
-  
 
   return (
     <div>
@@ -58,13 +60,12 @@ function RegistrationPage() {
         </div>
       </header>
     <div className="registration-container">
-      
-        <video autoPlay loop muted playsInline className="background-video">
-          <source src="Arrows.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+      <video autoPlay loop muted playsInline className="background-video">
+        <source src="Arrows.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
       <div className="card">
-      <h2>Registration</h2>
+        <h2>Registration</h2>
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
             <label htmlFor="fname">First Name:</label>
@@ -98,13 +99,18 @@ function RegistrationPage() {
           </div>
           <div className="form-group">
             <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <span onClick={toggleShowPassword} className="toggle-password">
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
           <div className="password-standards">
             <ul>
@@ -125,13 +131,18 @@ function RegistrationPage() {
           </div>
           <div className="form-group">
             <label htmlFor="password2">Retype Password:</label>
-            <input
-              type="password"
-              id="password2"
-              value={password2}
-              onChange={(e) => retypePassword(e.target.value)}
-              required
-            />
+            <div className="password-container">
+              <input
+                type={showPassword2 ? "text" : "password"}
+                id="password2"
+                value={password2}
+                onChange={(e) => retypePassword(e.target.value)}
+                required
+              />
+              <span onClick={toggleShowPassword2} className="toggle-password">
+                {showPassword2 ? "🙈" : "👁️"}
+              </span>
+            </div>
           </div>
           <button type="submit" className="submit-button">Register</button>
         </form>
