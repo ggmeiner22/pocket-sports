@@ -4,8 +4,29 @@
     overflow: hidden; /* Prevent any unwanted scrolling */
     border-radius: 8px;
     color: white;
-    text-align: center; /* Center-align text */
-    padding-top: 100px;
+}
+
+/* Header Styling */
+.registration-page-header {
+    top: 0;
+    width: 100%;
+    background-color: black;
+    min-height: 10vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow under the header */
+    z-index: 1000; /* Ensures the header stays above other elements */
+}
+
+.registration-page-header .logo {
+    margin-left: 20px; /* Adjust as needed */
+}
+.logo {
+    font-size: 2em;
+    font-weight: bold;
+    color: white;
 }
 
 .card {

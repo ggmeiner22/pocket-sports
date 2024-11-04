@@ -52,7 +52,9 @@ function LandingPage() {
   return (
     <div className="landing-page">
       <header className="landing-page-header">
-        <div className="logo">PocketSports</div>
+        <div className="logo">
+          <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
+        </div>
         <div className="button-container">
           <button onClick={login} className="coachButton">Login</button>
           <button className="contactButton">Contact Us</button>

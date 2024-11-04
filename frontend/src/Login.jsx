@@ -49,7 +49,12 @@ function Login() {
   };
 
   return (
-    <div className="registration-container"> 
+    <div className="registration-container">
+      <header className="registration-page-header">
+        <div className="logo">
+          <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
+        </div>
+      </header>
       <video autoPlay loop muted playsInline className="background-video">
           <source src="Arrows.mp4" type="video/mp4" />
           Your browser does not support the video tag.
