@@ -2,6 +2,8 @@ import { useState } from 'react';
 import './registration.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Login from './Login';
+
 
 function RegistrationPage() {
   const [fname, setFName] = useState('');
@@ -16,12 +18,19 @@ function RegistrationPage() {
   const toggleShowPassword = () => setShowPassword(!showPassword);
   const toggleShowPassword2 = () => setShowPassword2(!showPassword2);
 
+  const landing = () => {
+    navigate('/'); // Corrected the route path
+  };
+
+  const login = () => {
+    navigate('/login');
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
 
     if (!passwordPattern.test(password)) {
-      alert('Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.');
+      alert('Password must meet requirments.');
       return;
     }
 
@@ -42,6 +51,14 @@ function RegistrationPage() {
   };
 
   return (
+    <div>
+    <header className="landing-page-header">
+        <div className="logo">PocketSports</div>
+        <div className="button-container">
+        <button onClick={landing} className="coachButton">Home</button>
+          <button onClick={login} className="contactButton">Login</button>
+        </div>
+      </header>
     <div className="registration-container">
       <video autoPlay loop muted playsInline className="background-video">
         <source src="Arrows.mp4" type="video/mp4" />
@@ -95,6 +112,23 @@ function RegistrationPage() {
               </span>
             </div>
           </div>
+          <div className="password-standards">
+            <ul>
+              Password requires to have at least: 
+              <li className={password.length >= 8 ? 'valid' : 'invalid'}>
+                <span className="status-mark">{password.length >= 8 ? '✓' : '✗'}</span> 8 Characters
+              </li>
+              <li className={/[A-Z]/.test(password) ? 'valid' : 'invalid'}>
+                <span className="status-mark">{/[A-Z]/.test(password) ? '✓' : '✗'}</span> 1 Uppercase Letter
+              </li>
+              <li className={/[0-9]/.test(password) ? 'valid' : 'invalid'}>
+                <span className="status-mark">{/[0-9]/.test(password) ? '✓' : '✗'}</span> 1 Number
+              </li>
+              <li className={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'valid' : 'invalid'}>
+                <span className="status-mark">{/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '✓' : '✗'}</span> 1 Special Character
+              </li>
+            </ul>
+          </div>
           <div className="form-group">
             <label htmlFor="password2">Retype Password:</label>
             <div className="password-container">
@@ -127,6 +161,7 @@ function RegistrationPage() {
           <p>&copy; 2024 PocketSports. All rights reserved.</p>
         </div>
       </footer>
+    </div>
     </div>
   );
 }
