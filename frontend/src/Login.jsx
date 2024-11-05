@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
@@ -11,10 +11,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);  // State to control password visibility
   const [showModal, setShowModal] = useState(false);  // State to control modal visibility
   const navigate = useNavigate();
-
-  const landing = () => {
-    navigate('/'); // Corrected the route path
-  };
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
 
@@ -27,6 +23,7 @@ function Login() {
 
         setShowModal(true);  // Show the modal on successful login
 
+        // Clear input fields
         setEmail('');
         setPassword('');
         goToTempPage();
@@ -42,7 +39,7 @@ function Login() {
   };
 
   const goToRegister = () => {
-    navigate('/registration');  
+    navigate('/registration');  // Navigate to the register page
   };
 
   // PUT CONNECTION TO LANDING PAGE HERE
@@ -52,15 +49,12 @@ function Login() {
   };
 
   return (
-    <div>
-    <header className="landing-page-header">
-        <div className="logo">PocketSports</div>
-        <div className="button-container">
-        <button onClick={landing} className="coachButton">Home</button>
-          <button className="contactButton">Contact Us</button>
+    <div className="registration-container">
+      <header className="registration-page-header">
+        <div className="logo">
+          <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
         </div>
       </header>
-    <div className="registration-container"> 
       <video autoPlay loop muted playsInline className="background-video">
           <source src="Arrows.mp4" type="video/mp4" />
           Your browser does not support the video tag.
@@ -101,7 +95,7 @@ function Login() {
           <button type="submit" className="submit-button">
             Login
           </button>
-          <button type="button" className="register-button" onClick={goToRegister}>
+          <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToRegister}>
             Register
           </button>
         </form>
@@ -133,7 +127,6 @@ function Login() {
           <p>&copy; 2024 PocketSports. All rights reserved.</p>
         </div>
       </footer>
-    </div>
     </div>
   );
 }
