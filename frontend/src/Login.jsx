@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './App.css';
+import './Login.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
@@ -11,6 +11,10 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);  // State to control password visibility
   const [showModal, setShowModal] = useState(false);  // State to control modal visibility
   const navigate = useNavigate();
+
+  const landing = () => {
+    navigate('/'); // Corrected the route path
+  };
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
 
@@ -30,7 +34,7 @@ function Login() {
       })
       .catch(err => {
         console.log(err);
-        alert('Login failed: ' + (err.response?.data?.error || 'Unknown error'));
+        alert('Login failed: ' + (err.response?.data || 'Login failed. Please check your information and try again.'));
       });
   };
 
