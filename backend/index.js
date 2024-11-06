@@ -18,7 +18,7 @@ app.post('/register', async (req, res) => {
         // Check if the user already exists
         const user = await RegisterModel.findOne({ email: email });
         if (user) {
-            return res.status(400).json("Already have an account");
+            return res.status(400).json("Account under " + email + " already exists!");
         }
 
         if (password !== password2) {
@@ -44,12 +44,12 @@ app.post('/login', async (req, res) => {
     try {
         const user = await RegisterModel.findOne({ email: email });
         if (!user) {
-            return res.status(400).json("User not found");
+            return res.status(400).json("Account under " + email + " not found!");
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json("Invalid credentials");
+            return res.status(400).json("Invalid password!");
         }
 
         res.status(200).json("Login successful");

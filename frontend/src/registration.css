@@ -154,5 +154,27 @@ input[type="text"] {
     object-fit: cover; /* Ensures the video covers the entire area without distortion */
     z-index: -1; /* Pushes the video behind the content */
     overflow: hidden; /* Prevent any unwanted scrolling */
+}
 
+.password-standards ul {
+  color: white;
+  list-style-type: none; 
+  padding-left: 0;
+  text-align: left;
+  margin-left: 1em;
+}
+
+.password-standards li {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.password-standards .invalid{
+  margin-right: 8px; 
+  color: red; 
+}
+
+.password-standards li.valid  {
+  color: green;
 }
