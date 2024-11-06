@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Login from './Login';
 
-
 function RegistrationPage() {
   const [fname, setFName] = useState('');
   const [lname, setLName] = useState('');
@@ -25,9 +24,10 @@ function RegistrationPage() {
   const login = () => {
     navigate('/login');
   }
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
+    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
 
     if (!passwordPattern.test(password)) {
       alert('Password must meet requirments.');
@@ -46,20 +46,17 @@ function RegistrationPage() {
       })
       .catch(err => {
         console.log(err);
-        alert('Registration failed: ' + (err.response?.data?.error || 'Unknown error'));
+        alert('Registration failed: ' + (err.response?.data || 'Registration failed. Please check your information and try again.'));
       });
   };
 
   return (
-    <div>
-    <header className="landing-page-header">
-        <div className="logo">PocketSports</div>
-        <div className="button-container">
-        <button onClick={landing} className="coachButton">Home</button>
-          <button onClick={login} className="contactButton">Login</button>
+    <div className="registration-container">
+      <header className="registration-page-header">
+        <div className="logo">
+          <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
         </div>
       </header>
-    <div className="registration-container">
       <video autoPlay loop muted playsInline className="background-video">
         <source src="Arrows.mp4" type="video/mp4" />
         Your browser does not support the video tag.
@@ -161,7 +158,6 @@ function RegistrationPage() {
           <p>&copy; 2024 PocketSports. All rights reserved.</p>
         </div>
       </footer>
-    </div>
     </div>
   );
 }

@@ -32,13 +32,14 @@ function Login() {
 
         setShowModal(true);  // Show the modal on successful login
 
+        // Clear input fields
         setEmail('');
         setPassword('');
         teams();
       })
       .catch(err => {
         console.log(err);
-        alert('Login failed: ' + (err.response?.data?.error || 'Unknown error'));
+        alert('Login failed: ' + (err.response?.data || 'Login failed. Please check your information and try again.'));
       });
   };
 
@@ -47,7 +48,7 @@ function Login() {
   };
 
   const goToRegister = () => {
-    navigate('/registration');  
+    navigate('/registration');  // Navigate to the register page
   };
 
   // PUT CONNECTION TO LANDING PAGE HERE
@@ -57,15 +58,12 @@ function Login() {
   };
 
   return (
-    <div>
-    <header className="landing-page-header">
-        <div className="logo">PocketSports</div>
-        <div className="button-container">
-        <button onClick={landing} className="coachButton">Home</button>
-          <button className="contactButton">Contact Us</button>
+    <div className="registration-container">
+      <header className="registration-page-header">
+        <div className="logo">
+          <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
         </div>
       </header>
-    <div className="registration-container"> 
       <video autoPlay loop muted playsInline className="background-video">
           <source src="Arrows.mp4" type="video/mp4" />
           Your browser does not support the video tag.
@@ -106,7 +104,7 @@ function Login() {
           <button type="submit" className="submit-button">
             Login
           </button>
-          <button type="button" className="register-button" onClick={goToRegister}>
+          <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToRegister}>
             Register
           </button>
         </form>
@@ -138,7 +136,6 @@ function Login() {
           <p>&copy; 2024 PocketSports. All rights reserved.</p>
         </div>
       </footer>
-    </div>
     </div>
   );
 }
