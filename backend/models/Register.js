@@ -5,7 +5,10 @@ const RegisterSchema = new mongoose.Schema({
     lname: String,
     email: String,
     password: String,
-    password2: String
+    password2: String,
+    verified: { type: Boolean, default: false},
+    verifyCode: String,
+    verifyExpiration: Date
 })
 
 const RegisterModel = mongoose.model("register", RegisterSchema);

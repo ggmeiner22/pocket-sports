@@ -4,6 +4,7 @@
     overflow: hidden; /* Prevent any unwanted scrolling */
     border-radius: 8px;
     color: white;
+    min-height: 100vh;
 }
 
 /* Header Styling */
@@ -78,6 +79,10 @@ input[type="password"] {
     background-color: black; /* Match input background to page */
     color: white; /* Input text color */
     transition: border-color 0.3s ease; /* Smooth border color transition */
+
+    .code-input {
+        width: 20%;
+    }
 }
 
 input[type="text"]:focus,
@@ -128,7 +133,7 @@ input[type="text"] {
     color: #f8f9fa;
     padding: 40px 20px;
     border-top: 2px solid orange;
-
+    margin-top: auto;
   }
   
   .footer-container {
@@ -177,4 +182,34 @@ input[type="text"] {
 
 .password-standards li.valid  {
   color: green;
+}
+
+.code-input {
+    width: 5%;
+    height: 40px;
+    text-align: center;
+    font-size: 24px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.code-input:focus {
+    border-color: #007BFF;
+}
+
+.code-submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px; /* Match button style */
+    background-color: orange; /* Match landing page button color */
+    color: black;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.code-submit-button:hover {
+    background-color: black; /* Change background color on hover */
+    color: orange; /* Change text color on hover */
+    border: 2px solid orange; /* Optional border on hover */
 }

@@ -107,9 +107,9 @@ function Login() {
         {/* Confirmation Modal */}
         <Modal show={showModal} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title>Login Successful</Modal.Title>
+            <Modal.Title>Verification Successful</Modal.Title>
           </Modal.Header>
-          <Modal.Body>You are now logged in!</Modal.Body>
+          <Modal.Body>You are now verified!</Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={handleClose}>
               OK

@@ -25,6 +25,17 @@ function RegistrationPage() {
     navigate('/login');
   }
 
+  const verifyEmail = (email) => {
+    axios.post('http://localhost:3001/verifyemail', {email: email})
+      .then(result => {
+        navigate('/verifycode');
+      })
+      .catch(err => {
+        console.log(err)
+        alert('Email sending failed: ' + (err.response?.data || 'email failed. Please check your information and try again.'));
+      })
+  } 
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
@@ -42,7 +53,7 @@ function RegistrationPage() {
         setEmail('');
         setPassword('');
         retypePassword('');
-        navigate('/login');
+        verifyEmail(email);
       })
       .catch(err => {
         console.log(err);
