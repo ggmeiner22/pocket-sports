@@ -4,6 +4,7 @@ import './Login.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
+import TeamsPage from './Teams';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -15,6 +16,10 @@ function Login() {
   const landing = () => {
     navigate('/'); // Corrected the route path
   };
+
+  const teams = () => {
+    navigate('/teams');
+  }
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
 
@@ -30,7 +35,7 @@ function Login() {
         // Clear input fields
         setEmail('');
         setPassword('');
-        goToTempPage();
+        teams();
       })
       .catch(err => {
         console.log(err);

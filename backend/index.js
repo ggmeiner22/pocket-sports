@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt'); // Import bcrypt
 const RegisterModel = require('./models/Register');
+const TeamsModel = require('./models/Teams');
 
 const app = express();
 app.use(cors());
@@ -56,6 +57,43 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
+    }
+});
+
+app.post('/teams', async (req, res) => {
+    const { teamName, organizationName, teamColors, selectedSport } = req.body;
+
+    try {
+        // Check if the team already exists
+        const existingTeam = await TeamsModel.findOne({ teamName: teamName, organizationName: organizationName });
+
+        if (existingTeam) {
+            return res.status(400).json("Team already exists");
+        }
+
+        // Create and save the new team in MongoDB
+        const newTeam = new TeamsModel({
+            teamName,
+            organizationName,
+            teamColors, 
+            selectedSport
+        });
+
+        await newTeam.save();
+        res.status(201).json("Team created successfully");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+
+app.get('/teams', async (req, res) => {
+    try {
+        const teams = await TeamsModel.find(); // Fetch all teams from MongoDB
+        res.status(200).json(teams);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch teams' });
     }
 });
 
