@@ -38,6 +38,7 @@ function Verify() {
             console.log(err)
             alert('Verification failed: ' + (err.response?.data || 'Verification failed. Please check your information and try again.'));
         })
+    alert('Verification successful!');
     navigate('/login');
   };
 
