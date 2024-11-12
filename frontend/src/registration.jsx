@@ -25,12 +25,30 @@ function RegistrationPage() {
     navigate('/login');
   }
 
+   const verifyEmail = (email) => {
+    navigate('/verifycode', {state: {email}});
+    axios.post('http://localhost:3001/verifyemail', {email: email})
+      .then(result => {
+        console.log("Success:", result)
+      })
+      .catch(err => {
+        console.log(err)
+        alert('Email sending failed: ' + (err.response?.data || 'email failed. Please check your information and try again.'));
+      })
+  } 
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!passwordPattern.test(password)) {
       alert('Password must meet requirments.');
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      alert('email is not in a valid format. Please enter a different email.');
       return;
     }
 
@@ -42,7 +60,7 @@ function RegistrationPage() {
         setEmail('');
         setPassword('');
         retypePassword('');
-        navigate('/login');
+        verifyEmail(email);
       })
       .catch(err => {
         console.log(err);

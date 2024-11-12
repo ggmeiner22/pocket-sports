@@ -7,6 +7,7 @@ import LandingPage from './landing-page';
 import AfterLoginTemp from './AfterLoginTemp';
 import React from 'react';
 import TeamsPage from './Teams';
+import Verify from './Verify';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/temp" element={<AfterLoginTemp />} />
       <Route path="/teams" element={<TeamsPage />} />
+      <Route path="/verifycode" element={<Verify/>}/>
     </Routes>
   );
 }
