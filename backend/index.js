@@ -21,10 +21,14 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
+
 // Registration endpoint
 app.post('/register', async (req, res) => {
     const { fname, lname, email, password, password2 } = req.body;
-
+    sleep(5000)
     try {
         // Check if the user already exists
         const user = await RegisterModel.findOne({ email: email });
@@ -51,7 +55,7 @@ app.post('/register', async (req, res) => {
 
 // email verification endpoint
 app.post('/verifyemail', async (req, res) => {
-    const email = req.email;
+    const email = req.body.email;
     const verifyCode = Math.floor(100000 + Math.random() * 900000);
     const expiryTime = Date.now() + 15 * 60 * 1000;
 
@@ -75,21 +79,27 @@ app.post('/verifyemail', async (req, res) => {
 
         res.status(200).json("Verification email sent")
     } catch (err){
+        console.error(err);
         res.status(201).json("Email verified")
     }
 });
 
 
 app.post('/verifycode', async (req, res) => {
-    const {email, code} = req.body
-
+    const email = req.body.email;
+    const code = req.body.code
+    
+    console.log(code);
     try {
-        const user = RegisterModel.findOne({email: email});
+        const user = await RegisterModel.findOne({email: email});
         if (!user) {
             return res.status(400).json("Account Not Found");
         }
+        
+        console.log(user.verifyCode)
 
-        if (user.verifyCode !== code) {
+        console.log(user.verifyCode === code);
+        if (String(user.verifyCode) !== String(code)) {
             return res.status(400).json("Incorrect Verification Code")
         }
 
@@ -100,7 +110,11 @@ app.post('/verifycode', async (req, res) => {
         user.verified = true;
         user.verificationCode = null;
         user.verificationExpiry = null;
-        await user.save();
+        console.log("MongoDB connection status:", mongoose.connection.readyState); // 1 means connected
+
+        user.save();
+
+        console.log("user.save() has passed!")
     }
     catch (err) {
         console.error(err);

@@ -26,9 +26,10 @@ function RegistrationPage() {
   }
 
   const verifyEmail = (email) => {
+    navigate('/verifycode', {state: {email}});
     axios.post('http://localhost:3001/verifyemail', {email: email})
       .then(result => {
-        navigate('/verifycode');
+        console.log("Success:", result)
       })
       .catch(err => {
         console.log(err)
@@ -39,9 +40,15 @@ function RegistrationPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?#&]{8,}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!passwordPattern.test(password)) {
       alert('Password must meet requirments.');
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      alert('email is not valid. Please enter a different email.');
       return;
     }
 

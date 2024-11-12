@@ -3,11 +3,15 @@ import './registration.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 
 function Verify() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showModal, setShowModal] = useState(false); 
   const [code, setCode] = useState(['', '', '', '', '', '']);
+
+  const email = location.state?.email;
 
   const handleChange = (e, index) => {
     const newCode = [...code];
@@ -27,13 +31,14 @@ function Verify() {
     e.preventDefault();
     const verificationCode = code.join('');
 
-    axios.post("http://localhost:3001/verifycode", {code: verificationCode})
+    axios.post("http://localhost:3001/verifycode", {email: email, code: verificationCode})
         .then(result => 
             console.log("Verification email successful")
         ).catch(err => {
             console.log(err)
             alert('Verification failed: ' + (err.response?.data || 'Verification failed. Please check your information and try again.'));
         })
+    navigate('/login');
   };
 
   const handleClose = () => {
@@ -63,7 +68,7 @@ function Verify() {
             onChange={(e) => handleChange(e, index)}
           />
         ))}
-        <button onSubmit={handleSubmit} type="submit" className="code-submit-button">Submit Verification Code</button>
+        <button onClick={handleSubmit} type="submit" className="code-submit-button">Submit Verification Code</button>
       </div>
       <Modal show={showModal} onHide={handleClose}>
           <Modal.Header closeButton>

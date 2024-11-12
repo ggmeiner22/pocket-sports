@@ -9,7 +9,7 @@ const RegisterSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false},
     verifyCode: String,
     verifyExpiration: Date
-})
+}, {collection: 'registers'});
 
 const RegisterModel = mongoose.model("register", RegisterSchema);
 module.exports = RegisterModel;
