@@ -112,22 +112,27 @@ app.get('/teams', async (req, res) => {
         return res.status(400).json({ error: "User ID is missing in the request headers." });
     }
 
+    // Validate that the userId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid User ID format." });
+    }
+
     try {
-        // Fetch all user-team associations and populate team details
-        const userTeams = await UserOnTeamModel.find({ userId }).populate(
-            'teamId', 'teamName organizationName teamColors selectedSport');  // Populate team details from the 'teamId'
+        // Fetch user-team associations and populate the team details
+        const userTeams = await UserOnTeamModel.find({ userId: userId }); 
 
-        if (!userTeams || userTeams.length === 0) {
-            return res.status(404).json({ error: "No teams found for the user." });
-        }
+        // Map teamIds and fetch full team details
+        const teamIds = userTeams.map((ut) => ut.teamId);
+        const teams = await TeamsModel.find({ _id: { $in: teamIds } });
 
-        // If teams exist, return populated user teams
-        res.status(200).json(userTeams);
+        // Respond with populated user teams
+        res.status(200).json(teams);
     } catch (err) {
         console.error("Error fetching teams:", err);
-        res.status(500).json({ error: 'Failed to fetch teams' });
+        res.status(500).json({ error: "Failed to fetch teams." });
     }
 });
+
 
 
 app.listen(3001, () => {
