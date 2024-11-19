@@ -53,25 +53,26 @@ function TeamsPage() {
   const getTeams = async () => {
 
     try {
-      const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
-      console.log("T: User ID received:", userId);  // Check if userId is being fetched correctly
+      const storedUserId = localStorage.getItem('userId');  // Retrieve userId from localStorage
+      console.log("Fetching teams for userId:", storedUserId);  // Check if userId is being fetched correctly
 
-    if (!userId) {
+    if (!storedUserId) {
       console.log("User ID is missing");
       return;  // Exit early if userId is missing
     }
  
       const response = await axios.get('http://localhost:3001/teams', {
           headers: { 
-            userId: userId 
+            userId: storedUserId 
           }
       });
 
-      console.log(response.data);  // Log the response from the server
+      console.log("Teams fetched:", response.data); // Inspect server response
       setTeams(response.data);
 
     } catch (error) {
-      console.error("Error fetching teams:", error);
+      console.error("Error fetching teams:", error.response || error.message);
+      alert("Failed to fetch teams. Please try again later.");
     }
   };
 
@@ -110,7 +111,7 @@ function TeamsPage() {
       })
       .catch((err) => {
         console.log(err);
-        alert('Error creating team');
+        alert(err + 'Error creating team');
       });
   };
 
