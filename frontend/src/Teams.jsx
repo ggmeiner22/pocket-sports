@@ -8,18 +8,22 @@ function TeamsPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
-  const [teamColors, setTeamColors] = useState('');
+  const [teamColors, setTeamColors] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedSport, setselectedSport] = useState('');
 
   const navigate = useNavigate();
-
+  const colors = ['#FF5733', '#008000', '#3357FF', '#ff8c00', '#ffd700', '#8A2BE2',];
   const landing = () => {
     navigate('/');
   };
 
   const login = () => {
     navigate('/login');
+  };
+
+  const goToTeamPage = () => {
+    navigate('/home');
   };
 
   const handleCreateTeam = () => {
@@ -31,7 +35,15 @@ function TeamsPage() {
   };
 
   const handleTeamChange = (e) => {
-    setselectedSport(e.target.value); // Update the selected team
+    setselectedSport(e.target.value);
+  };
+
+  const handleColorClick = (color) => {
+    if (teamColors.includes(color)) {
+      setTeamColors(teamColors.filter((c) => c !== color));
+    } else {
+      setTeamColors([...teamColors, color]);
+    }
   };
 
   const getTeams = async () => {
@@ -111,14 +123,23 @@ function TeamsPage() {
                 <br />
                 <label>
                   Team Colors:
-                  <input
-                    type={"text"}
-                    id="teamColors"
-                    value={teamColors}
-                    onChange={(e) => setTeamColors(e.target.value)}
-                    placeholder="e.g., Blue, Red"
-                    required
-                  />
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                {colors.map((color) => (
+                  <div
+                    key={color}
+                    onClick={() => handleColorClick(color)}
+                    style={{
+                      backgroundColor: color,
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      border: teamColors.includes(color) ? '3px solid white' : '1px solid black',
+                      transition: 'transform 0.2s ease',
+                    }}
+                  ></div>
+                ))}
+              </div>
                 </label>
                 <label>
                     Intended Sport:
@@ -146,7 +167,7 @@ function TeamsPage() {
             <div className="teamName"><strong>{team.teamName}</strong></div>
             <div className="organizationName">{team.organizationName}</div>
             </div>
-            <button className= 'topButtons'>Select Team + </button>
+            <button className= 'topButtons' onClick={goToTeamPage}>Select Team + </button>
           </li>
           ))}
         </ul>

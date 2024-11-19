@@ -175,11 +175,20 @@ input[type="password"]:focus {
     border: 2px solid white; 
 }
 
-/* Flexbox for Create/Display Teams */
 .createButtons {
     display: flex;
     justify-content: flex-start;
     flex-direction: row;
     margin-left: 2em;
+}
+
+.color-palette {
+    background-color: color;
+    width: '50px';
+    height: '50px';
+    border-radius: '50%';
+    cursor: 'pointer';
+    border: 3px solid white;
+    transition: 'transform 0.2s ease';
 }
 

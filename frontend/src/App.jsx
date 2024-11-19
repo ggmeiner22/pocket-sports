@@ -7,15 +7,17 @@ import LandingPage from './landing-page';
 import AfterLoginTemp from './AfterLoginTemp';
 import React from 'react';
 import TeamsPage from './Teams';
+import HomePage from './TeamHome';
 
 function App() {
   return (
-    <Routes>  {/* No BrowserRouter here */}
-      <Route path="/" element={<LandingPage />} />  {/* Define the home route */}
-      <Route path="/registration" element={<RegistrationPage />} />  {/* Define the registration route */}
+    <Routes> 
+      <Route path="/" element={<LandingPage />} /> 
+      <Route path="/registration" element={<RegistrationPage />} /> 
       <Route path="/login" element={<Login />} />
       <Route path="/temp" element={<AfterLoginTemp />} />
       <Route path="/teams" element={<TeamsPage />} />
+      <Route path="/home" element={<HomePage/>}/>
     </Routes>
   );
 }
