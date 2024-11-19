@@ -110,7 +110,7 @@ function TeamsPage() {
       })
       .catch((err) => {
         console.log(err);
-        alert('Error creating team');
+        alert(err + 'Error creating team');
       });
   };
 
