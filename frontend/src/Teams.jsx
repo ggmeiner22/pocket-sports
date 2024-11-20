@@ -5,11 +5,13 @@ import axios from 'axios';
 
 function TeamsPage() {
   const [showPopup, setShowPopup] = useState(false);
+  const [showJoinPopup, setShowJoinPopup] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [teamColors, setTeamColors] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [userId, setUserId] = useState(null);  // userId state
+  const [userId, setUserId] = useState('');  // userId state
+  const [joinCode, setJoinCode] = useState('')
 
   const [selectedSport, setSelectedSport] = useState('');
   
@@ -114,13 +116,13 @@ function TeamsPage() {
     e.preventDefault();
 
     const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
-
     const newTeam = {
       teamName,
       organizationName,
       teamColors,
       selectedSport,
       createdBy: userId,  // Pass userId to associate the team with the logged-in user
+      joinCode
     };
 
     axios.post('http://localhost:3001/teams', newTeam)
@@ -131,12 +133,36 @@ function TeamsPage() {
         setOrganizationName('');
         setTeamColors('');
         setSelectedSport('');
+        setJoinCode('');
       })
       .catch((err) => {
         console.log(err);
         alert(err + 'Error creating team');
       });
   };
+
+
+  const handleJoinSubmit = async (e) => {
+    e.preventDefault();
+    
+    const storedUserId = localStorage.getItem('userId');  // Get userId
+    // Make a POST request to join the team
+    try {
+      const response = await axios.post('http://localhost:3001/joinTeam', {
+        teamCode: joinCode,
+        userId: storedUserId
+      });
+      console.log(response.data);
+      alert("Successfully joined the team!");
+      // Refresh teams list
+      handleCloseJoinPopup();
+      getTeams();
+    } catch (error) {
+      console.error("Error joining team:", error);
+      alert("Failed to join the team. Please try again.");
+    }
+  };
+
 
   // Show popup to create a new team
   const handleCreateTeam = () => {
@@ -146,6 +172,18 @@ function TeamsPage() {
   // Close the team creation popup
   const handleClosePopup = () => {
     setShowPopup(false);
+  };
+
+  const handleJoinTeam = () => {
+    setShowJoinPopup(true);
+  }
+
+  const handleTeamCode = () => {
+    code = teamCode
+  }
+
+  const handleCloseJoinPopup = () => {
+    setShowJoinPopup(false);
   };
 
   return (
@@ -160,7 +198,7 @@ function TeamsPage() {
       
       <div className="createButtons">
         <button className="topButtons" onClick={handleCreateTeam}>Create Team +</button>
-        <button className="topButtons">Join Team +</button>
+        <button className="topButtons" onClick={handleJoinTeam}>Join Team +</button>
       </div>
       
       <div className="body">
@@ -222,11 +260,32 @@ function TeamsPage() {
                 </label>
                 <br />
                 <div className="popup-buttons">
-                  <button className="topButtons" type="button" onClick={handleClosePopup}>Cancel</button>
+                  <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
                   <button className="topButtons" type="submit">Create</button>
                 </div>
               </form>
             </div>
+          </div>
+        )}
+
+        {showJoinPopup && (
+          <div className="popup-top">
+          <div className="popup-content">
+            <form onSubmit={handleJoinSubmit}>
+              <label>
+                  Enter the 4-digit Team Code:
+                  <input
+                    type="text"
+                    id="joinCode"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    required
+                  />
+              </label>
+              <button className="topButtons" type='submit'>Submit Team Code</button>
+              <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
+            </form>
+          </div>
           </div>
         )}
 
@@ -237,6 +296,7 @@ function TeamsPage() {
             <div>
             <div className="teamName"><strong>{team.teamName}</strong></div>
             <div className="organizationName">{team.organizationName}</div>
+            <p>Code: <strong>{team.teamCode}</strong></p>
             </div>
             <button className= 'topButtons' onClick={goToTeamPage}>Select Team + </button>
           </li>

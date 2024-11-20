@@ -178,3 +178,33 @@ input[type="text"] {
 .password-standards li.valid  {
   color: green;
 }
+
+.code-input {
+    width: 5%;
+    height: 40px;
+    text-align: center;
+    font-size: 24px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.code-input:focus {
+    border-color: #007BFF;
+}
+
+.code-submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px; /* Match button style */
+    background-color: orange; /* Match landing page button color */
+    color: black;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.code-submit-button:hover {
+    background-color: black; /* Change background color on hover */
+    color: orange; /* Change text color on hover */
+    border: 2px solid orange; /* Optional border on hover */
+}
