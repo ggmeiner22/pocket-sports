@@ -120,10 +120,10 @@ function Login() {
               </span>
             </div>
           </div>
-          <button type="submit" className="submit-button">
+          <button type="submit" className="submit-button" onClick={teams}>
             Login
           </button>
-          <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToRegister}>
+          <button type="button" className="register-button" onClick={goToRegister}>
             Register
           </button>
         </form>

@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const TeamsSchema = new mongoose.Schema({
     teamName: String,
     organizationName: String,
-    teamColors: String,
+    teamColors: Array,
     selectedSport: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Register', required: true },
 });

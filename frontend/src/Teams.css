@@ -175,7 +175,6 @@ input[type="password"]:focus {
     border: 2px solid white; 
 }
 
-/* Flexbox for Create/Display Teams */
 .createButtons {
     display: flex;
     justify-content: flex-start;
