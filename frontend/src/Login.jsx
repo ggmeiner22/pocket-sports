@@ -120,7 +120,7 @@ function Login() {
               </span>
             </div>
           </div>
-          <button type="submit" className="submit-button">
+          <button type="submit" className="submit-button" onClick={teams}>
             Login
           </button>
           <button type="button" className="register-button" onClick={goToRegister}>
