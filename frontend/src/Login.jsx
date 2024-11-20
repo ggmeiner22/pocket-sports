@@ -29,6 +29,8 @@ function Login() {
       .then(result => {
         console.log(result);
         const userId = result.data.userId;  // Get the userId from the backend response
+        console.log('USERID::');
+        console.log(userId);
         localStorage.setItem('userId', userId);
 
         //const { userId, firstName, lastName, email } = result.data;  // Get user details from response
@@ -120,7 +122,7 @@ function Login() {
               </span>
             </div>
           </div>
-          <button type="submit" className="submit-button" onClick={teams}>
+          <button type="submit" className="submit-button">
             Login
           </button>
           <button type="button" className="register-button" onClick={goToRegister}>
