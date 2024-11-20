@@ -23,7 +23,7 @@ function TeamsPage() {
   });
 
   const navigate = useNavigate();
-  const colors = ['#FF5733', '#008000', '#3357FF', '#ff8c00', '#ffd700', '#8A2BE2',];
+  const colors = ['#8b0000', '#006400', '#191970', '#ff8c00', '#daa520', '#663399',];
   const landing = () => {
     navigate('/');
   };
@@ -32,7 +32,9 @@ function TeamsPage() {
     navigate('/login');
   };
 
-  const goToTeamPage = () => {
+  const goToTeamPage = (team) => {
+    // Store the selected team data in localStorage
+    localStorage.setItem('selectedTeam', JSON.stringify(team));
     navigate('/home');
   };
 
@@ -238,7 +240,7 @@ function TeamsPage() {
             <div className="teamName"><strong>{team.teamName}</strong></div>
             <div className="organizationName">{team.organizationName}</div>
             </div>
-            <button className= 'topButtons' onClick={goToTeamPage}>Select Team + </button>
+            <button className= 'topButtons' onClick={() => goToTeamPage(team)}>Select Team + </button>
           </li>
           ))}
         </ul>

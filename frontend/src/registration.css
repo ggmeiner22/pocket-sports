@@ -6,6 +6,11 @@
     color: white;
 }
 
+body {
+    background-color: black;
+    color: white;
+  }
+
 /* Header Styling */
 .registration-page-header {
     top: 0;
