@@ -8,6 +8,8 @@ function TeamsPage() {
   const [teamName, setTeamName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [teamColors, setTeamColors] = useState([]);
+  const [teamCode, setTeamCode] = useState('');
+
   const [teams, setTeams] = useState([]);
   const [userId, setUserId] = useState(null);  // userId state
 
@@ -16,6 +18,7 @@ function TeamsPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   
+
   const [userDetails, setUserDetails] = useState({
     firstName: 'John',
     lastName: 'Doe',
@@ -109,6 +112,35 @@ function TeamsPage() {
     }
   }, [userId]);
 
+
+  const handleJoinTeam = async (e) => {
+    e.preventDefault();
+    
+    if (!teamCodeInput) {
+      alert("Please enter a team code.");
+      return;
+    }
+
+    const storedUserId = localStorage.getItem('userId');  // Get userId
+
+    // Make a POST request to join the team
+    try {
+      const response = await axios.post('http://localhost:3001/joinTeam', {
+        teamCode: teamCodeInput,
+        userId: storedUserId
+      });
+
+      console.log(response.data);
+      alert("Successfully joined the team!");
+
+      // Refresh teams list
+      getTeams();
+    } catch (error) {
+      console.error("Error joining team:", error);
+      alert("Failed to join the team. Please try again.");
+    }
+  };
+
   // Handle the "Create Team" form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -120,17 +152,21 @@ function TeamsPage() {
       organizationName,
       teamColors,
       selectedSport,
-      createdBy: userId,  // Pass userId to associate the team with the logged-in user
+      createdBy: userId,
+      teamCode
     };
 
     axios.post('http://localhost:3001/teams', newTeam)
-      .then(() => {
+      .then((response) => {
+        console.log("hello")
+        console.log(response.data);
         getTeams();  // Fetch updated list of teams
         setShowPopup(false);  // Close the popup
         setTeamName('');
         setOrganizationName('');
         setTeamColors('');
         setSelectedSport('');
+        setTeamCode(response.data.teamCode);
       })
       .catch((err) => {
         console.log(err);
@@ -162,6 +198,10 @@ function TeamsPage() {
         <button className="topButtons" onClick={handleCreateTeam}>Create Team +</button>
         <button className="topButtons">Join Team +</button>
       </div>
+
+      
+
+   
       
       <div className="body">
         {showPopup && (
@@ -237,10 +277,12 @@ function TeamsPage() {
             <div>
             <div className="teamName"><strong>{team.teamName}</strong></div>
             <div className="organizationName">{team.organizationName}</div>
+            <p>Code: <strong>{team.teamCode}</strong></p>
             </div>
             <button className= 'topButtons' onClick={goToTeamPage}>Select Team + </button>
           </li>
           ))}
+         
         </ul>
       </div>
 

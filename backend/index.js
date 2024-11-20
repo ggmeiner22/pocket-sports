@@ -67,6 +67,17 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Utility function to generate a random 4-character alphanumeric code
+const generateTeamCode = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 4; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return code;
+  };
+  
+
 app.post('/teams', async (req, res) => {
     const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
 
@@ -77,13 +88,17 @@ app.post('/teams', async (req, res) => {
             return res.status(400).json("Team already exists");
         }
 
+        // Generate a unique code for the team
+        const teamCode = generateTeamCode();
+
         // Create and save the new team in MongoDB
         const newTeam = new TeamsModel({
             teamName,
             organizationName,
             teamColors, 
             selectedSport,
-            createdBy
+            createdBy,
+            teamCode,
         });
         await newTeam.save();
 
@@ -95,7 +110,10 @@ app.post('/teams', async (req, res) => {
         });
         await newTeamMember.save(); 
 
-        res.status(201).json("Team created successfully");
+        res.status(201).json({
+            message: "Team created successfully",
+            teamCode: teamCode,  // Respond with the teamCode
+          });
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
@@ -133,6 +151,46 @@ app.get('/teams', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch teams." });
     }
 });
+
+// Add route to handle joining a team
+app.post('/joinTeam', async (req, res) => {
+    const { teamCode, userId } = req.body;  // Get the team code and userId from the request body
+
+    try {
+        // Find the team by teamCode
+        const team = await TeamsModel.findOne({ teamCode: teamCode });
+
+        if (!team) {
+            return res.status(400).json("Team not found with the provided code.");
+        }
+
+        // Create a new UserOnTeam document
+        const newUserOnTeam = new UserOnTeam({
+            userId, // The logged-in user's ID
+            teamId: team._id, // The team's ID
+            role: 'player' // Default role can be 'player', but can be expanded
+        });
+
+        await newUserOnTeam.save(); // Save the user to the team
+
+        res.status(200).json("Successfully joined the team!");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error joining the team." });
+    }
+});
+
+// Fetch a team's roster
+app.get('/team/:id', async (req, res) => {
+    try {
+        const team = await TeamsModel.findById(req.params.id).populate('roster'); // Populate with roster details
+        res.status(200).json(team);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error fetching team details." });
+    }
+});
+
 
 
 

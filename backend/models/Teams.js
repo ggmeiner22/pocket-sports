@@ -6,6 +6,7 @@ const TeamsSchema = new mongoose.Schema({
     teamColors: Array,
     selectedSport: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Register', required: true },
+    teamCode: { type: String, unique: true },
 });
 
 const TeamsModel = mongoose.model("teams", TeamsSchema);
