@@ -5,8 +5,8 @@ const TeamsSchema = new mongoose.Schema({
     organizationName: String,
     teamColors: Array,
     selectedSport: String,
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Register' }
-})
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Register', required: true },
+});
 
 const TeamsModel = mongoose.model("teams", TeamsSchema);
 module.exports = TeamsModel;
