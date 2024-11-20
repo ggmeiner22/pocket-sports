@@ -8,7 +8,6 @@ import AfterLoginTemp from './AfterLoginTemp';
 import React from 'react';
 import TeamsPage from './Teams';
 import HomePage from './TeamHome';
-import Verify from './Verify';
 
 function App() {
   return (
@@ -19,7 +18,6 @@ function App() {
       <Route path="/temp" element={<AfterLoginTemp />} />
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/home" element={<HomePage/>}/>
-      <Route path="/verifycode" element={<Verify/>}/>
     </Routes>
   );
 }
