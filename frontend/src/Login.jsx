@@ -28,14 +28,33 @@ function Login() {
     axios.post('http://localhost:3001/login', { email, password })
       .then(result => {
         console.log(result);
-        console.log('Login successful!');
+        const userId = result.data.userId;  // Get the userId from the backend response
+        localStorage.setItem('userId', userId);
+
+        //const { userId, firstName, lastName, email } = result.data;  // Get user details from response
+        //setUserId(userId);  // Set the userId to state
+        /*setUserDetails({
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+        }); */ // Dynamically set the user details to state
+
+      console.log("User details stored:", result.data);
+
+       
+
+        console.log("User ID received:", userId);
+
+       
+        console.log("User ID stored:", userId);
+        
 
         setShowModal(true);  // Show the modal on successful login
 
         // Clear input fields
         setEmail('');
         setPassword('');
-        teams();
+        teams();  // Redirect to the teams page after successful login
       })
       .catch(err => {
         console.log(err);
@@ -104,7 +123,7 @@ function Login() {
           <button type="submit" className="submit-button">
             Login
           </button>
-          <button type="button" className="btn btn-light border w-100 rounded-0" onClick={goToRegister}>
+          <button type="button" className="register-button" onClick={goToRegister}>
             Register
           </button>
         </form>

@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://127.0.0.1:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
@@ -53,7 +53,16 @@ app.post('/login', async (req, res) => {
             return res.status(400).json("Invalid password!");
         }
 
-        res.status(200).json("Login successful");
+        // Send userId in the response
+        res.status(200).json({
+            message: "Login successful",
+            userId: user._id.toString(),
+           
+    
+           
+        });
+        console.log(user._id.toString())
+
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
@@ -61,7 +70,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/teams', async (req, res) => {
-    const { teamName, organizationName, teamColors, selectedSport } = req.body;
+    const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
 
     try {
         // Check if the team already exists
@@ -76,7 +85,8 @@ app.post('/teams', async (req, res) => {
             teamName,
             organizationName,
             teamColors, 
-            selectedSport
+            selectedSport,
+            createdBy
         });
 
         await newTeam.save();
@@ -88,8 +98,17 @@ app.post('/teams', async (req, res) => {
 });
 
 app.get('/teams', async (req, res) => {
+
+    console.log("Headers received:", req.headers);
+    const userId = req.headers['userid'];
+    console.log("Backend: Received userId:", userId);
+
+    if (!userId) {
+        return res.status(400).json("User ID is missing in the request headers.");
+    }
+
     try {
-        const teams = await TeamsModel.find(); // Fetch all teams from MongoDB
+        const teams = await TeamsModel.find({ createdBy: userId }); // Fetch all teams from MongoDB
         res.status(200).json(teams);
     } catch (err) {
         console.error(err);
