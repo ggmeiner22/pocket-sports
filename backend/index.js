@@ -101,6 +101,7 @@ app.get('/teams', async (req, res) => {
 
     console.log("Headers received:", req.headers);
     const userId = req.headers['userid'];
+    const colors = req.headers['teamColors']
     console.log("Backend: Received userId:", userId);
 
     if (!userId) {
