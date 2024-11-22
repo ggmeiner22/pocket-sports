@@ -103,11 +103,36 @@ function TeamsPage() {
     }
   };
 
+  const getUserDetails = () => {
+    const storedUserId = localStorage.getItem('userId');
+
+    if (!storedUserId) {
+      console.log('User ID is missing');
+      return;
+    }
+
+    fetch(`http://localhost:3001/registers/${storedUserId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setUserDetails({
+          firstName: data.fname,
+          lastName: data.lname,
+          email: data.email,
+        });
+      })
+      .catch((err) => {
+        console.error('Error fetching user details:', err);
+        alert('Failed to load user details. Please try again later.');
+      });
+  };
+
+
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId'); // Fetch userId from localStorage
     if (storedUserId) {
       setUserId(storedUserId); // Set userId state from localStorage
       getTeams(); // Fetch teams if userId exists
+      getUserDetails(); // Updates user profile data
     } else {
       console.log('User ID not available');
     }
