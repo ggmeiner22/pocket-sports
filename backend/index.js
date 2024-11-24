@@ -245,6 +245,27 @@ app.post('/joinTeam', async (req, res) => {
 
 })
 
+
+app.get('/registers/:userId', async (req, res) => {
+    try {
+      const userId = req.params.userId;
+
+      // Fetch user details using the userId
+      const user = await RegisterModel.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const { fname, lname, email } = user;
+      res.json({ fname, lname, email });
+    } catch (err) {
+      console.error('Error fetching user details:', err);
+      res.status(500).json({ message: 'Failed to load user details. Please try again later.' });
+    }
+  });
+
+
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });
