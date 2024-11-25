@@ -25,7 +25,7 @@ function TeamsPage() {
   });
 
   const navigate = useNavigate();
-  const colors = ['#FF5733', '#008000', '#3357FF', '#ff8c00', '#ffd700', '#8A2BE2',];
+  const colors = ['#8b0000', '#006400', '#191970', '#ff8c00', '#daa520', '#663399'];
   const landing = () => {
     navigate('/');
   };
@@ -34,7 +34,8 @@ function TeamsPage() {
     navigate('/login');
   };
 
-  const goToTeamPage = () => {
+  const goToTeamPage = (team) => {
+    localStorage.setItem('selectedTeam', JSON.stringify(team));
     navigate('/home');
   };
 
@@ -125,6 +126,27 @@ function TeamsPage() {
       joinCode
     };
 
+    const getUserDetails = () => {
+      const storedUserId = localStorage.getItem('userId');
+      if (!storedUserId) {
+        console.log('User ID is missing');
+        return;
+      }
+      axios.get(`http://localhost:3001/registers/${storedUserId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setUserDetails({
+            firstName: data.fname,
+            lastName: data.lname,
+            email: data.email,
+          });
+        })
+        .catch((err) => {
+          console.error('Error fetching user details:', err);
+          alert('Failed to load user details. Please try again later.');
+        });
+    };
+
     axios.post('http://localhost:3001/teams', newTeam)
       .then(() => {
         getTeams();  // Fetch updated list of teams
@@ -157,6 +179,7 @@ function TeamsPage() {
       // Refresh teams list
       handleCloseJoinPopup();
       getTeams();
+      getUserDetails();
     } catch (error) {
       console.error("Error joining team:", error);
       alert("Failed to join the team. Please try again.");
@@ -260,7 +283,7 @@ function TeamsPage() {
                 </label>
                 <br />
                 <div className="popup-buttons">
-                  <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
+                  <button className="topButtons" type="button" onClick={handleClosePopup}>Cancel</button>
                   <button className="topButtons" type="submit">Create</button>
                 </div>
               </form>
@@ -298,7 +321,7 @@ function TeamsPage() {
             <div className="organizationName">{team.organizationName}</div>
             <p>Code: <strong>{team.teamCode}</strong></p>
             </div>
-            <button className= 'topButtons' onClick={goToTeamPage}>Select Team + </button>
+            <button className= 'topButtons' onClick={() => goToTeamPage(team)}>View Team</button>
           </li>
           ))}
         </ul>

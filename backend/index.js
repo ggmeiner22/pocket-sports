@@ -62,6 +62,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
+
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -81,13 +82,13 @@ app.post('/login', async (req, res) => {
             message: "Login successful",
             userId: user._id.toString(),
         });
-        console.log(user._id.toString())
 
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
     }
 });
+
 
 app.post('/teams', async (req, res) => {
     const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
@@ -126,6 +127,7 @@ app.post('/teams', async (req, res) => {
     }
 });
 
+
 // Get teams for a user
 app.get('/teams', async (req, res) => {
     console.log("Headers received:", req.headers);
@@ -157,6 +159,7 @@ app.get('/teams', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch teams." });
     }
 });
+
 
 // email verification endpoint
 app.post('/verifyemail', async (req, res) => {
@@ -194,16 +197,12 @@ app.post('/verifycode', async (req, res) => {
     const email = req.body.email;
     const code = req.body.code
     
-    console.log(code);
     try {
         const user = await RegisterModel.findOne({email: email});
         if (!user) {
             return res.status(400).json("Account Not Found");
         }
         
-        console.log(user.verifyCode)
-
-        console.log(user.verifyCode === code);
         if (String(user.verifyCode) !== String(code)) {
             return res.status(400).json("Incorrect Verification Code")
         }
@@ -229,12 +228,10 @@ app.post('/verifycode', async (req, res) => {
 
 
 app.post('/joinTeam', async (req, res) => { 
-    code = req.body.teamCode;
-    id = req.body.userId;
+    const code = req.body.teamCode;
+    const id = req.body.userId;
 
-    console.log(code)
-    console.log(id)
-    team = await TeamsModel.findOne({teamCode: String(code)})
+    const team = await TeamsModel.findOne({teamCode: String(code)})
     if (!team) {
         console.log("Error. No team found with that code");
     } else {
@@ -244,6 +241,49 @@ app.post('/joinTeam', async (req, res) => {
     }
 
 })
+
+
+app.get('/roster', async (req, res) => {
+    try {
+        const team = req.query.team;
+        const team_json = JSON.parse(team);
+        const id = team_json._id;
+
+        // Find all roster entries for the team
+        const roster = await UserOnTeamModel.find({ teamId: id });
+    
+        const players = [];
+        for (const player of roster) {
+            // Wait for each player's info to be retrieved
+            const player_info = await RegisterModel.findOne({ _id: player.userId.toString() }).lean();
+            if (player_info) {
+                player_info.role = player.role;
+                players.push(player_info);
+           }
+        }
+        return res.status(201).json(players); // Return the populated players array
+    } catch (error) {
+        console.error("Error fetching roster:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.get('/registers/:userId', async (req, res) => {
+    try {
+      const userId = req.params.userId;
+
+      // Fetch user details using the userId
+      const user = await RegisterModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      const { fname, lname, email } = user;
+      res.status(200).json({ fname, lname, email });
+    } catch (err) {
+      console.error('Error fetching user details:', err);
+      res.status(500).json({ message: 'Failed to load user details. Please try again later.' });
+    }
+});
 
 
 app.listen(3001, () => {

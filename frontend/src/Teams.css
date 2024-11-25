@@ -2,6 +2,18 @@
 .body {
     height: auto; 
     padding: 20px; 
+    background-color: black;
+}
+
+.App {
+    background-color: black;
+    text-align: center;
+    overflow: hidden; /* Prevent unwanted scrolling */
+}
+
+body {
+    background-color: black;
+    color: white;
 }
 
 /* Teams Container - Ensures center alignment */
