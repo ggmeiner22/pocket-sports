@@ -16,7 +16,6 @@ function HomePage() {
       const response = await axios.get('http://localhost:3001/roster', {
         params: {team: team}
       });
-      console.log(response.data);
       setRoster(response.data);
     } catch(err) {
       console.error(err);
@@ -50,13 +49,13 @@ function HomePage() {
       <header className="landing-page-header1">
         <div className="logo">
           <a href="/" style={{ textDecoration: 'none', color: 'black' }}>PocketSports</a>
-          <button onClick={home} className="coachButton">Teams</button>
         </div>
+        <button onClick={home} className="featuresButtons">Teams</button>
         <div className="button-container"></div>
       </header>
       <div style={{backgroundColor: selectedTeam?.teamColors?.[0] || 'white'}}>
         <div className="content">
-          <div><p className="img-text">Tailored Training for Peak Performance</p></div>
+          <div><p className="img-text">Tailored Training for Peak Performance. Go {selectedTeam?.teamName}!</p></div>
           <button className="coachButton" onClick={handleRosterPopup}>View Roster</button>
         </div>
       </div>
@@ -72,8 +71,7 @@ function HomePage() {
               {roster.length > 0 ? (
                 roster.map((player, index) => (
                   <div key={index} className="roster-item">
-                    <p><strong>First Name:</strong> {player.fname}</p>
-                    <p><strong>Last Name:</strong> {player.lname}</p>
+                    <p><strong>Name:</strong> {`${player.fname} ${player.lname}`}</p>
                     <p><strong>Role:</strong> {player.role}</p>
                   </div>
                 ))

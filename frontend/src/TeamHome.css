@@ -8,6 +8,18 @@
     color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.landing-page-header1 .featuresButtons {
+    margin-left: auto; /* Push the button to the right */
+}
+
+/* .landing-page-header1 {
+    background-color: white;
+    display: flex;
+}
+.featuresButtons {
+    margin-left: auto;
+} */
 .App1 {
     background-color: white;
     text-align: center;
@@ -59,4 +71,21 @@
     color: white;
     font-size: 16px;
     line-height: 1.8; /* Ensure better readability for multiline text */
+}
+.featuresButtons:hover {
+    background-color: black;
+    color: white;
+    border: 2px solid white;
+    align-items: center; 
+}
+  
+.featuresButtons {
+    border: none; /* Remove default border */
+    padding: 10px 30px; /* Add padding inside the button */
+    font-size: 1rem; /* Adjust font size */
+    border-radius: 5px; /* Round corners */
+    cursor: pointer; /* Show pointer on hover */
+    background-color: orange;
+    color: black;
+    border-radius: 25px;
 }

@@ -125,28 +125,6 @@ function TeamsPage() {
       createdBy: userId,  // Pass userId to associate the team with the logged-in user
       joinCode
     };
-
-    const getUserDetails = () => {
-      const storedUserId = localStorage.getItem('userId');
-      if (!storedUserId) {
-        console.log('User ID is missing');
-        return;
-      }
-      axios.get(`http://localhost:3001/registers/${storedUserId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setUserDetails({
-            firstName: data.fname,
-            lastName: data.lname,
-            email: data.email,
-          });
-        })
-        .catch((err) => {
-          console.error('Error fetching user details:', err);
-          alert('Failed to load user details. Please try again later.');
-        });
-    };
-
     axios.post('http://localhost:3001/teams', newTeam)
       .then(() => {
         getTeams();  // Fetch updated list of teams
@@ -163,6 +141,26 @@ function TeamsPage() {
       });
   };
 
+  const getUserDetails = () => {
+    const storedUserId = localStorage.getItem('userId');
+    if (!storedUserId) {
+      console.log('User ID is missing');
+      return;
+    }
+    axios.get(`http://localhost:3001/registers/${storedUserId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setUserDetails({
+          firstName: data.fname,
+          lastName: data.lname,
+          email: data.email,
+        });
+      })
+      .catch((err) => {
+        console.error('Error fetching user details:', err);
+        alert('Failed to load user details. Please try again later.');
+      });
+  }
 
   const handleJoinSubmit = async (e) => {
     e.preventDefault();
