@@ -116,9 +116,9 @@ app.post('/teams', async (req, res) => {
             userId: createdBy,
             teamId: newTeam._id,
             role: 'Owner',
+            
         });
         await newTeamMember.save(); 
-
         res.status(201).json("Team created successfully");
     } catch (err) {
         console.error(err);

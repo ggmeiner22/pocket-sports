@@ -1,0 +1,22 @@
+.codeContainer {
+    margin: 200px;
+    flex-direction: column;
+    display: flex;
+}
+
+.code-input {
+    padding: 30px;
+    margin: 20px;
+    flex-direction: column;
+}
+
+.text {
+    font-size: 1.5em;
+    margin-top: 50px;
+}
+
+.code-submit-button {
+    width: 500px;
+    align-self: center;
+    margin-top: 20px;
+}

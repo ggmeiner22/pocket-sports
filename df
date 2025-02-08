@@ -1,0 +1,17 @@
+[33mfe5c18e[m[33m ([m[1;36mHEAD -> [m[1;32mdevelopment[m[33m, [m[1;31morigin/development[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33mfe5c18e[m[33m ([m[1;36mHEAD -> [m[1;32mdevelopment[m[33m, [m[1;31morigin/development[m[33m)[m HEAD@{1}: checkout: moving from password-requirements to development
+[33mab115d8[m[33m ([m[1;32mpassword-requirements[m[33m)[m HEAD@{2}: checkout: moving from development to password-requirements
+[33mfe5c18e[m[33m ([m[1;36mHEAD -> [m[1;32mdevelopment[m[33m, [m[1;31morigin/development[m[33m)[m HEAD@{3}: pull origin development: Fast-forward
+[33mab115d8[m[33m ([m[1;32mpassword-requirements[m[33m)[m HEAD@{4}: reset: moving to HEAD
+[33mab115d8[m[33m ([m[1;32mpassword-requirements[m[33m)[m HEAD@{5}: checkout: moving from password-requirements to development
+[33mab115d8[m[33m ([m[1;32mpassword-requirements[m[33m)[m HEAD@{6}: checkout: moving from development to password-requirements
+[33mab115d8[m[33m ([m[1;32mpassword-requirements[m[33m)[m HEAD@{7}: pull origin development: Fast-forward
+[33m7599128[m[33m ([m[1;32mregistration_new_fields[m[33m)[m HEAD@{8}: reset: moving to HEAD
+[33m7599128[m[33m ([m[1;32mregistration_new_fields[m[33m)[m HEAD@{9}: pull origin development: Fast-forward
+[33md804224[m HEAD@{10}: checkout: moving from landing-page to development
+[33m7f95ebb[m[33m ([m[1;31morigin/landing-page[m[33m, [m[1;32mlanding-page[m[33m)[m HEAD@{11}: reset: moving to HEAD
+[33m7f95ebb[m[33m ([m[1;31morigin/landing-page[m[33m, [m[1;32mlanding-page[m[33m)[m HEAD@{12}: checkout: moving from development to landing-page
+[33md804224[m HEAD@{13}: checkout: moving from landing-page to development
+[33m7f95ebb[m[33m ([m[1;31morigin/landing-page[m[33m, [m[1;32mlanding-page[m[33m)[m HEAD@{14}: commit: landing-page and css changes
+[33m3f7266d[m[33m ([m[1;32mmain[m[33m)[m HEAD@{15}: checkout: moving from main to landing-page
+[33m3f7266d[m[33m ([m[1;32mmain[m[33m)[m HEAD@{16}: clone: from https://github.com/ggmeiner22/pocket-sports.git

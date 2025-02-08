@@ -9,6 +9,9 @@ import React from 'react';
 import TeamsPage from './Teams';
 import HomePage from './TeamHome';
 import Verify from './Verify';
+import Roster from './Roster';
+import PracticePlans from './practice-plans';
+import GoalsPage from './goals-page';
 
 function App() {
   return (
@@ -20,6 +23,11 @@ function App() {
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/home" element={<HomePage/>}/>
       <Route path="/verifycode" element={<Verify/>}/>
+      <Route path="/roster" element={<Roster/>}/>
+      <Route path="/practiceplans" element={<PracticePlans/>}/>
+      <Route path="/goalspage" element={<GoalsPage/>}/>
+      <Route path="/homepage" element={<HomePage/>}/>
+
     </Routes>
   );
 }
