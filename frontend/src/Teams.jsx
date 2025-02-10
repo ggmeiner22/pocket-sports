@@ -37,6 +37,11 @@ function TeamsPage() {
   const goToTeamPage = (team) => {
     // Store the selected team data in localStorage
     localStorage.setItem('selectedTeam', JSON.stringify(team));
+    if (localStorage.getItem('role') === 'Owner') {
+      localStorage.setItem('role', 'Player'); // Update role to Player
+    } else {
+      localStorage.setItem('role', 'Owner'); // Update role to Owner (you can change this logic as needed)
+    }
     navigate('/home');
   };
 
@@ -222,7 +227,6 @@ function TeamsPage() {
           <button onClick={handleProfileClick} className="contactButton">Profile</button>
         </div>
       </header>
-      
       <div className="createButtons">
         <button className="topButtons" onClick={handleCreateTeam}>Create Team +</button>
         <button className="topButtons" onClick={handleJoinTeam}>Join Team +</button>
@@ -309,14 +313,13 @@ function TeamsPage() {
                     required
                   />
               </label>
-              <button className="topButtons" type='submit'>Submit Team Code</button>
               <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
+              <button className="topButtons" type='submit'>Submit Team Code</button>
             </form>
           </div>
           </div>
         )}
 
-        <h2>Teams List</h2>
         <ul className="teamsList">
           {teams.map((team, index) => (
             <li key={index}>

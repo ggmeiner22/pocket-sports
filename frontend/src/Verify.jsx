@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './registration.css';
+import './Verify.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
@@ -54,12 +54,10 @@ function Verify() {
           <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
         </div>
       </header>
-      <video autoPlay loop muted playsInline className="background-video">
-        <source src="Arrows.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-      <p>Please submit the 6 digit code sent to your email.</p>
-      <div id="code-container">
+     
+      <div className="codeContainer" id="code-container">
+      <p className='text'>Please submit the 6 digit code sent to your email.</p>
+      <div>
       {code.map((digit, index) => (
           <input
             key={index}
@@ -69,6 +67,7 @@ function Verify() {
             onChange={(e) => handleChange(e, index)}
           />
         ))}
+        </div>
         <button onClick={handleSubmit} type="submit" className="code-submit-button">Submit Verification Code</button>
       </div>
       <Modal show={showModal} onHide={handleClose}>

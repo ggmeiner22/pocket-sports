@@ -47,11 +47,6 @@ body {
 
 }
 
-h2 {
-    margin-bottom: 20px;
-    color: white; /* Change header color to match buttons */
-}
-
 .registration-form {
     display: flex;
     flex-direction: column;
