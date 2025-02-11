@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt'); // Import bcrypt
 const RegisterModel = require('./models/Register');
 const TeamsModel = require('./models/Teams');
 const UserOnTeamModel = require('./models/UserOnTeam');
+const DrillBankModel = require('./models/DrillBank')
+const PracticePlanModel = require('./models/PracticePlan')
 const nodemailer = require('nodemailer')
 
 const app = express();
