@@ -9,7 +9,8 @@ function Roster() {
     const [buttons, setButtons] = useState([
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/goalspage", label: "Goals" },
+      { path: "/practiceplans", label: "Practice" }
     ]);
     const navigate = useNavigate();
     const location = useLocation();
@@ -39,6 +40,9 @@ function Roster() {
       }
   
     }, []);
+
+    
+
 
   return (
     <div className='App'>
