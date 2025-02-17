@@ -26,7 +26,67 @@
 
 body {
     height: 100vh;
+    background-color: black;
 }
+
+.home-cards {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: whitesmoke;
+
+}
+
+Progress {
+    text-align: center;
+    justify-content: center;
+}
+
+.card.teamHome {
+    background-color: whitesmoke;
+    display: flex;
+    border: 2px solid black; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    width: 80%;
+    margin: 40px auto;
+    text-align: center;
+    justify-content: center;
+}
+
+
+.homepage-headers {
+    text-align: left;
+    margin-left: 50px;
+    width: 100vw;
+    margin-top: 40px;
+}
+
+.card-events {
+    width: 90vw;
+    text-align: left;
+    margin: 40px auto;
+    background-color: whitesmoke;
+    border: 2px solid black; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.homepage-text {
+    text-align: center;
+    justify-content: center;
+    width: 100vw;
+}
+
+.homepage-headers {
+    font-size: 7vh;
+    background-color: whitesmoke;
+    color: black;
+    margin-left: 20px;
+    width: 100vw;
+}
+
 
 .footer-container1 {
     display: flex;

@@ -42,7 +42,7 @@ function TeamsPage() {
     } else {
       localStorage.setItem('role', 'Owner'); // Update role to Owner (you can change this logic as needed)
     }
-    navigate('/home');
+    navigate('/homepage');
   };
 
 
