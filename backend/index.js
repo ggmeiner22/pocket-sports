@@ -8,10 +8,13 @@ const UserOnTeamModel = require('./models/UserOnTeam');
 const DrillBankModel = require('./models/DrillBank')
 const PracticePlanModel = require('./models/PracticePlan')
 const nodemailer = require('nodemailer')
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -250,10 +253,10 @@ app.post('/joinTeam', async (req, res) => {
 
 app.get('/registers/:userId', async (req, res) => {
     try {
-      const userId = req.params.userId;
+      const teamId = req.params.userId;
 
       // Fetch user details using the userId
-      const user = await RegisterModel.findById(userId);
+      const user = await TeamsModel.findById(teamId);
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -263,10 +266,103 @@ app.get('/registers/:userId', async (req, res) => {
       res.json({ fname, lname, email });
     } catch (err) {
       console.error('Error fetching user details:', err);
-      res.status(500).json({ message: 'Failed to load user details. Please try again later.' });
+      res.status(500).json({ message: 'Failed to load user details.' });
     }
   });
 
+// might need this later
+// app.get('/teamsport', async (req, res) => {
+//     try {
+//         const teamId = req.params.teamId;
+
+//         const team = await TeamsModel.findById(teamId);
+        
+//         if(!team) {
+//             return res.status(404).json({message: "Team not found"});
+//         }
+//         const sport = team.selectedSport;
+//         res.status(200).json(sport);
+//     } catch (err) {
+//         console.error('Error fetching team sport:', err);
+//         res.status(500).json({ message: 'Failed to load team sport.' });
+//     }
+
+
+// });
+
+app.post('/drillbank', async (req, res) => {
+    const { pdfB64, teamId, drillName } = req.body;
+
+    console.log('Received data:', {teamId, drillName }); // Log received data
+
+    if (!pdfB64 || !teamId || !drillName) {
+        return res.status(400).json({ message: 'pdf, teamId, and drillName are required.' });
+    }
+    try {
+        await DrillBankModel.create({ drillName: drillName, pdfB64: pdfB64, teamId: teamId });
+        res.status(201).json("Practice plan saved to drill bank successfully");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+
+app.get('/drillbank/team/:teamId', async (req, res) => {
+    const { teamId } = req.params;
+  
+    try {
+      const drills = await DrillBankModel.find({ teamId: teamId });
+  
+      if (!drills || drills.length === 0) {
+        return res.status(404).json({ message: 'No drills found for this team' });
+      }
+  
+      res.status(200).json(drills);
+    } catch (err) {
+      console.error('Error fetching drills:', err);
+      res.status(500).json({ message: 'Failed to fetch drills' });
+    }
+  });
+
+
+  app.get('/drillbank/:drillName', async (req, res) => {
+    const { drillName } = req.params;
+  
+    try {
+      const drill = await DrillBankModel.findOne({ drillName: drillName });
+  
+      if (!drill) {
+        return res.status(404).json({ message: 'Drill not found' });
+      }
+  
+      const pdfB64 = drill.pdfB64;
+      const pdfBuffer = Buffer.from(pdfB64.split(',')[1], 'base64');
+  
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=${drillName}.pdf`);
+      res.send(pdfBuffer);
+    } catch (err) {
+      console.error('Error fetching drill:', err);
+      res.status(500).json({ message: 'Failed to fetch drill' });
+    }
+  });
+
+  app.delete('/drillbank/:drillId', async (req, res) => {
+    const { drillId } = req.params;
+  
+    try {
+      const result = await DrillBankModel.findByIdAndDelete(drillId);
+  
+      if (!result) {
+        return res.status(404).json({ message: 'Drill not found' });
+      }
+  
+      res.status(200).json({ message: 'Drill deleted successfully' });
+    } catch (err) {
+      console.error('Error deleting drill:', err);
+      res.status(500).json({ message: 'Failed to delete drill' });
+    }
+  });
 
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");

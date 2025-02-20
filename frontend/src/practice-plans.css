@@ -54,3 +54,36 @@
 .pdf-button:hover {
     background-color: #45a049;
 }
+
+.modal-dialog {
+    .modal-header {
+        align-items: right;
+        justify-content: right;
+    }
+    max-width: 90%;
+    margin: 0 auto;
+    .modal-footer .btn{
+        justify-content: center;
+        margin: 0 20px;
+    }
+  }
+  
+  .modal-content {
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .dragNdrop {
+        display: flex;  
+        gap: 20px;
+    }
+    .deleteElement {
+        background-color: red;
+    }
+  }
+  
+  .modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
