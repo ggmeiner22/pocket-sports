@@ -9,7 +9,8 @@ function GoalsPage() {
     const [buttons, setButtons] = useState([
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/calendarpage", label: "Calendar" },
+      { path: "/goalspage", label: "Goals" },
     ]);
     const navigate = useNavigate();
     const location = useLocation();

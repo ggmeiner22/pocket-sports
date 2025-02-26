@@ -2,6 +2,18 @@ import './practice-plans.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Use Axios for HTTP requests
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { Navigation, Pagination } from 'swiper/modules';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+// Import field images
+import VolleyballField from '/Volleyball.jpg';
+import LacrosseField from '/Lacrosse.jpg';
+import BasketballField from '/Basketball.jpg';
 
 
 function PracticePlans() {
@@ -9,10 +21,12 @@ function PracticePlans() {
     const [buttons, setButtons] = useState([
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/calendarpage", label: "Calendar" },
+      { path: "/goalspage", label: "Goals" },
     ]);
     const navigate = useNavigate();
     const location = useLocation();
+    
   
     useEffect(() => {
       // Retrieve the selected team and role from localStorage
@@ -61,7 +75,36 @@ function PracticePlans() {
           <button className="contactButton1">Contact Us</button>
         </div>
       </header>
-      <body></body>
+
+      {/* Sliding Field View */}
+      <div className="field-slider-container">
+        <Swiper
+          navigation
+          pagination={{ clickable: true }}
+          modules={[Navigation, Pagination]}
+          className="field-slider"
+        >
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Volleyball Court</h2>
+              <img src="/Volleyball.jpg" alt="Volleyball Field" className="field-image"/>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Lacrosse Field</h2>
+              <img src="/Lacrosse.jpg" alt="Lacrosse Field" className="field-image"/>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Basketball Court</h2>
+              <img src="/Basketball.jpg" alt="Basketball Field" className="field-image"/>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+      </div>
+      
       <footer className="footer1">
         <div className="footer-container1">
           <div className="footer-column1">
