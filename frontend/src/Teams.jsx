@@ -129,6 +129,8 @@ function TeamsPage() {
         console.error('Error fetching user details:', err);
         alert('Failed to load user details. Please try again later.');
       });
+      console.log(localStorage.getItem("userId"));
+
   };
 
 
