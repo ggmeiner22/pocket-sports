@@ -26,11 +26,11 @@ function PracticePlans() {
   const canvasRef = useRef(null);
   const [drillName, setDrillName] = useState('');
   const [buttons, setButtons] = useState([
-    { path: "/homepage", label: "Home" },
-    { path: "/roster", label: "Roster" },
-    { path: "/goalspage", label: "Goals" },
-    { path: "/practiceplans", label: "Practice" }
-  ]);
+      { path: "/homepage", label: "Home" },
+      { path: "/roster", label: "Roster" },
+      { path: "/calendarpage", label: "Calendar" },
+      { path: "/goalspage", label: "Goals" }
+    ]);
   const navigate = useNavigate();
   const location = useLocation();
   const swiperRef = useRef(null);

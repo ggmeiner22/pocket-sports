@@ -10,15 +10,6 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow under the header */
 }
 
-.custom-calendar {
-    max-width: 400px;
-    margin: auto;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
 .App1 {
     background-color: red;
     text-align: center;
@@ -33,74 +24,6 @@
     justify-content: center;
 }
 
-.calendar-container {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-}
-
-/* Event Section */
-.event-section {
-    width: 55%;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Event Input Styling */
-.event-input {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.event-input input {
-    flex-grow: 1;
-    padding: 8px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.event-input button {
-    padding: 8px 15px;
-    font-size: 16px;
-    border: none;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.event-input button:hover {
-    background-color: #45a049;
-}
-
-/* Event Cards (Box Layout) */
-.event-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.event-box {
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.event-box p {
-    margin: 0;
-    font-size: 16px;
-    font-weight: bold;
-}
-
 .remove-btn {
     background: none;
     border: none;
@@ -112,7 +35,67 @@
 
 body {
     height: 100vh;
+    background-color: black;
 }
+
+.home-cards {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: whitesmoke;
+
+}
+
+Progress {
+    text-align: center;
+    justify-content: center;
+}
+
+.card.teamHome {
+    background-color: whitesmoke;
+    display: flex;
+    border: 2px solid black; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    width: 80%;
+    margin: 40px auto;
+    text-align: center;
+    justify-content: center;
+}
+
+
+.homepage-headers {
+    text-align: left;
+    margin-left: 50px;
+    width: 100vw;
+    margin-top: 40px;
+}
+
+.card-events {
+    width: 90vw;
+    text-align: left;
+    margin: 40px auto;
+    background-color: whitesmoke;
+    border: 2px solid black; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.homepage-text {
+    text-align: center;
+    justify-content: center;
+    width: 100vw;
+}
+
+.homepage-headers {
+    font-size: 7vh;
+    background-color: whitesmoke;
+    color: black;
+    margin-left: 20px;
+    width: 100vw;
+}
+
 
 .footer-container1 {
     display: flex;

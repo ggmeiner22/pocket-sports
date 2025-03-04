@@ -42,7 +42,7 @@ function TeamsPage() {
     } else {
       localStorage.setItem('role', 'Owner'); // Update role to Owner (you can change this logic as needed)
     }
-    navigate('/home');
+    navigate('/homepage');
   };
 
 
@@ -129,6 +129,8 @@ function TeamsPage() {
         console.error('Error fetching user details:', err);
         alert('Failed to load user details. Please try again later.');
       });
+      console.log(localStorage.getItem("userId"));
+
   };
 
 

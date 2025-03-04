@@ -7,6 +7,7 @@ const TeamsModel = require('./models/Teams');
 const UserOnTeamModel = require('./models/UserOnTeam');
 const DrillBankModel = require('./models/DrillBank')
 const PracticePlanModel = require('./models/PracticePlan')
+const EventsModel = require('./models/events')
 const nodemailer = require('nodemailer')
 const bodyParser = require('body-parser');
 
@@ -17,6 +18,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+const { ObjectId } = require('mongodb');
 
 
 const transporter = nodemailer.createTransport({
@@ -130,6 +132,89 @@ app.post('/teams', async (req, res) => {
         res.status(500).json(err);
     }
 });
+
+app.post('/events', async (req, res) => {
+    const { teamName, selectedCategory, eventName, date, eventLocation, drills, time, createdBy } = req.body;
+
+    try {
+    
+        // Create and save the new event in MongoDB
+        const newEvent = new EventsModel({
+            teamName,
+            selectedCategory,
+            eventName,
+            date,
+            eventLocation,
+            drills, 
+            time,
+            createdBy,
+        });
+        await newEvent.save();
+
+       
+        res.status(201).json("Event created successfully");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+
+const router = express.Router();
+
+app.get('/useronteams', async (req, res) => {
+    console.log("Headers received:", req.headers);
+    const teamId = req.headers['teamid'];
+
+    if (!teamId) {
+        return res.status(400).json({ error: "Missing teamId" });
+    }
+
+    try {
+        const events = await UserOnTeamModel.find({ teamId: teamId});
+        res.status(200).json(events);
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Get events for a specific user and team
+app.get('/events', async (req, res) => {
+    console.log("Headers received:", req.headers);
+    const userId = req.headers['userid'];
+
+    if (!userId) {
+        return res.status(400).json({ error: "Missing userId or teamNameee" });
+    }
+
+    try {
+        const events = await EventsModel.find({ createdBy: userId});
+        res.status(200).json(events);
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.delete('/events/:eventId', async (req, res) => {
+    const { eventId } = req.params;
+    try {
+      const event = await EventsModel.findById(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+  
+      // Use deleteOne to delete the event by _id
+      await EventsModel.deleteOne({ _id: eventId });
+  
+      res.status(200).json({ message: "Event removed successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+
 
 // Get teams for a user
 app.get('/teams', async (req, res) => {
@@ -254,10 +339,10 @@ app.post('/joinTeam', async (req, res) => {
 app.get('/registers/:userId', async (req, res) => {
     try {
       const teamId = req.params.userId;
-
+        console.log(teamId);
       // Fetch user details using the userId
-      const user = await TeamsModel.findById(teamId);
-
+      const user = await RegisterModel.findById(teamId);
+        console.log(user);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
