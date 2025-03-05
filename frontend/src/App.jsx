@@ -22,7 +22,6 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/temp" element={<AfterLoginTemp />} />
       <Route path="/teams" element={<TeamsPage />} />
-      <Route path="/home" element={<HomePage/>}/>
       <Route path="/verifycode" element={<Verify/>}/>
       <Route path="/roster" element={<Roster/>}/>
       <Route path="/practiceplans" element={<PracticePlans/>}/>
