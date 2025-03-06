@@ -7,7 +7,10 @@ const PracticePlanSchema = new mongoose.Schema({
     practiceTime: { type: String, required: true }, // Example: "4:00 PM - 6:00 PM"
     drills: [{
         drillId: { type: mongoose.Schema.Types.ObjectId, ref: 'drillBank', required: true }, 
-        duration: { type: String, required: true } // Example: "15 minutes"
+        duration: { type: Number, required: true }, // Store duration in minutes
+        status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' }, // Drill execution status
+        startTime: { type: Number }, // Store timestamp (milliseconds since epoch)
+        endTime: { type: Number } // Store timestamp (milliseconds since epoch)
     }],
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'teams', required: true }, // Ensures team ownership
 }, { timestamps: true });
