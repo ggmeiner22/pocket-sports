@@ -10,7 +10,7 @@ import TeamsPage from './Teams';
 import HomePage from './TeamHome';
 import Verify from './Verify';
 import Roster from './Roster';
-import PracticePlans from './practice-plans';
+import Drills from './drills';
 import GoalsPage from './goals-page';
 import CalendarPage from './calendar';
 
@@ -24,7 +24,7 @@ function App() {
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/verifycode" element={<Verify/>}/>
       <Route path="/roster" element={<Roster/>}/>
-      <Route path="/practiceplans" element={<PracticePlans/>}/>
+      <Route path="/drills" element={<Drills/>}/>
       <Route path="/goalspage" element={<GoalsPage/>}/>
       <Route path="/homepage" element={<HomePage/>}/>
       <Route path="/calendarpage" element={<CalendarPage/>}/>

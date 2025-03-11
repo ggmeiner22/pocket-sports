@@ -1,4 +1,4 @@
-import './practice-plans.css';
+import './drills.css';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios'; // Use Axios for HTTP requests
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -17,9 +17,9 @@ import VolleyballField from '/Volleyball.jpg';
 import LacrosseField from '/Lacrosse.jpg';
 import BasketballField from '/Basketball.jpg';
 
-function PracticePlans() {
+function Drills() {
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [practicePlans, setPracticePlans] = useState([]);
+  const [drillBank, addToDrillBank] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [canvas, setCanvas] = useState(null);
@@ -45,7 +45,7 @@ function PracticePlans() {
       })
   }
 
-  const handleCreatePlan = () => {
+  const handleCreateDrill = () => {
     if (swiperRef.current) {
       const activeIndex = swiperRef.current.swiper.activeIndex;
       const activeSlide = swiperRef.current.swiper.slides[activeIndex];
@@ -56,7 +56,7 @@ function PracticePlans() {
     }
   }
 
-  const savePracticePlan = () => {
+  const saveDrill = () => {
     html2canvas(canvasRef.current).then((canvas) => {
       const imgData = canvas.toDataURL('image/jpeg', 0.5);
       const pdf = new jsPDF('landscape');
@@ -77,7 +77,7 @@ function PracticePlans() {
   const fetchDrills = () => {
     axios.get(`http://localhost:3001/drillbank/team/${selectedTeam._id}`)
       .then(response => {
-        setPracticePlans(response.data);
+        addToDrillBank(response.data);
       })
       .catch(err => {
         console.error('Error fetching drills:', err);
@@ -141,10 +141,10 @@ function PracticePlans() {
     if (storedRole === "Owner") {
       setButtons((prevButtons) => {
         // Prevent adding the button twice
-        if (!prevButtons.some(button => button.path === "/practiceplans")) {
+        if (!prevButtons.some(button => button.path === "/drills")) {
           return [
             ...prevButtons,
-            { path: "/practiceplans", label: "Practice Plans" }
+            { path: "/drills", label: "Drills" }
           ];
         }
         return prevButtons;
@@ -200,15 +200,15 @@ function PracticePlans() {
     axios.delete(`http://localhost:3001/drillbank/${drillId}`)
       .then(response => {
         console.log(response.data.message);
-        // Remove the deleted drill from the practicePlans state
-        setPracticePlans(practicePlans.filter(drill => drill._id !== drillId));
+        // Remove the deleted drill from the drillBank state
+        addToDrillBank(drillBank.filter(drill => drill._id !== drillId));
       })
       .catch(err => {
         console.error('Error deleting drill:', err);
       });
   };
 
-  const handlePracticePlanClick = (imageSrc) => {
+  const handleDrillLayoutClick = (imageSrc) => {
     setModalImage(imageSrc);
     setShowModal(true);
   };
@@ -252,19 +252,19 @@ function PracticePlans() {
           <SwiperSlide>
             <div className="field-container">
               <h2>Volleyball Court</h2>
-              <img src="/Volleyball.jpg" alt="Volleyball Field" className="field-image" onClick={() => handlePracticePlanClick("/Volleyball.jpg")} />
+              <img src="/Volleyball.jpg" alt="Volleyball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="field-container">
               <h2>Lacrosse Field</h2>
-              <img src="/Lacrosse.jpg" alt="Lacrosse Field" className="field-image" onClick={() => handlePracticePlanClick("/Lacrosse.jpg")} />
+              <img src="/Lacrosse.jpg" alt="Lacrosse Field" className="field-image" onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="field-container">
               <h2>Basketball Court</h2>
-              <img src="/Basketball.jpg" alt="Basketball Field" className="field-image" onClick={() => handlePracticePlanClick("/Basketball.jpg")} />
+              <img src="/Basketball.jpg" alt="Basketball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Basketball.jpg")} />
             </div>
           </SwiperSlide>
         </Swiper>
@@ -290,18 +290,18 @@ function PracticePlans() {
               onChange={(e) => setDrillName(e.target.value)}
             />
           </div>
-          <Button onClick={savePracticePlan}> Save Practice Plan</Button>
+          <Button onClick={saveDrill}> Save Drill</Button>
           <Button variant='secondary' onClick={closeModal}>Close</Button>
         </Modal.Footer>
       </Modal>
       <p>Choose a template then click the image or the button below to get started!</p>
-      <button className="contactButton1" onClick={handleCreatePlan}>Create Practice Plan</button>
+      <button className="contactButton1" onClick={handleCreateDrill}>Create Drill</button>
       <button onClick={handleDrillBank}>Go to Drill Bank</button>
 
       <div className="drill-list">
       <h3>Drill Bank</h3>
       <ul>
-        {practicePlans.map((drill) => (
+        {drillBank.map((drill) => (
           <li key={drill._id}>
             {drill.drillName}
             <button onClick={() => fetchDrillPdf(drill.drillName)}>Download</button>
@@ -329,4 +329,5 @@ function PracticePlans() {
   );
 }
 
-export default PracticePlans;
+export default Drills
+;
