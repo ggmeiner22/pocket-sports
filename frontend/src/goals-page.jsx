@@ -29,10 +29,10 @@ function GoalsPage() {
       if (storedRole === "Owner") {
         setButtons((prevButtons) => {
           // Prevent adding the button twice
-          if (!prevButtons.some(button => button.path === "/practiceplans")) {
+          if (!prevButtons.some(button => button.path === "/drills")) {
             return [
               ...prevButtons,
-              { path: "/practiceplans", label: "Practice Plans" }
+              { path: "/drills", label: "Drills" }
             ];
           }
           return prevButtons;

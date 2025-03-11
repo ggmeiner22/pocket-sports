@@ -30,10 +30,10 @@ function Roster() {
 
     if (storedRole === "Owner") {
       setButtons((prevButtons) => {
-        if (!prevButtons.some(button => button.path === "/practiceplans")) {
+        if (!prevButtons.some(button => button.path === "/drills")) {
           return [
             ...prevButtons,
-            { path: "/practiceplans", label: "Practice Plans" }
+            { path: "/drills", label: "Drills" }
           ];
         }
         return prevButtons;
