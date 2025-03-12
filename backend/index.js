@@ -8,6 +8,8 @@ const UserOnTeamModel = require('./models/UserOnTeam');
 const DrillBankModel = require('./models/DrillBank')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
+const GoalModel = require('./models/Goal');
+
 const nodemailer = require('nodemailer')
 const bodyParser = require('body-parser');
 
@@ -39,6 +41,7 @@ const generateTeamCode = () => {
     }
     return code;
 };
+
 
 
 // Registration endpoint
@@ -213,6 +216,98 @@ app.delete('/events/:eventId', async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+
+  app.post('/goals', async (req, res) => {
+    const { title, description, createdBy, teamId, targetNumber} = req.body;
+
+    console.log("Received goal data:", { title, description, createdBy, teamId, targetNumber });
+
+
+    if (!title || !createdBy || !teamId || targetNumber === undefined) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(createdBy) || !mongoose.Types.ObjectId.isValid(teamId)) {
+        return res.status(400).json({ message: "Invalid ObjectId for createdBy or teamId" });
+    }
+
+    try {
+        const { title, description, createdBy, teamId, targetNumber } = req.body;
+        const newGoal = new GoalModel({ 
+            title,
+            description, 
+            createdBy, 
+            teamId, 
+            targetNumber
+        });
+        
+        await newGoal.save();
+        res.status(201).json(newGoal);
+    } catch (error) {
+        console.error("Error creating goal:", error);
+        res.status(500).json({ message: "Error creating goal", error });
+    }
+});
+
+
+app.get('/goals', async (req, res) => {
+    const { teamId } = req.query; 
+
+    if (!teamId) {
+        return res.status(400).json({ message: "Missing teamId" });
+    }
+
+    try {
+        const goals = await GoalModel.find({ teamId })
+            .populate("createdBy", "fname lname") // ✅ Ensure RegisterModel is imported
+            .exec();
+        res.status(200).json(goals);
+    } catch (error) {
+        console.error("Error fetching goals:", error);
+        res.status(500).json({ message: "Error fetching goals" });
+    }
+});
+
+
+app.put('/goals/:goalId', async (req, res) => {
+    const { goalId } = req.params;
+    const { title, description, targetNumber, progress, completed } = req.body;
+
+    try {
+        const updatedGoal = await GoalModel.findByIdAndUpdate(
+            goalId, { 
+                title, 
+                description, 
+                targetNumber, 
+                progress, 
+                completed: progress >= targetNumber,
+            }, 
+            { new: true}
+        );
+        res.status(200).json(updatedGoal);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error updating goal" });
+    }
+});
+
+app.delete('/goals/:goalId', async (req, res) => {
+    const { goalId } = req.params;
+
+    try {
+        const deletedGoal = await GoalModel.findByIdAndDelete(goalId);
+
+        if (!deletedGoal) {
+            return res.status(404).json({ message: "Goal not found" });
+        }
+        res.status(200).json({ message: "Goal deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error deleting goal" });
+    }
+});
+
 
 
 

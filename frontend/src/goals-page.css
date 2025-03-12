@@ -1,0 +1,134 @@
+body {
+    background-color: white;
+}
+.goal-header {
+    display: flex; /* Flexbox layout */
+    justify-content: space-between; /* Push the button to the right */
+    align-items: center; /* Center items vertically */
+    width: 100%; /* Full width for the container */
+    margin-bottom: 20px; /* Space below the header */
+  }
+  
+  strong {
+    padding-top: 30px;
+    margin: 0; /* Remove default margin */
+    text-align: center; /* Center the text */
+    flex-grow: 1; /* Allow the h2 to take up all available space */
+    color: black;
+    font-size: 7vh;
+    
+    
+  }
+  h2 {
+    color: black;
+  }
+  .goals-container {
+    background-color: white;
+    color: black;
+  }
+
+  .button-container-2 {
+    display: flex;
+    justify-content: center; 
+    gap: 30px; 
+    margin-top: 40px; 
+}
+
+  label {
+    color: black;
+    text-align: center;
+  }
+  .add-goal-button {
+    background-color: black;
+    color: white;
+    border: none;
+    top: 130px;
+    padding: 20px 40px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    z-index: 1000; /* Ensures the button stays on top */
+    position: absolute; /* Position the button absolutely within the goal-header */
+    right: 20px; /* Adjust distance from the right edge */
+  }
+  
+  .add-goal-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+  }
+  
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; 
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000;
+  }
+  
+  .popup-content {
+    background-color: whitesmoke;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%; 
+    max-height: 90%; 
+    padding: 20px;
+    border: 2px solid black;
+    color: black;
+    
+  }
+  
+  .popup-content input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .popup button {
+    background-color: #4CAF50;
+    color: black;
+    padding: 10px;
+
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .popup button:hover {
+    background-color: #45a049; /* Darker green on hover */
+  }
+  
+  .goal-list {
+    width: 90vw;
+    text-align: left;
+    margin: 40px auto;
+    background-color: whitesmoke;
+    border: 2px solid black; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 10px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    list-style: none;
+  }
+  
+  .goal-item {
+    display: flex;
+    justify-content: space-between;
+    background: #f9f9f9;
+    padding: 35px;
+    margin: 0 30px 20px 30px;
+    border-radius: 5px;
+    color: black;
+  }
+  
+  .goal-item button {
+  
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
