@@ -11,5 +11,5 @@ const RegisterSchema = new mongoose.Schema({
     verifyExpiration: Date
 }, { collection: 'registers' });
 
-const RegisterModel = mongoose.model("register", RegisterSchema);
+const RegisterModel = mongoose.model("Register", RegisterSchema);
 module.exports = RegisterModel;
