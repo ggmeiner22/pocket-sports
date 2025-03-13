@@ -20,6 +20,9 @@ import BasketballField from '/Basketball.jpg';
 function Drills() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [drillBank, addToDrillBank] = useState([]);
+  const [allTags, setAllTags] = useState([]); // All available tags
+  const [drillTags, setDrillTags] = useState([]); // Selected tags for this drill
+  const [newTag, setNewTag] = useState(""); // Input value for new tag
   const [showModal, setShowModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [canvas, setCanvas] = useState(null);
@@ -34,6 +37,7 @@ function Drills() {
   const navigate = useNavigate();
   const location = useLocation();
   const swiperRef = useRef(null);
+  const [isDrillMenuOpen, setIsDrillMenuOpen] = useState(false);
 
   const getSport = (selectedTeam) => {
     axios.get('http://localhost:3001/teamsport/:teamId', { teamId: selectedTeam })
@@ -51,27 +55,86 @@ function Drills() {
       const activeSlide = swiperRef.current.swiper.slides[activeIndex];
       const imgSrc = activeSlide.querySelector('img').src;
       console.log("Active Slide:", imgSrc);
+  
       setModalImage(imgSrc);
-      setShowModal(true);
+  
+      // FETCH TAGS FOR THIS TEAM
+      if (selectedTeam && selectedTeam._id) {
+        axios.get(`http://localhost:3001/drilltags/team/${selectedTeam._id}`)
+          .then(response => {
+            console.log("Fetched tags:", response.data);  // Debug
+            setAllTags(response.data);                    // Store in state
+            setShowModal(true);                           // Finally, open modal
+          })
+          .catch(err => {
+            console.error("Error fetching tags:", err);
+            setShowModal(true); // Still open the modal, but no tags
+          });
+      } else {
+        // If no team is selected for some reason, just open the modal
+        setShowModal(true);
+      }
     }
-  }
+  };
+  
 
   const saveDrill = () => {
     html2canvas(canvasRef.current).then((canvas) => {
-      const imgData = canvas.toDataURL('image/jpeg', 0.5);
-      const pdf = new jsPDF('landscape');
-      pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); // Adjust the dimensions as needed
-      const pdfBase64 = pdf.output('datauristring');
-      
-      axios.post('http://localhost:3001/drillbank', { pdfB64: pdfBase64, teamId: selectedTeam._id, drillName: drillName})
+        const imgData = canvas.toDataURL('image/jpeg', 0.5);
+        const pdf = new jsPDF('landscape');
+        pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); // Adjust dimensions as needed
+        const pdfBase64 = pdf.output('datauristring');
+
+        axios.post('http://localhost:3001/drillbank', { 
+            pdfB64: pdfBase64, 
+            teamId: selectedTeam._id, 
+            drillName: drillName, 
+            tags: drillTags
+        })
         .then(result => {
-          console.log("Success:", result);
+            console.log("Success:", result);
+            setIsDrillMenuOpen(false);  // ✅ Close menu (if applicable)
+            setShowModal(false);        // ✅ Close the modal after saving
         })
         .catch(err => {
-          console.log(err);
+            console.log(err);
         });
-
     });
+  };
+
+
+
+  const handleTagSelection = async (tag) => {
+    if (!tag || !selectedTeam) return; // Ensure the tag is not empty and team is selected
+  
+    try {
+      const response = await axios.get(`http://localhost:3001/drilltags/${tag}`);
+      
+      if (response.data.exists) {
+        console.log("Tag already exists in the database:", tag);
+      } else {
+        // If the tag does not exist, create a new one
+        const result = await axios.post('http://localhost:3001/drilltags', { tagName: tag, teamId: selectedTeam._id });
+        console.log("Tag created successfully:", result.data);
+  
+        // Ensure allTags is updated correctly
+        setAllTags((prevTags) => [...prevTags, tag]);
+      }
+  
+      // Add to selected tags if not already present
+      setDrillTags((prevTags) => (prevTags.includes(tag) ? prevTags : [...prevTags, tag]));
+  
+    } catch (err) {
+      console.error("Error checking or creating tag:", err);
+    }
+  
+    setNewTag(""); // Clear input field after adding
+  };
+  
+  
+  
+  const removeTag = (tagToRemove) => {
+    setDrillTags(drillTags.filter(tag => tag !== tagToRemove)); // Remove tag
   };
 
   const fetchDrills = () => {
@@ -285,13 +348,53 @@ function Drills() {
             <label htmlFor="drillName">Drill Name:</label>
             <input
               type="text"
+              placeholder = "Enter the drill's name"
               id="drillName"
               value={drillName}
               onChange={(e) => setDrillName(e.target.value)}
             />
           </div>
-          <Button onClick={saveDrill}> Save Drill</Button>
-          <Button variant='secondary' onClick={closeModal}>Close</Button>
+
+          {/* Drill Tags Section */}
+          <div>
+            <label htmlFor="drillName" style={{ color: 'black' }}>Drill Name:</label>
+
+           {/* Dropdown for existing tags */}
+            <select onChange={(e) => setNewTag(e.target.value)} value={newTag}>
+              <option value="">-- Select an Existing Tag --</option>
+              {allTags.length > 0 ? (
+                allTags.map((tag, index) => (
+                  <option key={index} value={tag}>{tag}</option>
+                ))
+              ) : (
+                <option disabled>No tags found</option>
+              )}
+            </select>
+
+            {/* Manual input for new tags */}
+            <input
+              type="text"
+              placeholder="Enter a new tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+            />
+
+            <Button onClick={() => handleTagSelection(newTag)}>Add Drill Tag</Button>
+          </div>
+
+          {/* Display added tags */}
+          <div>
+            <h4 style={{ color: 'black' }}>Selected Tags:</h4>
+            {drillTags.map((tag, index) => (
+              <span key={index} className="tag" style={{ color: 'black' }}>
+                {tag}<button onClick={() => removeTag(tag)}>x</button>
+              </span>
+            ))}
+          </div>
+
+         <Button onClick={saveDrill}> Save Drill</Button>
+         <Button variant='secondary' onClick={closeModal}>Close</Button>
+         
         </Modal.Footer>
       </Modal>
       <p>Choose a template then click the image or the button below to get started!</p>
