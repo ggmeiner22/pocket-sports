@@ -93,8 +93,8 @@ function Drills() {
         })
         .then(result => {
             console.log("Success:", result);
-            setIsDrillMenuOpen(false);  // ✅ Close menu (if applicable)
-            setShowModal(false);        // ✅ Close the modal after saving
+            setIsDrillMenuOpen(false);  // Close menu (if applicable)
+            setShowModal(false);        // Close the modal after saving
         })
         .catch(err => {
             console.log(err);
