@@ -6,6 +6,7 @@ const RegisterModel = require('./models/Register');
 const TeamsModel = require('./models/Teams');
 const UserOnTeamModel = require('./models/UserOnTeam');
 const DrillBankModel = require('./models/DrillBank')
+const DrillTagModel = require('./models/DrillTags')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
@@ -470,8 +471,81 @@ app.get('/registers/:userId', async (req, res) => {
 
 // });
 
+app.get('/drilltags/:tag', async (req, res) => {
+    const { tag } = req.params;
+    const existingTag = await DrillTagModel.findOne({ tagName: tag });
+    res.json({ exists: !!existingTag });
+  });
+
+  app.post('/drilltags', async (req, res) => {
+    const { tagName, teamId } = req.body;
+
+    if (!tagName || !teamId) {
+        return res.status(400).json({ message: "Tag name and team ID are required." });
+    }
+
+    try {
+        let tag = await DrillTagModel.findOne({ tagName, teamId });
+
+        if (!tag) {
+            tag = await DrillTagModel.create({ tagName, teamId });
+        }
+
+        res.status(201).json({ message: "Tag created successfully", tag });
+    } catch (err) {
+        console.error("Error creating tag:", err);
+        res.status(500).json({ message: "Failed to create tag." });
+    }
+});
+
+// Fetch tags for a specific team
+app.get('/drilltags/team/:teamId', async (req, res) => {
+    const { teamId } = req.params;
+    try {
+      const tags = await DrillTagModel.find({ teamId: teamId });
+      // Return just the tag names or the entire tag objects
+      res.status(200).json(tags.map(tag => tag.tagName));
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      res.status(500).json({ message: "Failed to fetch drill tags" });
+    }
+  });
+
+
 app.post('/drillbank', async (req, res) => {
-    const { pdfB64, teamId, drillName } = req.body;
+    const { pdfB64, teamId, drillName, tags } = req.body;
+
+    if (!pdfB64 || !teamId || !drillName) {
+        return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
+    }
+
+    try {
+        let tagIds = [];
+
+        if (tags && tags.length > 0) {
+            for (let tagName of tags) {
+                let tag = await DrillTagModel.findOne({ tagName, teamId });
+
+                if (!tag) {
+                    tag = await DrillTagModel.create({ tagName, teamId });
+                }
+
+                tagIds.push(tag._id);
+            }
+        }
+
+        await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds });
+
+        res.status(201).json({ message: "Drill saved successfully", tagIds });
+    } catch (err) {
+        console.error("Error saving drill:", err);
+        res.status(500).json({ message: "Failed to save drill" });
+    }
+});
+
+
+/*app.post('/drillbank', async (req, res) => {
+    const { pdfB64, teamId, drillName, tags } = req.body;
 
     console.log('Received data:', {teamId, drillName }); // Log received data
 
@@ -479,13 +553,13 @@ app.post('/drillbank', async (req, res) => {
         return res.status(400).json({ message: 'pdf, teamId, and drillName are required.' });
     }
     try {
-        await DrillBankModel.create({ drillName: drillName, pdfB64: pdfB64, teamId: teamId });
+        await DrillBankModel.create({ drillName: drillName, pdfB64: pdfB64, teamId: teamId, tags: tags || [] });
         res.status(201).json("Practice plan saved to drill bank successfully");
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
     }
-});
+});*/
 
 app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
