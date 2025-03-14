@@ -58,7 +58,7 @@ body {
     flex-direction: column;
 }
 
-label {
+.card label {
     margin-bottom: 5px;
     color: white; /* Label color */
     font-size: 1.1em; /* Slightly larger font size */
@@ -67,7 +67,7 @@ label {
     padding-left: 1em;
 }
 
-input[type="text"],
+.card input[type="text"],
 input[type="email"],
 input[type="password"] {
     padding: 10px;

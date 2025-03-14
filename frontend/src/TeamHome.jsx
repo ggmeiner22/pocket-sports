@@ -80,26 +80,87 @@ function HomePage() {
 
   }, []); 
 
-  const renderGoalCards = () => (
-    Array.from({ length: 3 }).map((_, index) => (
-      <Card key={index} className='teamHome' style={{ width: '18rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem',  }}>
-          <Progress style={{ '--progress-color': selectedTeam?.teamColors?.[0] }}  progress={75} />
-        </div>
-        <Card.Body>
-          <Card.Title>Card Title</Card.Title>
-          <Card.Text>Example text describing the goal.</Card.Text>
-          <Button
-            style={{ backgroundColor: selectedTeam?.teamColors?.[0] }}
-            variant='primary'
-          >
-            Go somewhere
-          </Button>
-        </Card.Body>
-      </Card>
-    ))
-  );
+  const [goals, setGoals] = useState([]);
+  useEffect(() => {
+    const storedTeam = localStorage.getItem("selectedTeam");
+    if (storedTeam) {
+        setSelectedTeam(JSON.parse(storedTeam));
+    }
+  }, []);
 
+  useEffect(() => {
+      if (selectedTeam && selectedTeam._id) {
+          fetchGoals();
+          
+
+      }
+  }, [selectedTeam]); // Fetch goals when selectedTeam changes
+
+  useEffect(() => {
+    console.log("Goals state updated:", goals.map(goal => goal.title));
+  }, [goals]); // Runs every time `goals` state updates
+
+
+  const fetchGoals = async () => {
+    if (!selectedTeam || !selectedTeam._id) {
+        console.warn("fetchGoals: No selected team found, skipping fetch.");
+        return;
+    }
+
+    try {
+        console.log("Fetching goals for team:", selectedTeam._id); // Debugging
+        const response = await axios.get("http://localhost:3001/goals", {
+            params: { teamId: selectedTeam._id },
+        });
+
+        console.log("Goals fetched:", response.data); // Debugging
+        //if (res.data.length > 0) {
+          //console.log("First goal:", res.data[0]);
+        //}
+
+        if (response.data && response.data.length > 0) {
+          // Sort by lastUpdated or createdAt in descending order (most recent first)
+          const sortedGoals = response.data.sort((a, b) => new Date(b.createdAt));
+    
+          // Take only the top 3 most recent goals
+          setGoals(sortedGoals.slice(0, 3));
+        }
+        console.log("Goals after update:", res.data[4]);
+
+    } catch (error) {
+        console.error("Error fetching goals:", error);
+    }
+  };
+
+useEffect(() => {
+  if (selectedTeam) fetchGoals();
+}, [selectedTeam]);
+
+
+const renderGoalCards = () => {
+  if (goals.length === 0) {
+    return <p style={{ color: 'black', alignSelf: 'center', width: '100%', fontSize: '5vw', margin: '40px' }}>No recent goals!</p>;
+  }
+
+  return goals.map((goal, index) => (
+    <Card key={index} className='teamHome' style={{ width: '18rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
+      <Progress  style={{color: selectedTeam?.teamColors?.[0]}} progress={(goal.progress / goal.targetNumber) * 100} />
+      </div>
+      <Card.Body>
+        <Card.Title>{goal.title || "Goal Title"}</Card.Title>
+        <Card.Text>{goal.description || "Goal details here."}</Card.Text>
+        <Button
+          style={{ backgroundColor: selectedTeam?.teamColors?.[0] }}
+          variant='primary'
+          onClick={() => navigate(`/goalspage`)}
+        >
+          View Goal
+        </Button>
+      </Card.Body>
+    </Card>
+  ));
+};
   const getEvents = async () => {
     try {
       const storedUserId = localStorage.getItem('userId');

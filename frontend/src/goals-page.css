@@ -1,5 +1,5 @@
-body {
-    background-color: white;
+.body {
+    background-color: whitesmoke;
 }
 .goal-header {
     display: flex; /* Flexbox layout */
@@ -8,22 +8,60 @@ body {
     width: 100%; /* Full width for the container */
     margin-bottom: 20px; /* Space below the header */
   }
-  
-  strong {
-    padding-top: 30px;
-    margin: 0; /* Remove default margin */
-    text-align: center; /* Center the text */
-    flex-grow: 1; /* Allow the h2 to take up all available space */
-    color: black;
-    font-size: 7vh;
-    
-    
-  }
-  h2 {
-    color: black;
-  }
+
+  .progress-medal-container {
+    display: flex;
+    align-items: left;  /* Aligns vertically */
+    justify-content: left;  /* Centers in the container */
+    gap: 12vw;  /* Adds space between the progress circle and the medal */
+    margin: 40px 80px;  /* Centers the entire block */
+}
+
+.completed-goals-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.medal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 3 columns */
+  grid-template-rows: auto; /* Automatically adjust rows */
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+
+  max-height: 250px; /* Limit height to fit exactly 2 rows */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+}
+
+/* Style for the scrollbar (optional) */
+.medal-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.medal-grid::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.medal-grid::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
+}
+
+.medal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
   .goals-container {
-    background-color: white;
+    background-color: whitesmoke;
     color: black;
   }
 
@@ -42,18 +80,19 @@ body {
     background-color: black;
     color: white;
     border: none;
-    top: 130px;
     padding: 20px 40px;
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
-    z-index: 1000; /* Ensures the button stays on top */
-    position: absolute; /* Position the button absolutely within the goal-header */
     right: 20px; /* Adjust distance from the right edge */
+    border: 2px solid black;
+    align-self: right;
   }
   
   .add-goal-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: whitesmoke; /* Darker green on hover */
+    border: 2px solid black;
+    color: black;
   }
   
   .popup {
@@ -119,7 +158,6 @@ body {
     justify-content: space-between;
     background: #f9f9f9;
     padding: 35px;
-    margin: 0 30px 20px 30px;
     border-radius: 5px;
     color: black;
   }

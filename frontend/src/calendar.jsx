@@ -10,10 +10,16 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date()); // Selected date state
   const [showPopup, setShowPopup] = useState(false); // Popup state for event creation
   const [eventName, setEventName] = useState('');
+    const [loading, setLoading] = useState(false);  // Loading state
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [players, setPlayers] = useState([]);
+  const [feedback, setFeedback] = useState(''); // To store user feedback text
   const [eventLocation, setEventLocation] = useState('');
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(''); // Rename this state to better reflect its purpose, such as `selectedPlayerId`.
   const [drills, setDrills] = useState([]); // initialize drills as an empty array
   const [time, setTime] = useState('');
+  const [playerDetails, setPlayerDetails] = useState({});
   const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
   const navigate = useNavigate();
@@ -28,6 +34,8 @@ function CalendarPage() {
       ]);
 
   const storedUserId = localStorage.getItem('userId');
+  const storedTeam = localStorage.getItem('selectedTeam');
+
 
   const handleDrillChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
@@ -35,7 +43,6 @@ function CalendarPage() {
   };
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('selectedTeam');
     if (storedTeam) {
       setTeamName(storedTeam);
     }
@@ -52,7 +59,61 @@ function CalendarPage() {
         });
       }
     getEvents(selectedDate); // Fetch events for the selected date
+    getRoster();
   }, [selectedDate]);
+
+  const getUserDetails = async (playerId) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/registers/${playerId}`);
+      return response.data;  // Return user details for a specific player
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return null;
+    }
+  };
+
+  const getRoster = async () => {
+    setLoading(true);
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeam?._id;
+
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+
+      const response = await axios.get('http://localhost:3001/useronteams', {
+        headers: {
+          teamId: storedTeamId
+        },
+      });
+      setPlayers(response.data);
+      
+      // Fetch player details for each player
+      const playerDetailsPromises = response.data.map(player => getUserDetails(player.userId));  // Assuming `userId` is the field
+      const details = await Promise.all(playerDetailsPromises);
+
+      const playerDetailsMap = details.reduce((acc, userDetails, idx) => {
+        acc[response.data[idx].userId] = userDetails;
+        return acc;
+      }, {});
+      
+      setPlayerDetails(playerDetailsMap);  // Save details in state
+    } catch (error) {
+      console.error("Error fetching players:", error.response || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   useEffect(() => {
+      const storedTeam = localStorage.getItem("selectedTeam");
+      if (storedTeam) {
+          setSelectedTeam(JSON.parse(storedTeam));
+      }
+    }, []);
 
   // Fetch events for the selected date
   const getEvents = async (date) => {
@@ -259,6 +320,7 @@ function CalendarPage() {
               </div>
             </div>
           )}
+          
 
           {/* Display Events for the Selected Date */}
           <div className="event-input-half">
@@ -298,11 +360,57 @@ function CalendarPage() {
                 </ul>
             </div>
         </div>
+        
         )}
-      </div>
-      
 
-      <footer className="footer1" style={{backgroundColor: 'whitesmoke'}}>
+{selectedEvent && storedRole == "Owner" && (
+    <div className = "event-details" style={{marginTop:"4vh"}}>
+      <div className="event-details-card">
+      <h4>Give Feedback on Game/Practice</h4>
+        <label style={{ color: 'black', marginTop: '2vh' }}>
+          <select
+            style={{ backgroundColor: 'whitesmoke', color: 'black' }}
+            value={selectedPlayer} 
+            onChange={(e) => setSelectedPlayer(e.target.value)} 
+            required
+          >
+            <option value="" disabled>Select a player</option>
+            {players.map((player) => {
+              const playerInfo = playerDetails[player.userId]; // Access player details using userId
+              // Check if playerInfo exists before rendering the option
+              return playerInfo ? (
+                <option key={player.userId} value={player.userId}>
+                  {playerInfo.fname} {playerInfo.lname}
+                </option>
+              ) : (
+                <option key={player.userId} disabled>No details available</option> // Optional fallback if playerInfo is not available
+              );
+            })}
+          </select>
+        </label>
+      </div>
+
+      <div className = "drills-container">
+        <input 
+          type="text" 
+          id="feedbackTextBox" 
+          placeholder="Enter your feedback here" 
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)} 
+        />
+        <button 
+          onClick={() => handleFeedbackSubmit(selectedPlayer, feedback)} 
+          style={{ backgroundColor: 'black', color: 'white', marginTop: '4vh' }}
+        >
+          Submit Feedback
+        </button>
+      </div>
+    </div>
+  )}
+      </div>
+  
+
+      <footer className="footer1" style={{backgroundColor: selectedTeam?.teamColors?.[0] || 'white', color: 'whitesmoke'}}>
         <div className="footer-container1">
           <div className="footer-column1">
             <h4>About Us</h4>
