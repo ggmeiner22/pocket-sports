@@ -77,7 +77,20 @@ function Drills() {
     }
   };
   
-
+  useEffect(() => {
+    if (selectedTeam && selectedTeam._id && showModal) {
+      axios.get(`http://localhost:3001/drilltags/team/${selectedTeam._id}`)
+        .then(response => {
+          console.log("Fetched tags in useEffect:", response.data);
+          setAllTags(response.data);
+        })
+        .catch(err => {
+          console.error("Error fetching tags in useEffect:", err);
+        });
+    }
+  }, [selectedTeam, showModal]);
+  
+  
   const saveDrill = () => {
     html2canvas(canvasRef.current).then((canvas) => {
         const imgData = canvas.toDataURL('image/jpeg', 0.5);

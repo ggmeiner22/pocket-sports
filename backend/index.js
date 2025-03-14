@@ -471,12 +471,6 @@ app.get('/registers/:userId', async (req, res) => {
 
 // });
 
-app.get('/drilltags/:tag', async (req, res) => {
-    const { tag } = req.params;
-    const existingTag = await DrillTagModel.findOne({ tagName: tag });
-    res.json({ exists: !!existingTag });
-  });
-
   app.post('/drilltags', async (req, res) => {
     const { tagName, teamId } = req.body;
 
