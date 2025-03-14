@@ -492,6 +492,12 @@ app.get('/registers/:userId', async (req, res) => {
     }
 });
 
+app.get('/drilltags/:tag', async (req, res) => {
+    const { tag } = req.params;
+    const existingTag = await DrillTagModel.findOne({ tagName: tag });
+    res.json({ exists: !!existingTag });
+  });
+
 // Fetch tags for a specific team
 app.get('/drilltags/team/:teamId', async (req, res) => {
     const { teamId } = req.params;

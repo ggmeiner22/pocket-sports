@@ -23,6 +23,8 @@ function Drills() {
   const [allTags, setAllTags] = useState([]); // All available tags
   const [drillTags, setDrillTags] = useState([]); // Selected tags for this drill
   const [newTag, setNewTag] = useState(""); // Input value for new tag
+  const [dropdownTag, setDropdownTag] = useState("");
+  const [inputTag, setInputTag] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [canvas, setCanvas] = useState(null);
@@ -90,7 +92,6 @@ function Drills() {
     }
   }, [selectedTeam, showModal]);
   
-  
   const saveDrill = () => {
     html2canvas(canvasRef.current).then((canvas) => {
         const imgData = canvas.toDataURL('image/jpeg', 0.5);
@@ -106,8 +107,18 @@ function Drills() {
         })
         .then(result => {
             console.log("Success:", result);
+            // Close the modal and clear fields after saving
+            setIsDrillMenuOpen(false);  // If applicable
+            setShowModal(false);        // Close the modal
+            setDrillName("");           // Clear drill name
+            setDrillTags([]);           // Clear selected drill tags
+            setNewTag("");              // Clear the manual tag input
             setIsDrillMenuOpen(false);  // Close menu (if applicable)
             setShowModal(false);        // Close the modal after saving
+            // Optionally, clear the canvas (if needed)
+            if (canvas) {
+              canvas.clear();
+            }
         })
         .catch(err => {
             console.log(err);
@@ -118,7 +129,7 @@ function Drills() {
 
 
   const handleTagSelection = async (tag) => {
-    if (!tag || !selectedTeam) return; // Ensure the tag is not empty and team is selected
+    if (!tag || !selectedTeam) return; // Ensure the tag and team are valid
   
     try {
       const response = await axios.get(`http://localhost:3001/drilltags/${tag}`);
@@ -129,13 +140,19 @@ function Drills() {
         // If the tag does not exist, create a new one
         const result = await axios.post('http://localhost:3001/drilltags', { tagName: tag, teamId: selectedTeam._id });
         console.log("Tag created successfully:", result.data);
-  
-        // Ensure allTags is updated correctly
+        // Update allTags with the new tag
         setAllTags((prevTags) => [...prevTags, tag]);
       }
   
       // Add to selected tags if not already present
-      setDrillTags((prevTags) => (prevTags.includes(tag) ? prevTags : [...prevTags, tag]));
+      setDrillTags((prevTags) => {
+        if (!prevTags.includes(tag)) {
+          const newTags = [...prevTags, tag];
+          console.log("Updated drillTags:", newTags);
+          return newTags;
+        }
+        return prevTags;
+      });
   
     } catch (err) {
       console.error("Error checking or creating tag:", err);
@@ -143,6 +160,7 @@ function Drills() {
   
     setNewTag(""); // Clear input field after adding
   };
+  
   
   
   
@@ -373,7 +391,7 @@ function Drills() {
             <label htmlFor="drillName" style={{ color: 'black' }}>Drill Name:</label>
 
            {/* Dropdown for existing tags */}
-            <select onChange={(e) => setNewTag(e.target.value)} value={newTag}>
+            <select onChange={(e) => setDropdownTag(e.target.value)} value={dropdownTag}>
               <option value="">-- Select an Existing Tag --</option>
               {allTags.length > 0 ? (
                 allTags.map((tag, index) => (
@@ -388,21 +406,30 @@ function Drills() {
             <input
               type="text"
               placeholder="Enter a new tag"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              value={inputTag}
+              onChange={(e) => setInputTag(e.target.value)}
             />
 
-            <Button onClick={() => handleTagSelection(newTag)}>Add Drill Tag</Button>
+            <Button onClick={() => {const tagToAdd = dropdownTag || inputTag;
+              handleTagSelection(tagToAdd);
+              setDropdownTag(""); // Optionally clear the dropdown selection
+              setInputTag("");    // Clear the manual input
+              }}>Add Drill Tag
+            </Button>
           </div>
 
           {/* Display added tags */}
           <div>
             <h4 style={{ color: 'black' }}>Selected Tags:</h4>
-            {drillTags.map((tag, index) => (
-              <span key={index} className="tag" style={{ color: 'black' }}>
-                {tag}<button onClick={() => removeTag(tag)}>x</button>
-              </span>
-            ))}
+            {drillTags.length > 0 ? (
+              drillTags.map((tag, index) => (
+                <span key={index} className="tag" style={{ color: 'black', marginRight: '5px' }}>
+                  {tag} <button onClick={() => removeTag(tag)}>x</button>
+                </span>
+              ))
+            ) : (
+              <p style={{ color: 'black' }}>No tags selected.</p>
+            )}
           </div>
 
          <Button onClick={saveDrill}> Save Drill</Button>
