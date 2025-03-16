@@ -234,7 +234,7 @@ function TeamsPage() {
         <button className="topButtons" onClick={handleJoinTeam}>Join Team +</button>
       </div>
       
-      <div className="body">
+      <div className="bodyHome">
         {showPopup && (
           <div className="popup-top">
             <div className="popup-content">
@@ -293,7 +293,7 @@ function TeamsPage() {
                 </label>
                 <br />
                 <div className="popup-buttons">
-                  <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
+                  <button className="topButtons" type="button" onClick={handleClosePopup}>Cancel</button>
                   <button className="topButtons" type="submit">Create</button>
                 </div>
               </form>

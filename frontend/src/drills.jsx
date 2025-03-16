@@ -454,7 +454,7 @@ function Drills() {
       </ul>
     </div>
 
-      <footer className="footer1">
+    <footer className="footer1" style={{backgroundColor: selectedTeam?.teamColors?.[0] || 'white', color: 'whitesmoke'}}>
         <div className="footer-container1">
           <div className="footer-column1">
             <h4>About Us</h4>

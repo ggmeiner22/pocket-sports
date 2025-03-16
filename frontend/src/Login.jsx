@@ -80,16 +80,19 @@ function Login() {
 
   return (
     <div className="registration-container">
-      <header className="registration-page-header">
+      <header className="landing-page-header">
         <div className="logo">
           <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>PocketSports</a>
+        </div>
+        <div className="button-container">
+          <button className="contactButton">Contact Us</button>
         </div>
       </header>
       <video autoPlay loop muted playsInline className="background-video">
           <source src="Arrows.mp4" type="video/mp4" />
           Your browser does not support the video tag.
       </video>
-      <div className="card">
+      <div className="card" style={{marginTop:'10vh'}}>
         <h2>Login</h2>
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
