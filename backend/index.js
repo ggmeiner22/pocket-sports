@@ -618,6 +618,42 @@ app.get('/drillbank/team/:teamId', async (req, res) => {
     }
   });
 
+  app.delete('/useronteams', async (req, res) => {
+    const { userId, teamId } = req.body;
+    try {
+      const userOnTeam = await UserOnTeamModel.findOne({ userId, teamId });
+      if (!userOnTeam) {
+        return res.status(404).json({ message: "User not found on this team" });
+      }
+      console.log(`Removing user with role: ${userOnTeam.role}`);
+      await UserOnTeamModel.deleteOne({ _id: userOnTeam._id });
+      res.status(200).json({ message: `User (${userOnTeam.role}) removed successfully` });
+    } catch (error) {
+      console.error("Error removing user:", error);
+      res.status(500).json({ message: "Failed to remove user" });
+    }
+  });  
+  
+  app.put('/useronteams/role', async (req, res) => {
+    const { userId, teamId, newRole } = req.body;
+    try {
+      const updatedDoc = await UserOnTeamModel.findOneAndUpdate(
+        { userId, teamId },
+        { role: newRole },
+        { new: true }
+      );
+      if (!updatedDoc) {
+        return res.status(404).json({ message: "User not found on this team" });
+      }
+      console.log(`Changed role of userId ${userId} to ${newRole}`);
+      res.status(200).json({ message: "Role updated successfully", updatedDoc });
+    } catch (error) {
+      console.error("Error updating role:", error);
+      res.status(500).json({ message: "Failed to update role" });
+    }
+  });
+  
+
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });
