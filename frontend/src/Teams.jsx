@@ -328,7 +328,7 @@ function TeamsPage() {
             <div>
             <div className="teamName"><strong>{team.teamName}</strong></div>
             <div className="organizationName">{team.organizationName}</div>
-            <p>Code: <strong>{team.teamCode}</strong></p>
+            <p> Code: <strong style={{ color: "white" }}>{team.teamCode}</strong></p>
             </div>
             <button className= 'topButtons' onClick={() => goToTeamPage(team)}>Select Team + </button>
           </li>
