@@ -9,18 +9,28 @@ import axios from 'axios';
 
 function Roster() {
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [players, setPlayers] = useState([]);
-  const [playerDetails, setPlayerDetails] = useState({});
-  const [currentUserRole, setCurrentUserRole] = useState(null);  // Role as per DB (from userOnTeam)
+  const [players, setPlayers] = useState([]); // Array of UserOnTeam documents
+  const [playerDetails, setPlayerDetails] = useState({}); // Optional extra info from Register
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Role-change modal state
+  // Role-change modal state (for non-self role changes)
   const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
-  const [userToChangeRole, setUserToChangeRole] = useState(null); // The user whose role is being changed
-  const [roleToChange, setRoleToChange] = useState("Player"); // Default new role for the target
+  const [userToChangeRole, setUserToChangeRole] = useState(null);
+  const [roleToChange, setRoleToChange] = useState("Player");
   const [newOwnerCandidate, setNewOwnerCandidate] = useState(""); // For when the owner is changing his own role
 
-  // For navigation & location
+  // Edit User Info modal state (available for all users)
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [editUserData, setEditUserData] = useState({
+    playerPosition: "",
+    heightFeet: "",
+    heightInches: "",
+    weight: "",
+    playerStats: ""
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,7 +50,7 @@ function Roster() {
     if (storedTeamString) {
       setSelectedTeam(JSON.parse(storedTeamString));
     }
-    getRoster();  // Fetch the roster
+    getRoster();
   }, []);
 
   const getUserDetails = async (userId) => {
@@ -68,10 +78,10 @@ function Roster() {
       const rosterRes = await axios.get('http://localhost:3001/useronteams', {
         headers: { teamId: storedTeamId },
       });
-      const rosterData = rosterRes.data; // Array of userOnTeam documents
+      const rosterData = rosterRes.data;
       setPlayers(rosterData);
 
-      // Determine current user's DB role from the roster
+      // Determine current user's DB role from roster data
       const me = rosterData.find((p) => p.userId === currentUserId);
       if (me) {
         setCurrentUserRole(me.role);
@@ -85,7 +95,7 @@ function Roster() {
         }
       }
 
-      // Fetch user details for each user in the roster
+      // Optionally fetch additional user details from Register
       const detailPromises = rosterData.map((p) => getUserDetails(p.userId));
       const details = await Promise.all(detailPromises);
       const detailsMap = details.reduce((acc, userObj, idx) => {
@@ -101,7 +111,6 @@ function Roster() {
     }
   };
 
-  // Remove a user from the team
   const removeUser = async (userId) => {
     try {
       await axios.delete('http://localhost:3001/useronteams', {
@@ -114,7 +123,6 @@ function Roster() {
     }
   };
 
-  // Open role-change modal for a given user
   const openChangeRoleModal = (userId, currentRole) => {
     setUserToChangeRole(userId);
     setRoleToChange(currentRole); // Initialize with current role
@@ -166,13 +174,59 @@ function Roster() {
       alert("Failed to change role. Please try again.");
     }
   };
-  
-  
 
-  // Placeholder for editing user info
+  // Open Edit User Info modal (available for all users)
   const openEditUserModal = (userId) => {
-    console.log('Open modal to edit user:', userId);
-    alert("Open edit modal for user with ID: " + userId);
+    // Find the user's info from the players array (UserOnTeam document)
+    const userData = players.find(p => p.userId === userId);
+    if (userData) {
+      setUserToEdit(userId);
+      // Parse height (expected format: "5'11''")
+      let heightFeet = "";
+      let heightInches = "";
+      if (userData.height) {
+        const parts = userData.height.split("'");
+        if (parts.length >= 2) {
+          heightFeet = parts[0];
+          heightInches = parts[1].replace(/''$/, "").trim();
+        }
+      }
+      setEditUserData({
+        playerPosition: userData.playerPosition || "",
+        heightFeet: heightFeet,
+        heightInches: heightInches,
+        weight: userData.weight || "",
+        playerStats: userData.playerStats ? JSON.stringify(userData.playerStats) : ""
+      });
+      setShowEditUserModal(true);
+    } else {
+      alert("User data not available.");
+    }
+  };
+
+  const handleEditUserSubmit = async () => {
+    try {
+      if (!userToEdit) return;
+      // Combine feet and inches into a height string
+      const combinedHeight = `${editUserData.heightFeet}'${editUserData.heightInches}''`;
+      const updatedData = {
+        playerPosition: editUserData.playerPosition,
+        height: combinedHeight,
+        weight: editUserData.weight,
+        playerStats: editUserData.playerStats ? JSON.parse(editUserData.playerStats) : []
+      };
+      // Update the user info in the UserOnTeam document
+      const response = await axios.put(`http://localhost:3001/useronteams/${userToEdit}`, {
+        ...updatedData,
+        teamId: selectedTeam._id
+      });
+      console.log("User info updated:", response.data);
+      setShowEditUserModal(false);
+      getRoster();
+    } catch (err) {
+      console.error("Error updating user info:", err.response ? err.response.data : err.message);
+      alert("Failed to update user info. Please try again.");
+    }
   };
 
   const renderRosterCards = () => {
@@ -192,7 +246,12 @@ function Roster() {
                 </span>
               )}
             </Card.Title>
-            <Card.Text>Email: {detail.email}</Card.Text>
+            <Card.Text>
+              Email: {detail.email}<br/>
+              Position: {player.playerPosition || "N/A"}<br/>
+              Height: {player.height || "N/A"}<br/>
+              Weight: {player.weight ? `${player.weight} lbs` : "N/A"}
+            </Card.Text>
             <Button
               style={{ backgroundColor: selectedTeam?.teamColors?.[0] || 'gray' }}
               variant="primary"
@@ -206,7 +265,6 @@ function Roster() {
                   ⋮
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {/* Only show Remove User if this is not the current user */}
                   {player.userId !== currentUserId && (
                     <>
                       <Dropdown.Item onClick={() => removeUser(player.userId)}>
@@ -252,76 +310,29 @@ function Roster() {
           <button className="contactButton1">Contact Us</button>
         </div>
       </header>
-
       <strong className="homepage-headers">Your Team</strong>
-
       <div style={{ backgroundColor: 'whitesmoke' }}>
         {loading ? <p>Loading roster...</p> : renderRosterCards()}
       </div>
 
-      {/* Role Change Modal */}
+      {/* Role Change Modal for other users */}
       <Modal show={showChangeRoleModal} onHide={() => setShowChangeRoleModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Change User Role</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* If the current owner is changing his own role */}
-          {userToChangeRole === currentUserId && currentUserRole === "Owner" ? (
-            <>
-              <p>
-                As the current owner, you must select a new owner before changing your role.
-              </p>
-              <label htmlFor="newOwner">Select New Owner:</label>
-              <select
-                id="newOwner"
-                value={newOwnerCandidate}
-                onChange={(e) => setNewOwnerCandidate(e.target.value)}
-                style={{ marginLeft: '10px' }}
-              >
-                <option value="">-- Select a user --</option>
-                {players
-                  .filter(p => p.userId !== currentUserId)
-                  .map((p, idx) => {
-                    const detail = playerDetails[p.userId];
-                    if (!detail) return null;
-                    return (
-                      <option key={idx} value={p.userId}>
-                        {detail.fname} {detail.lname} ({p.role})
-                      </option>
-                    );
-                  })}
-              </select>
-              <br /><br />
-              <label htmlFor="newRole">Your New Role:</label>
-              <select
-                id="newRole"
-                value={roleToChange}
-                onChange={(e) => setRoleToChange(e.target.value)}
-                style={{ marginLeft: '10px' }}
-              >
-                {/* Do not include Owner as an option for yourself */}
-                <option value="Coach">Coach</option>
-                <option value="Player">Player</option>
-                <option value="Parent">Parent</option>
-              </select>
-            </>
-          ) : (
-            // For changing someone else's role, just show a dropdown
-            <>
-              <label htmlFor="newRole">Select New Role:</label>
-              <select
-                id="newRole"
-                value={roleToChange}
-                onChange={(e) => setRoleToChange(e.target.value)}
-                style={{ marginLeft: '10px' }}
-              >
-                <option value="Owner">Owner</option>
-                <option value="Coach">Coach</option>
-                <option value="Player">Player</option>
-                <option value="Parent">Parent</option>
-              </select>
-            </>
-          )}
+          <label htmlFor="newRole">Select New Role:</label>
+          <select
+            id="newRole"
+            value={roleToChange}
+            onChange={(e) => setRoleToChange(e.target.value)}
+            style={{ marginLeft: '10px' }}
+          >
+            <option value="Owner">Owner</option>
+            <option value="Coach">Coach</option>
+            <option value="Player">Player</option>
+            <option value="Parent">Parent</option>
+          </select>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowChangeRoleModal(false)}>
@@ -332,7 +343,79 @@ function Roster() {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* End Role Change Modal */}
+
+      {/* Edit User Info Modal */}
+      <Modal show={showEditUserModal} onHide={() => setShowEditUserModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit User Info</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <label>
+            Position:
+            <input
+              type="text"
+              value={editUserData.playerPosition}
+              onChange={(e) =>
+                setEditUserData({ ...editUserData, playerPosition: e.target.value })
+              }
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+          <br /><br />
+          <label>
+            Height:
+            <input
+              type="number"
+              placeholder="Feet"
+              value={editUserData.heightFeet || ""}
+              onChange={(e) =>
+                setEditUserData({ ...editUserData, heightFeet: e.target.value })
+              }
+              style={{ marginLeft: '10px', width: '60px' }}
+            />
+            <input
+              type="number"
+              placeholder="Inches"
+              value={editUserData.heightInches || ""}
+              onChange={(e) =>
+                setEditUserData({ ...editUserData, heightInches: e.target.value })
+              }
+              style={{ marginLeft: '10px', width: '60px' }}
+            />
+          </label>
+          <br /><br />
+          <label>
+            Weight (lbs):
+            <input
+              type="number"
+              value={editUserData.weight}
+              onChange={(e) =>
+                setEditUserData({ ...editUserData, weight: e.target.value })
+              }
+              style={{ marginLeft: '10px' }}
+            />
+          </label>
+          <br /><br />
+          <label>
+            Stats (JSON format):
+            <textarea
+              value={editUserData.playerStats}
+              onChange={(e) =>
+                setEditUserData({ ...editUserData, playerStats: e.target.value })
+              }
+              style={{ marginLeft: '10px', width: '100%' }}
+            />
+          </label>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditUserModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleEditUserSubmit}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <footer
         className="footer1"

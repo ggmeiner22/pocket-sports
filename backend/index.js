@@ -654,6 +654,23 @@ app.get('/drillbank/team/:teamId', async (req, res) => {
   });
   
 
+  app.put('/useronteams/:userId', async (req, res) => {
+    try {
+      const updatedUser = await UserOnTeamModel.findOneAndUpdate(
+        { userId: req.params.userId, teamId: req.body.teamId },
+        req.body,
+        { new: true }
+      );
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found on this team" });
+      }
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user info:", error);
+      res.status(500).json({ message: "Failed to update user info" });
+    }
+  });   
+
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });
