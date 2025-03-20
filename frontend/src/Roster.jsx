@@ -10,15 +10,20 @@ import axios from 'axios';
 function Roster() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [players, setPlayers] = useState([]); // Array of UserOnTeam documents
-  const [playerDetails, setPlayerDetails] = useState({}); // Optional extra info from Register
+  const [playerDetails, setPlayerDetails] = useState({}); // Extra info from Register (if any)
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Individual toggle states for extra info visibility (controlled by Owner)
+  const [showPosition, setShowPosition] = useState(true);
+  const [showHeight, setShowHeight] = useState(true);
+  const [showWeight, setShowWeight] = useState(true);
 
   // Role-change modal state (for non-self role changes)
   const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
   const [userToChangeRole, setUserToChangeRole] = useState(null);
   const [roleToChange, setRoleToChange] = useState("Player");
-  const [newOwnerCandidate, setNewOwnerCandidate] = useState(""); // For when the owner is changing his own role
+  const [newOwnerCandidate, setNewOwnerCandidate] = useState("");
 
   // Edit User Info modal state (available for all users)
   const [showEditUserModal, setShowEditUserModal] = useState(false);
@@ -34,7 +39,7 @@ function Roster() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // For header buttons
+  // Header buttons
   const [buttons, setButtons] = useState([
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
@@ -42,16 +47,55 @@ function Roster() {
     { path: "/goalspage", label: "Goals" }
   ]);
 
-  // Current user ID from localStorage
   const currentUserId = localStorage.getItem('userId');
 
+  // Load team from localStorage and fetch roster
   useEffect(() => {
     const storedTeamString = localStorage.getItem('selectedTeam');
     if (storedTeamString) {
-      setSelectedTeam(JSON.parse(storedTeamString));
+      const team = JSON.parse(storedTeamString);
+      setSelectedTeam(team);
     }
     getRoster();
   }, []);
+
+  // When selectedTeam is loaded, fetch its extra info visibility settings from the backend
+  useEffect(() => {
+    if (selectedTeam && selectedTeam._id) {
+      loadTeamSettings();
+    }
+  }, [selectedTeam]);
+
+  // Loads team settings (expects extraInfoVisibility field on team document)
+  const loadTeamSettings = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3001/teams/${selectedTeam._id}`);
+      const settings = response.data.extraInfoVisibility;
+      if (settings) {
+        setShowPosition(settings.showPosition);
+        setShowHeight(settings.showHeight);
+        setShowWeight(settings.showWeight);
+      }
+    } catch (error) {
+      console.error("Error loading team settings:", error);
+    }
+  };  
+
+  // Update team settings so that toggles persist for all users
+  const updateTeamSettings = async (newSettings) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/teams/${selectedTeam._id}/extraInfoVisibility`,
+        { extraInfoVisibility: newSettings }
+      );
+      // Update local state with response from backend
+      setShowPosition(response.data.extraInfoVisibility.showPosition);
+      setShowHeight(response.data.extraInfoVisibility.showHeight);
+      setShowWeight(response.data.extraInfoVisibility.showWeight);
+    } catch (error) {
+      console.error("Error updating team settings:", error);
+    }
+  };
 
   const getUserDetails = async (userId) => {
     try {
@@ -69,19 +113,15 @@ function Roster() {
       const storedTeamString = localStorage.getItem("selectedTeam");
       const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
       const storedTeamId = storedTeam ? storedTeam._id : null;
-
       if (!storedTeamId) {
         console.log("Team ID is missing");
         return;
       }
-
       const rosterRes = await axios.get('http://localhost:3001/useronteams', {
         headers: { teamId: storedTeamId },
       });
       const rosterData = rosterRes.data;
       setPlayers(rosterData);
-
-      // Determine current user's DB role from roster data
       const me = rosterData.find((p) => p.userId === currentUserId);
       if (me) {
         setCurrentUserRole(me.role);
@@ -94,8 +134,6 @@ function Roster() {
           });
         }
       }
-
-      // Optionally fetch additional user details from Register
       const detailPromises = rosterData.map((p) => getUserDetails(p.userId));
       const details = await Promise.all(detailPromises);
       const detailsMap = details.reduce((acc, userObj, idx) => {
@@ -118,15 +156,14 @@ function Roster() {
       });
       getRoster();
     } catch (error) {
-      console.error('Error removing user:', error);
-      alert('Failed to remove user. Please try again.');
+      console.error("Error removing user:", error);
+      alert("Failed to remove user. Please try again.");
     }
   };
 
   const openChangeRoleModal = (userId, currentRole) => {
     setUserToChangeRole(userId);
-    setRoleToChange(currentRole); // Initialize with current role
-    // If the owner is changing his own role, reset newOwnerCandidate
+    setRoleToChange(currentRole);
     if (userId === currentUserId) {
       setNewOwnerCandidate("");
     }
@@ -136,15 +173,10 @@ function Roster() {
   const handleChangeRoleSubmit = async () => {
     try {
       if (!selectedTeam || !userToChangeRole) return;
-  
-      // Disallow self role change
       if (userToChangeRole === currentUserId) {
         alert("You cannot change your own role.");
         return;
       }
-  
-      // If current user is Owner and changing someone else's role to Owner,
-      // transfer ownership: update target to Owner and current owner to Coach.
       if (currentUserRole === "Owner" && roleToChange === "Owner") {
         const responseNewOwner = await axios.put('http://localhost:3001/useronteams/role', {
           userId: userToChangeRole,
@@ -159,7 +191,6 @@ function Roster() {
         });
         console.log("Current owner's role changed to Coach:", responseCurrent.data);
       } else {
-        // For any other case, simply update the target user's role
         const response = await axios.put('http://localhost:3001/useronteams/role', {
           userId: userToChangeRole,
           teamId: selectedTeam._id,
@@ -175,13 +206,10 @@ function Roster() {
     }
   };
 
-  // Open Edit User Info modal (available for all users)
   const openEditUserModal = (userId) => {
-    // Find the user's info from the players array (UserOnTeam document)
     const userData = players.find(p => p.userId === userId);
     if (userData) {
       setUserToEdit(userId);
-      // Parse height (expected format: "5'11''")
       let heightFeet = "";
       let heightInches = "";
       if (userData.height) {
@@ -207,7 +235,6 @@ function Roster() {
   const handleEditUserSubmit = async () => {
     try {
       if (!userToEdit) return;
-      // Combine feet and inches into a height string
       const combinedHeight = `${editUserData.heightFeet}'${editUserData.heightInches}''`;
       const updatedData = {
         playerPosition: editUserData.playerPosition,
@@ -215,7 +242,6 @@ function Roster() {
         weight: editUserData.weight,
         playerStats: editUserData.playerStats ? JSON.parse(editUserData.playerStats) : []
       };
-      // Update the user info in the UserOnTeam document
       const response = await axios.put(`http://localhost:3001/useronteams/${userToEdit}`, {
         ...updatedData,
         teamId: selectedTeam._id
@@ -233,7 +259,6 @@ function Roster() {
     return players.map((player, index) => {
       const detail = playerDetails[player.userId];
       if (!detail) return null;
-
       return (
         <Card key={index} className="card-events">
           <Card.Header as="h5">{player.role}</Card.Header>
@@ -247,10 +272,14 @@ function Roster() {
               )}
             </Card.Title>
             <Card.Text>
-              Email: {detail.email}<br/>
-              Position: {player.playerPosition || "N/A"}<br/>
-              Height: {player.height || "N/A"}<br/>
-              Weight: {player.weight ? `${player.weight} lbs` : "N/A"}
+              Email: {detail.email}<br />
+              {player.role === "Player" && (
+                <>
+                  {showPosition && <>Position: {player.playerPosition || "N/A"}<br /></>}
+                  {showHeight && <>Height: {player.height || "N/A"}<br /></>}
+                  {showWeight && <>Weight: {player.weight ? `${player.weight} lbs` : "N/A"}<br /></>}
+                </>
+              )}
             </Card.Text>
             <Button
               style={{ backgroundColor: selectedTeam?.teamColors?.[0] || 'gray' }}
@@ -311,11 +340,68 @@ function Roster() {
         </div>
       </header>
       <strong className="homepage-headers">Your Team</strong>
+      {/* Owner-only toggles for extra info */}
+      {currentUserRole === "Owner" && (
+        <div style={{ margin: '10px', textAlign: 'center' }}>
+          <label>
+          <input
+            type="checkbox"
+            checked={showPosition}
+            onChange={(e) => {
+              const newVal = e.target.checked;
+              setShowPosition(newVal);
+              updateTeamSettings({ 
+                showPosition: newVal, 
+                showHeight, 
+                showWeight 
+              });
+            }}
+            style={{ marginRight: '5px' }}
+          />
+            Show Position
+          </label>
+          <label style={{ marginLeft: '10px' }}>
+          <input
+            type="checkbox"
+            checked={showHeight}
+            onChange={(e) => {
+              const newVal = e.target.checked;
+              setShowHeight(newVal);
+              updateTeamSettings({ 
+                showPosition, 
+                showHeight: newVal, 
+                showWeight 
+              });
+            }}
+            style={{ marginRight: '5px' }}
+          />
+          Show Height
+        </label>
+        <label style={{ marginLeft: '10px' }}>
+          <input
+            type="checkbox"
+            checked={showWeight}
+            onChange={(e) => {
+              const newVal = e.target.checked;
+              setShowWeight(newVal);
+              updateTeamSettings({ 
+                showPosition, 
+                showHeight, 
+                showWeight: newVal 
+              });
+            }}
+            style={{ marginRight: '5px' }}
+          />
+          Show Weight
+        </label>
+        </div>
+      )}
+
       <div style={{ backgroundColor: 'whitesmoke' }}>
         {loading ? <p>Loading roster...</p> : renderRosterCards()}
       </div>
 
-      {/* Role Change Modal for other users */}
+      {/* Role Change Modal */}
       <Modal show={showChangeRoleModal} onHide={() => setShowChangeRoleModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Change User Role</Modal.Title>
