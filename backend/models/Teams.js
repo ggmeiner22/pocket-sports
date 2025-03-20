@@ -7,6 +7,11 @@ const TeamsSchema = new mongoose.Schema({
     selectedSport: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Register', required: true },
     teamCode: { type: String, unique: true },
+    extraInfoVisibility: {
+        showPosition: { type: Boolean, default: true },
+        showHeight: { type: Boolean, default: true },
+        showWeight: { type: Boolean, default: true }
+      }
 });
 
 const TeamsModel = mongoose.model("teams", TeamsSchema);
