@@ -13,6 +13,7 @@ import Roster from './Roster';
 import Drills from './drills';
 import GoalsPage from './goals-page';
 import CalendarPage from './calendar';
+import PracticePlans from './practiceplans';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/verifycode" element={<Verify/>}/>
       <Route path="/roster" element={<Roster/>}/>
       <Route path="/drills" element={<Drills/>}/>
+      <Route path="/practiceplans" element={<PracticePlans/>}/>
       <Route path="/goalspage" element={<GoalsPage/>}/>
       <Route path="/homepage" element={<HomePage/>}/>
       <Route path="/calendarpage" element={<CalendarPage/>}/>

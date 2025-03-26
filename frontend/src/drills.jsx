@@ -34,7 +34,9 @@ function Drills() {
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
       { path: "/calendarpage", label: "Calendar" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/goalspage", label: "Goals" },
+      { path: "/drills", label: "Drills" },
+      { path: "/practiceplans", label: "Practice Plans" },
     ]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -160,9 +162,6 @@ function Drills() {
   
     setNewTag(""); // Clear input field after adding
   };
-  
-  
-  
   
   const removeTag = (tagToRemove) => {
     setDrillTags(drillTags.filter(tag => tag !== tagToRemove)); // Remove tag
