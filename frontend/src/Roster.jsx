@@ -125,7 +125,7 @@ function Roster() {
       const me = rosterData.find((p) => p.userId === currentUserId);
       if (me) {
         setCurrentUserRole(me.role);
-        if (me.role === "Owner") {
+        if (me.role === "Owner" || me.role === "Coach") {
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
