@@ -34,7 +34,8 @@ function Drills() {
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
       { path: "/calendarpage", label: "Calendar" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/goalspage", label: "Goals" },
+      { path: "/drills", label: "Drills"}
     ]);
   const navigate = useNavigate();
   const location = useLocation();

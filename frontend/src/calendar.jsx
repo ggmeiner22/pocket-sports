@@ -10,7 +10,7 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date()); // Selected date state
   const [showPopup, setShowPopup] = useState(false); // Popup state for event creation
   const [eventName, setEventName] = useState('');
-    const [loading, setLoading] = useState(false);  // Loading state
+  const [loading, setLoading] = useState(false);  // Loading state
   const [selectedCategory, setSelectedCategory] = useState('');
   const [players, setPlayers] = useState([]);
   const [feedback, setFeedback] = useState(''); // To store user feedback text
@@ -20,12 +20,13 @@ function CalendarPage() {
   const [drills, setDrills] = useState([]); // initialize drills as an empty array
   const [time, setTime] = useState('');
   const [playerDetails, setPlayerDetails] = useState({});
-  const [userId, setUserId] = useState(''); // userId state
+  //const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const storedRole = localStorage.getItem('role');
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [buttons, setButtons] = useState([
         { path: "/homepage", label: "Home" },
         { path: "/roster", label: "Roster" },
@@ -36,10 +37,44 @@ function CalendarPage() {
   const storedUserId = localStorage.getItem('userId');
   const storedTeam = localStorage.getItem('selectedTeam');
 
-
   const handleDrillChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
     setDrills(selectedOptions); 
+  };
+
+  // getDrillTab: checks the user's role and, if Owner, adds the "Drills" button.
+  const getDrillTab = async () => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
+        headers: { teamId: storedTeamId },
+      });
+      const rosterData = rosterRes.data;
+      // Use storedUserId here instead of undefined currentUserId
+      const me = rosterData.find((p) => p.userId === storedUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        //alert(`Your role is: ${me.role}`);  // for debugging only
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching roster:", error.response || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -60,6 +95,7 @@ function CalendarPage() {
       }
     getEvents(selectedDate); // Fetch events for the selected date
     getRoster();
+    getDrillTab();
   }, [selectedDate]);
 
   const getUserDetails = async (playerId) => {
