@@ -316,6 +316,21 @@ const updateGoalProgress = async () => {
                                     setShowEditPopup(true);
                                     
                                 }}>Update Progress</Button>
+
+                                <Button
+                                  variant="danger"
+                                  style={{ marginTop: '20px', marginLeft: '10px' }}
+                                  onClick={() => {
+                                    if (window.confirm("Are you sure you want to delete this goal?")) {
+                                      deleteGoal(goal._id);
+                                    }
+                                  }}
+                                >
+                                  Delete Goal
+                                </Button>
+
+
+
                             </Card.Body>
                         </Card>
                     ))
