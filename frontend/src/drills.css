@@ -87,3 +87,57 @@
     max-height: 100%;
     object-fit: cover;
   }
+
+  /* Increase the overall size of the modal if needed */
+.drill-modal .modal-dialog {
+  max-width: 90vw; /* or use a fixed width like 1000px */
+}
+
+/* Container that holds both the canvas and the form side-by-side */
+.drill-modal-content {
+  display: flex;
+  flex-wrap: wrap; /* Wrap on smaller screens */
+  gap: 20px;       /* Space between sections */
+}
+
+/* Left side: the canvas and button controls */
+.canvas-section {
+  flex: 1 1 300px;    /* Grow to fill space, minimum 300px wide */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Right side: form fields for drill name, tags, stats, etc. */
+.form-section {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Optional styling for inputs, tags, etc. */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-inputs, .stat-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.selected-tags, .selected-stats {
+  margin-top: 10px;
+}
+
+.selected-tags .tag, .selected-stats .stat {
+  background-color: #f2f2f2;
+  margin-right: 5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
