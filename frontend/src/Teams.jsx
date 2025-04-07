@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Teams.css';
 import axios from 'axios';
+import { useRef } from 'react';
 
 function TeamsPage() {
   const [showPopup, setShowPopup] = useState(false);
@@ -18,17 +19,62 @@ function TeamsPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   
-  const [userDetails, setUserDetails] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-  });
+  const [userDetails, setUserDetails] = useState(null);
+
 
   const navigate = useNavigate();
   const colors = ['#8b0000', '#006400', '#191970', '#ff8c00', '#daa520', '#663399',];
   const landing = () => {
     navigate('/');
   };
+
+  const fileInputRef = useRef();
+
+  const handleFileChange = async (e) => {
+    console.log("📂 File input triggered");
+    const file = e.target.files[0];
+    if (!file) return;
+    console.log("📁 File chosen:", file.name);
+  
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+  
+    const storedUserId = localStorage.getItem('userId');
+  
+    try {
+      const response = await fetch(`http://localhost:3001/upload-profile/${storedUserId}`, {
+        method: 'POST',
+        body: formData
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok && data.profilePicture) {
+        const fullPath = `http://localhost:3001${data.profilePicture}`;
+        // ✅ Update userDetails directly
+        setUserDetails((prev) => ({
+          ...prev,
+          profilePicture: fullPath
+        }));
+      } else {
+        console.error("Upload failed:", data.error);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  };
+  
+
+  // Handle profile modal visibility
+  const handleProfileClick = () => {
+    setShowProfileModal(true);
+  };
+
+  // Close the profile modal
+  const closeProfileModal = () => {
+    setShowProfileModal(false);
+  };
+  
 
   const login = () => {
     navigate('/login');
@@ -45,24 +91,6 @@ function TeamsPage() {
     navigate('/homepage');
   };
 
-
-  // Handle profile modal visibility
-  const handleProfileClick = () => {
-    setShowProfileModal(true);
-  };
-
-  // Close the profile modal
-  const closeProfileModal = () => {
-    setShowProfileModal(false);
-  };
-
-  // Handle file upload for the profile picture
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePicture(URL.createObjectURL(file));
-    }
-  };
 
   const logout = () => {
     localStorage.removeItem('authToken');
@@ -110,28 +138,42 @@ function TeamsPage() {
 
   const getUserDetails = () => {
     const storedUserId = localStorage.getItem('userId');
-
+  
     if (!storedUserId) {
       console.log('User ID is missing');
       return;
     }
-
+  
     fetch(`http://localhost:3001/registers/${storedUserId}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+      })
       .then((data) => {
+        const fullProfilePath = data.profilePicture
+          ? `http://localhost:3001${data.profilePicture}`
+          : null;
+  
         setUserDetails({
           firstName: data.fname,
           lastName: data.lname,
           email: data.email,
+          profilePicture: fullProfilePath
         });
+  
+        // If you’re still using a separate `profilePicture` state
+        if (fullProfilePath) {
+          setProfilePicture(fullProfilePath);
+        }
       })
       .catch((err) => {
         console.error('Error fetching user details:', err);
         alert('Failed to load user details. Please try again later.');
       });
-      console.log(localStorage.getItem("userId"));
-
   };
+  
 
 
   useEffect(() => {
@@ -344,7 +386,7 @@ function TeamsPage() {
             <div className="profile-info">
               <div className="profile-picture">
                 <img
-                  src={profilePicture || 'https://via.placeholder.com/150'}
+                  src={userDetails?.profilePicture || 'https://via.placeholder.com/150'}
                   alt="Profile"
                   className="profile-img"
                 />
@@ -352,6 +394,7 @@ function TeamsPage() {
                   type="file"
                   onChange={handleFileChange}
                   accept="image/*"
+                  ref={fileInputRef}
                   className="file-input"
                 />
               </div>
@@ -361,7 +404,7 @@ function TeamsPage() {
                 <p><strong>Email:</strong> {userDetails.email}</p>
               </div>
             </div>
-            <button onClick={closeProfileModal} className="close-btn">Close</button>
+            <button onClick={closeProfileModal} className="close-btn">Save</button>
           </div>
         </div>
       )}

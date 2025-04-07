@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt'); // Import bcrypt
@@ -19,10 +22,62 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static('uploads'));
+
 
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 const { ObjectId } = require('mongodb');
 
+const fs = require('fs');
+
+const uploadPath = 'uploads';
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+}
+
+
+// Storage engine for uploaded images
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  },
+});
+
+const upload = multer({ storage });
+
+app.post('/upload-profile/:userId', upload.single('profilePicture'), async (req, res) => {
+  console.log("🚀 Upload endpoint triggered");
+  console.log("📦 File received:", req.file);
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`;
+
+    const updatedUser = await RegisterModel.findByIdAndUpdate(
+      req.params.userId,
+      { profilePicture: filePath },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log("✅ Saved to MongoDB:", updatedUser); // DEBUG LOG
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: 'Failed to upload profile picture' });
+  }
+});
 
 const transporter = nodemailer.createTransport({
     host: 'smtp-relay.brevo.com',
@@ -44,9 +99,10 @@ const generateTeamCode = () => {
 };
 
 
+
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { fname, lname, email, password, password2 } = req.body;
+    const { fname, lname, email, password, password2, profilePicture} = req.body;
 
     try {
         // Check if the user already exists
@@ -442,8 +498,8 @@ app.get('/registers/:userId', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      const { fname, lname, email } = user;
-      res.json({ fname, lname, email });
+      const { fname, lname, email, profilePicture } = user;
+      res.json({ fname, lname, email, profilePicture });
     } catch (err) {
       console.error('Error fetching user details:', err);
       res.status(500).json({ message: 'Failed to load user details.' });

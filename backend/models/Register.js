@@ -8,6 +8,7 @@ const RegisterSchema = new mongoose.Schema({
     password2: String,
     verified: { type: Boolean, default: false },
     verifyCode: String,
+    profilePicture: { type: String },
     verifyExpiration: Date
 }, { collection: 'registers' });
 
