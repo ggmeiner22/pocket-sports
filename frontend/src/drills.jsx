@@ -330,6 +330,60 @@ function Drills() {
     setModalImage(null);
   }
 
+  const renderFieldSlide = () => {
+    if (!selectedTeam || !selectedTeam.selectedSport) return null;
+    
+    const sport = selectedTeam.selectedSport;
+    
+    switch (sport) {
+      case "Volleyball":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Volleyball Court</h2>
+              <img 
+                src="/Volleyball.jpg" 
+                alt="Volleyball Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      case "Lacrosse":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Lacrosse Field</h2>
+              <img 
+                src="/Lacrosse.jpg" 
+                alt="Lacrosse Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      case "Basketball":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Basketball Court</h2>
+              <img 
+                src="/Basketball.jpg" 
+                alt="Basketball Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Basketball.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      default:
+        return null;
+    }
+  };
+  
+
   return (
     <div className='App'>
       <header className="landing-page-header1">
@@ -361,24 +415,7 @@ function Drills() {
           className="field-slider"
           ref={swiperRef}
         >
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Volleyball Court</h2>
-              <img src="/Volleyball.jpg" alt="Volleyball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} />
-            </div>
-          </SwiperSlide>
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Lacrosse Field</h2>
-              <img src="/Lacrosse.jpg" alt="Lacrosse Field" className="field-image" onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} />
-            </div>
-          </SwiperSlide>
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Basketball Court</h2>
-              <img src="/Basketball.jpg" alt="Basketball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Basketball.jpg")} />
-            </div>
-          </SwiperSlide>
+          {renderFieldSlide()}
         </Swiper>
       </div>
 
