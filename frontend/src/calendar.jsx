@@ -32,6 +32,7 @@ function CalendarPage() {
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
         { path: "/goalspage", label: "Goals" },
+        
       ]);
 
   const storedUserId = localStorage.getItem('userId');

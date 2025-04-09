@@ -16,15 +16,12 @@ function HomePage() {
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
     { path: "/goalspage", label: "Goals" }
+   
   ]);
   const navigate = useNavigate();
   const location = useLocation();
   const [currentUserRole, setCurrentUserRole] = useState(null);
-  const [userDetails, setUserDetails] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-  });
+  const [userDetails, setUserDetails] = useState({});
 
   // Retrieve stored values from localStorage
   const storedUserId = localStorage.getItem('userId');
