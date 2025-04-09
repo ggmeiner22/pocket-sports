@@ -103,7 +103,7 @@ const generateTeamCode = () => {
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { fname, lname, email, password, password2, profilePicture} = req.body;
+    const { fname, lname, email, password, password2} = req.body;
 
     try {
         // Check if the user already exists
