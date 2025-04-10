@@ -10,6 +10,7 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date()); // Selected date state
   const [showPopup, setShowPopup] = useState(false); // Popup state for event creation
   const [eventName, setEventName] = useState('');
+  const [feedbackResponse, setFeedbackResponse] = useState('');
     const [loading, setLoading] = useState(false);  // Loading state
   const [selectedCategory, setSelectedCategory] = useState('');
   const [players, setPlayers] = useState([]);
@@ -20,6 +21,7 @@ function CalendarPage() {
   const [drills, setDrills] = useState([]); // initialize drills as an empty array
   const [time, setTime] = useState('');
   const [playerDetails, setPlayerDetails] = useState({});
+  const [practicePlans, setPracticePlans] = useState({});
   const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
   const navigate = useNavigate();
@@ -62,9 +64,25 @@ function CalendarPage() {
     getRoster();
   }, [selectedDate]);
 
+  useEffect(() => {
+    if (selectedDate) {
+      getEvents(selectedDate); // Fetch events for the selected date whenever it changes
+    }
+  }, [selectedDate]); // Dependency on selectedDate to re-fetch events when it changes
+
   const getUserDetails = async (playerId) => {
     try {
       const response = await axios.get(`http://localhost:3001/registers/${playerId}`);
+      return response.data;  // Return user details for a specific player
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return null;
+    }
+  };
+
+  const getPlanDetails = async (teamId) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/practiceplans/${teamId}`);
       return response.data;  // Return user details for a specific player
     } catch (error) {
       console.error('Error fetching user details:', error);
@@ -77,8 +95,8 @@ function CalendarPage() {
     try {
       const storedTeamString = localStorage.getItem("selectedTeam");
       const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
-      const storedTeamId = storedTeam?._id;
-
+      const storedTeamId = storedTeam ? storedTeam._id : null; // Access _id on the parsed object
+      console.log(storedTeamId);
       if (!storedTeamId) {
         console.log("Team ID is missing");
         return;
@@ -101,6 +119,16 @@ function CalendarPage() {
       }, {});
       
       setPlayerDetails(playerDetailsMap);  // Save details in state
+
+      const practicePlanPromises = response.data.map(plan => getPlanDetails(plan.teamId));  // Assuming `userId` is the field
+      const planDetails = await Promise.all(practicePlanPromises);
+
+      const planDetailsMap = details.reduce((acc, planDetails, idx) => {
+        acc[response.data[idx].teamId] = planDetails;
+        return acc;
+      }, {});
+      
+      setPracticePlans(planDetailsMap);  // Save details in state
     } catch (error) {
       console.error("Error fetching players:", error.response || error.message);
     } finally {
@@ -115,25 +143,64 @@ function CalendarPage() {
       }
     }, []);
 
+    const handleFeedbackSubmit = async (playerId, feedbackText) => {
+        const userId = localStorage.getItem('userId');
+        const newFeedback = {
+          teamId: selectedTeam?._id, // Ensure this is included
+          eventId: selectedEvent._id, 
+          playerId: playerId,
+          comment: feedbackText,
+        };
+    
+        axios.post('http://localhost:3001/feedback', newFeedback)
+          .then(() => {
+            setFeedback('');            
+          })
+          .catch((err) => {
+            console.log(err);
+            alert('Error creating feedback');
+          });
+    };
+    
+    
   // Fetch events for the selected date
   const getEvents = async (date) => {
     try {
       const storedUserId = localStorage.getItem('userId');
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeam ? storedTeam._id : null; // Access _id on the parsed object
+      console.log(storedTeamId);
       if (!storedUserId) {
         console.log("User ID is missing");
         return;
       }
-
-      const formattedDate = date.toDateString(); // Get the string representation of the date
+  
+      const formattedDate = date.toDateString();  // Get the string representation of the date
+  
+      // Check if storedTeam and storedTeam._id are valid before making the request
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;  // Exit early if the team ID is missing
+      }
+  
       const response = await axios.get('http://localhost:3001/events', {
         headers: {
-          userId: storedUserId,
-          teamName: teamName,
+          teamid: storedTeamId,  // Ensure the team ID is passed correctly
         },
       });
 
-      const eventsForDate = response.data.filter((event) => new Date(event.date).toDateString() === formattedDate);
-      console.log(eventsForDate);
+      console.log('API Response:', response.data);  // Log the full response data
+
+  
+      // Filter events that match the selected date
+      const eventsForDate = response.data.filter(event => {
+        console.log(new Date(event.date)); // This will print out the Date object for each event
+        return new Date(event.date).toDateString() === formattedDate &&
+               event.teamId === storedTeamId;  // Ensure it matches the team
+      });
+      console.log(formattedDate);
+      console.log("events for date:", eventsForDate);  // Log the events for the selected date
       // Update state with events for the selected date
       setEvents({
         ...events,
@@ -145,6 +212,38 @@ function CalendarPage() {
     }
   };
 
+  const getFeedback = async (playerId, eventId) => {
+    try {
+        const response = await axios.get(`http://localhost:3001/feedback/${playerId}/${eventId}`);
+        console.log("Feedback:", response.data.feedbacks);
+        return response.data.feedbacks; 
+    } catch (error) {
+        console.error("Error fetching feedback:", error.response?.data?.message || error.message);
+        return [];
+    }
+};
+
+// Example usage inside a button click or effect:
+const handleFetchFeedback = async (userId, event) => {
+  console.log("feedback:", userId);
+  console.log("feedback event", event);
+  
+  if (!event) {
+      console.log("Missing event or player selection.");
+      return;
+  }
+
+  const feedbacks = await getFeedback(userId, event);
+
+  // Ensure that feedbacks exist and there's at least one item
+  if (feedbacks.length > 0) {
+      setFeedbackResponse(feedbacks[1].comment);  // Assuming the first feedback has the comment
+      console.log("Fetched feedback:", feedbackResponse);
+  } else {
+      console.log("No feedback available.");
+  }
+};
+  
   // Handle date change on calendar
   const handleDateChange = (date) => {
     setSelectedDate(date); // Update selected date
@@ -156,7 +255,12 @@ function CalendarPage() {
   };
 
   const handleEventClick = (event) => {
-    setSelectedEvent(event);  // Set the clicked event's details
+    const userId = localStorage.getItem('userId');
+    setSelectedEvent((prevSelectedEvent) =>
+      prevSelectedEvent && prevSelectedEvent._id === event._id ? null : event
+    );
+      handleFetchFeedback(userId, event._id);
+    
   };
 
   // Handle form submission to create event
@@ -164,6 +268,7 @@ function CalendarPage() {
     e.preventDefault();
     const userId = localStorage.getItem('userId');
     const newEvent = {
+      teamId: selectedTeam?._id, // Ensure this is included
       teamName,
       selectedCategory,
       eventName,
@@ -171,6 +276,7 @@ function CalendarPage() {
       eventLocation,
       drills,
       time,
+      feedback,
       createdBy: userId,
     };
 
@@ -182,6 +288,7 @@ function CalendarPage() {
         setEventLocation('');
         setDrills('');
         setTime('');
+        setFeedback('');
 
         // Update the events state for the selected date
         const formattedDate = selectedDate.toDateString();
@@ -276,7 +383,7 @@ function CalendarPage() {
                 <form onSubmit={handleSubmit}>
                 <label style={{color: 'black'}}>
                   Category: 
-                  <select style={{backgroundColor: 'whitesmoke', color: 'black'}}value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
+                  <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}}value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
                     <option value="" disabled>Select a category</option>
                     <option>Practice</option>
                     <option>Game</option>
@@ -299,11 +406,19 @@ function CalendarPage() {
                     />
                   </label>
                   <label style={{ color: 'black' }}>
-                Drills:
-                <select style={{backgroundColor: 'whitesmoke', color: 'black'}}value={drills} onChange={(e) => setDrills(e.target.value)} required>
-                    <option value="" disabled>Select a category</option>
-                    <option>Sprints</option>
-                    <option>Other Drill</option>
+                Practice Plans:
+                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}}value={drills} onChange={(e) => setDrills(e.target.value)} required>
+                <option value="" disabled>Select a practice plan</option>
+                    {practicePlans.map((plan) => {
+                      const planInfo = practicePlans[plan.practicePlanId]; 
+                      return planInfo ? (
+                        <option key={plan.practicePlanId} value={plan.practicePlanId}>
+                          {plan.planName}
+                        </option>
+                      ) : (
+                        <option key={plan.practicePlanId} disabled>No details available</option>
+                      );
+                    })}
                   </select>
                 </label>
                   <label style={{color: 'black'}}>Time:
@@ -363,50 +478,57 @@ function CalendarPage() {
         
         )}
 
-{selectedEvent && storedRole == "Owner" && (
-    <div className = "event-details" style={{marginTop:"4vh"}}>
-      <div className="event-details-card">
+{selectedEvent && storedRole === "Owner" && (
+  <div className="event-details" style={{ marginTop: "4vh" }}>
+    <div className="event-details-card">
       <h4>Give Feedback on Game/Practice</h4>
-        <label style={{ color: 'black', marginTop: '2vh' }}>
-          <select
-            style={{ backgroundColor: 'whitesmoke', color: 'black' }}
-            value={selectedPlayer} 
-            onChange={(e) => setSelectedPlayer(e.target.value)} 
-            required
-          >
-            <option value="" disabled>Select a player</option>
-            {players.map((player) => {
-              const playerInfo = playerDetails[player.userId]; // Access player details using userId
-              // Check if playerInfo exists before rendering the option
-              return playerInfo ? (
-                <option key={player.userId} value={player.userId}>
-                  {playerInfo.fname} {playerInfo.lname}
-                </option>
-              ) : (
-                <option key={player.userId} disabled>No details available</option> // Optional fallback if playerInfo is not available
-              );
-            })}
-          </select>
-        </label>
-      </div>
-
-      <div className = "drills-container">
-        <input 
-          type="text" 
-          id="feedbackTextBox" 
-          placeholder="Enter your feedback here" 
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)} 
-        />
-        <button 
-          onClick={() => handleFeedbackSubmit(selectedPlayer, feedback)} 
-          style={{ backgroundColor: 'black', color: 'white', marginTop: '4vh' }}
+      <label style={{ color: 'black', marginTop: '2vh' }}>
+        <select
+          style={{ backgroundColor: 'whitesmoke', color: 'black' }}
+          value={selectedPlayer} 
+          onChange={(e) => setSelectedPlayer(e.target.value)} 
+          required
         >
-          Submit Feedback
-        </button>
-      </div>
+          <option value="" disabled>Select a player</option>
+          {players.map((player) => {
+            const playerInfo = playerDetails[player.userId]; 
+            return playerInfo ? (
+              <option key={player.userId} value={player.userId}>
+                {playerInfo.fname} {playerInfo.lname}
+              </option>
+            ) : (
+              <option key={player.userId} disabled>No details available</option>
+            );
+          })}
+        </select>
+      </label>
+
+      {/* Feedback Input */}
+      <textarea
+        style={{ width: "100%", height: "80px", marginTop: "10px" }}
+        placeholder="Enter feedback here..."
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+      ></textarea>
+
+      {/* Submit Button */}
+      <button 
+        style={{ marginTop: "10px", backgroundColor: "black", color: "white" }}
+        onClick={() => handleFeedbackSubmit(selectedPlayer, feedback)}
+      >
+        Submit Feedback
+      </button>
     </div>
-  )}
+  </div>
+)}
+{selectedEvent && storedRole === "Player" && (
+  <div className="event-details" style={{ marginTop: "4vh" }}>
+    <div className="event-details-card">
+      <h4>Feedback on Game/Practice</h4>
+      <p>{feedbackResponse}</p> {/* Display feedback */}
+    </div>
+  </div>
+)}
       </div>
   
 

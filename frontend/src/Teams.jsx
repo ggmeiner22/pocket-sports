@@ -237,10 +237,10 @@ function TeamsPage() {
       <div className="bodyHome">
         {showPopup && (
           <div className="popup-top">
-            <div className="popup-content">
+            <div className="popup-content" style={{ backgroundColor: 'black', color:'white'}}>
               <h2>Create a New Team</h2>
               <form onSubmit={handleSubmit}>
-                <label>
+                <label style={{ color:'white'}}>
                   Team Name:
                   <input
                     type="text"
@@ -251,7 +251,7 @@ function TeamsPage() {
                   />
                 </label>
                 <br />
-                <label>
+                <label style={{ color:'white'}}>
                   Organization Name:
                   <input
                     type="text"
@@ -262,7 +262,7 @@ function TeamsPage() {
                   />
                 </label>
                 <br />
-                <label>
+                <label style={{ color:'white'}}>
                   Team Colors:
                   <div style={{ display: 'flex', gap: '10px' }}>
                 {colors.map((color) => (
@@ -282,7 +282,7 @@ function TeamsPage() {
                 ))}
               </div>
                 </label>
-                <label>
+                <label style={{ color:'white'}}>
                   Intended Sport:
                   <select value={selectedSport} onChange={(e) => setSelectedSport(e.target.value)} required>
                     <option value="" disabled>Select a sport</option>

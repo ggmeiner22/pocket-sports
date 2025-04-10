@@ -275,6 +275,7 @@ const updateGoalProgress = async () => {
                   <select
                     value={newGoal.targetNumber}
                     onChange={(e) => setNewGoal({ ...newGoal, targetNumber: Number(e.target.value) })}
+                    style={{backgroundColor: 'whitesmoke', color: 'black', borderColor: 'black', width: "calc(100% - 30px)"}}
                   >
                     {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
                       <option key={num} value={num}>{num}</option>

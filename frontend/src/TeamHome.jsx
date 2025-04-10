@@ -164,6 +164,10 @@ const renderGoalCards = () => {
   const getEvents = async () => {
     try {
       const storedUserId = localStorage.getItem('userId');
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeam ? storedTeam._id : null; // Access _id on the parsed object
+      console.log(storedTeamId);
       if (!storedUserId) {
         console.log("User ID is missing");
         return;
@@ -171,8 +175,7 @@ const renderGoalCards = () => {
   
       const response = await axios.get('http://localhost:3001/events', {
         headers: {
-          userId: storedUserId,
-          teamName: teamName,
+          teamid: storedTeamId,  // Ensure the team ID is passed correctly
         },
       });
   
