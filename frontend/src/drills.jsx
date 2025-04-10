@@ -330,15 +330,15 @@ function Drills() {
     setModalImage(null);
   }
 
-  const renderFieldSlide = () => {
-    if (!selectedTeam || !selectedTeam.selectedSport) return null;
+  const renderFieldSlides = () => {
+    if (!selectedTeam || !selectedTeam.selectedSport) return [];
     
     const sport = selectedTeam.selectedSport;
     
     switch (sport) {
       case "Volleyball":
-        return (
-          <SwiperSlide>
+        return [
+          <SwiperSlide key="volley1">
             <div className="field-container">
               <h2>Volleyball Court</h2>
               <img 
@@ -348,11 +348,22 @@ function Drills() {
                 onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} 
               />
             </div>
+          </SwiperSlide>,
+          <SwiperSlide key="volley2">
+            <div className="field-container">
+              <h2>Halfcourt Volleyball</h2>
+              <img 
+                src="/VolleyballHalf.jpg" 
+                alt="Halfcourt Volleyball" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/VolleyballHalf.jpg")} 
+              />
+            </div>
           </SwiperSlide>
-        );
+        ];
       case "Lacrosse":
-        return (
-          <SwiperSlide>
+        return [
+          <SwiperSlide key="lacrosse1">
             <div className="field-container">
               <h2>Lacrosse Field</h2>
               <img 
@@ -362,26 +373,70 @@ function Drills() {
                 onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} 
               />
             </div>
+          </SwiperSlide>,
+          <SwiperSlide key="lacrosse2">
+            <div className="field-container">
+              <h2>Half field</h2>
+              <img 
+                src="/LacrosseHalf.jpg" 
+                alt="Half field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/LacrosseHalf.jpg")} 
+              />
+            </div>
+          </SwiperSlide>,
+          <SwiperSlide key="lacrosse3">
+            <div className="field-container">
+              <h2>Full Women's Field</h2>
+              <img 
+                src="/wlaxField.jpg" 
+                alt="Full Women's Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/wlaxField.jpg")} 
+              />
+            </div>
+          </SwiperSlide>,
+          <SwiperSlide key="lacrosse4">
+            <div className="field-container">
+              <h2>Half Women's Field</h2>
+              <img 
+                src="/wlaxHalf.jpg" 
+                alt="Half Women's Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/wlaxHalf.jpg")} 
+              />
+            </div>
           </SwiperSlide>
-        );
+        ];
       case "Basketball":
-        return (
-          <SwiperSlide>
+        return [
+          <SwiperSlide key="basketball1">
             <div className="field-container">
               <h2>Basketball Court</h2>
               <img 
                 src="/Basketball.jpg" 
-                alt="Basketball Field" 
+                alt="Basketball Court" 
                 className="field-image" 
                 onClick={() => handleDrillLayoutClick("/Basketball.jpg")} 
               />
             </div>
+          </SwiperSlide>,
+          <SwiperSlide key="basketball2">
+            <div className="field-container">
+              <h2>Alternate Basketball Layout</h2>
+              <img 
+                src="/BasketballHalf.jpg" 
+                alt="Basketball Halfcourt" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/BasketballHalf.jpg")} 
+              />
+            </div>
           </SwiperSlide>
-        );
+        ];
       default:
-        return null;
+        return [];
     }
-  };
+  };  
   
 
   return (
@@ -417,7 +472,7 @@ function Drills() {
           className="field-slider"
           ref={swiperRef}
         >
-          {renderFieldSlide()}
+          {renderFieldSlides()}
         </Swiper>
       </div>
 
