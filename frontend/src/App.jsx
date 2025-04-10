@@ -13,6 +13,9 @@ import Roster from './Roster';
 import Drills from './drills';
 import GoalsPage from './goals-page';
 import CalendarPage from './calendar';
+import ContactPage from './ContactPage';
+
+
 
 function App() {
   return (
@@ -28,6 +31,7 @@ function App() {
       <Route path="/goalspage" element={<GoalsPage/>}/>
       <Route path="/homepage" element={<HomePage/>}/>
       <Route path="/calendarpage" element={<CalendarPage/>}/>
+      <Route path="/contactpage" element={<ContactPage/>}/>
     </Routes>
   );
 }

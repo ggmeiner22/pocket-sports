@@ -14,6 +14,7 @@ const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
 const DrillStatsModel = require('./models/DrillStats');
+const Contact = require('./models/Contact');
 
 const nodemailer = require('nodemailer')
 const bodyParser = require('body-parser');
@@ -31,11 +32,32 @@ const { ObjectId } = require('mongodb');
 
 const fs = require('fs');
 
+
+// POST route for contact form
+app.post('/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    const contactEntry = new Contact({ name, email, message });
+    await contactEntry.save();
+
+    console.log('📨 New contact form submission:', contactEntry);
+
+    res.status(200).json({ message: 'Contact form submitted successfully.' });
+  } catch (error) {
+    console.error('❌ Error submitting contact form:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 const uploadPath = 'uploads';
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath);
 }
-
 
 // Storage engine for uploaded images
 const storage = multer.diskStorage({
