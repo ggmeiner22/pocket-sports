@@ -348,7 +348,9 @@ function Drills() {
           ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+          <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+            Contact Us
+          </button>
         </div>
       </header>
 

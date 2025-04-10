@@ -32,6 +32,9 @@ function CalendarPage() {
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
         { path: "/goalspage", label: "Goals" },
+
+    
+        
         
       ]);
 
@@ -284,7 +287,10 @@ function CalendarPage() {
             ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+        <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+          Contact Us
+        </button>
+
         </div>
       </header>
 
