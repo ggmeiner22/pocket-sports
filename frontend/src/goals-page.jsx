@@ -143,6 +143,7 @@ function GoalsPage() {
             createdBy: userId,
             teamId: selectedTeam._id,
             targetNumber: newGoal.targetNumber ?? 1,
+            isTeamGoal: newGoal.isTeamGoal || false,
         });
 
         
@@ -293,6 +294,18 @@ const updateGoalProgress = async () => {
                     ))}
                   </select>
 
+                  {(currentUserRole === "Owner" || currentUserRole === "Coach") && (
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={newGoal.isTeamGoal || false}
+                        onChange={(e) => setNewGoal({ ...newGoal, isTeamGoal: e.target.checked })}
+                      />
+                      Make this a team-wide goal
+                    </label>
+                  )}
+
+
                 <div className="button-container-2">
                   <button onClick={createGoal} style={{backgroundColor: selectedTeam?.teamColors?.[0], color: 'white'}} >Save Goal</button>
                   <button onClick={() => setShowPopup(false)} style={{backgroundColor: selectedTeam?.teamColors?.[0], color: 'white'}} >Cancel</button>
@@ -306,7 +319,19 @@ const updateGoalProgress = async () => {
                     goals.map((goal) => (
                       
                         <Card key={goal._id} className='card-events'>
-                            <Card.Header as='h5'>{goal.title}</Card.Header>
+                            <Card.Header as='h5'>
+                              {goal.title}
+                              {goal.isTeamGoal && (
+                                <span style={{ 
+                                  marginLeft: '10px', 
+                                  fontSize: '0.8rem', 
+                                  color: 'green', 
+                                  fontWeight: 'bold' 
+                                }}>
+                                  (Team Goal)
+                                </span>
+                              )}
+                            </Card.Header>
                             <Card.Body>
                                 <Card.Text>Description: {goal.description}</Card.Text>
                                 <Card.Text>Goal: {goal.targetNumber}</Card.Text>
