@@ -367,13 +367,18 @@ function TeamsPage() {
         <ul className="teamsList">
           {teams.map((team, index) => (
             <li key={index}>
-            <div>
-            <div className="teamName"><strong>{team.teamName}</strong></div>
-            <div className="organizationName">{team.organizationName}</div>
-            <p> Code: <strong style={{ color: "white" }}>{team.teamCode}</strong></p>
-            </div>
-            <button className= 'topButtons' onClick={() => goToTeamPage(team)}>Select Team + </button>
-          </li>
+              <div>
+                <div className="teamName"><strong>{team.teamName}</strong></div>
+                <div className="organizationName">{team.organizationName}</div>
+                {/* Display the selected sport */}
+                <div className="selectedSport">
+                  Sport: <strong>{team.selectedSport}</strong>
+                </div>
+              </div>
+              <button className='topButtons' onClick={() => goToTeamPage(team)}>
+                Select Team +
+              </button>
+            </li>
           ))}
         </ul>
       </div>

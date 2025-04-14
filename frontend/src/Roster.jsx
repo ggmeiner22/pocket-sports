@@ -299,9 +299,16 @@ function Roster() {
       if (!detail) return;
   
       const card = (
-        <Card key={index} className="card-events">
+        <Card key={index} className="card-events user-card">
           <Card.Header as="h5">{player.role}</Card.Header>
           <Card.Body>
+            <div className="profile-container">
+              <img 
+                src={detail.profilePicture ? `http://localhost:3001${detail.profilePicture}` : '/generic.jpg'}
+                alt={`${detail.fname}'s profile`}
+                className="profile-picture"
+              />
+            </div>
             <Card.Title>
               {detail.fname} {detail.lname}
               {player.userId === currentUserId && (
@@ -320,15 +327,8 @@ function Roster() {
                 </>
               )}
             </Card.Text>
-            <Button
-              style={{ backgroundColor: selectedTeam?.teamColors?.[0] || 'gray' }}
-              variant="primary"
-              onClick={() => navigate("/calendarpage")}
-            >
-              Learn More
-            </Button>
             {currentUserRole === "Owner" && (
-              <Dropdown style={{ display: 'inline-block', marginLeft: '10px' }}>
+              <Dropdown className="three-dots-dropdown">
                 <Dropdown.Toggle variant="secondary" id={`dropdown-${index}`}>
                   ⋮
                 </Dropdown.Toggle>
@@ -398,6 +398,11 @@ function Roster() {
       </header>
       <strong className="homepage-headers">Your Team</strong>
 
+      {(currentUserRole === "Owner" || currentUserRole === "Coach") && selectedTeam && selectedTeam.teamCode && (
+        <div className="team-join-code">
+          Join Code: <strong>{selectedTeam.teamCode}</strong>
+        </div>
+      )}
 
       <div className="filter-container">
         <div className="filter-popup-toggle" onClick={() => setFilterVisible(!filterVisible)}>

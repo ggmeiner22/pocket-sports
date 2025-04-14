@@ -5,6 +5,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { Modal, Button } from 'react-bootstrap';
 import TeamsPage from './Teams';
+import { Link } from 'react-router-dom';
+
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -131,7 +134,16 @@ function Login() {
           <button type="button" className="register-button" onClick={goToRegister}>
             Register
           </button>
+
+          <button
+              type="button"
+              className="forgot-password-button"
+              onClick={() => navigate('/forgot-password')}
+            >
+              Forgot Password?
+          </button>
         </form>
+
 
         {/* Confirmation Modal */}
         <Modal show={showModal} onHide={handleClose}>

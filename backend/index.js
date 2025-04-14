@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
 
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -31,6 +32,97 @@ mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useU
 const { ObjectId } = require('mongodb');
 
 const fs = require('fs');
+
+
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const user = await RegisterModel.findOne({ email });
+
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetToken = token;
+  user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+  try {
+    await user.save();
+    console.log("✅ Token saved to user:", user.email);
+    console.log("🧾 Token:", user.resetToken);
+    console.log("🕒 Expiry:", user.resetTokenExpiry);
+  } catch (err) {
+    console.error("❌ Error saving token:", err);
+    return res.status(500).json({ message: "Failed to save reset token" });
+  }
+
+
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'pocketsportsteam@gmail.com',
+      pass: 'rbgxybnicgzxngic'
+    }
+  });
+
+  const resetLink = `http://localhost:5173/reset-password/${token}`;
+
+  await transporter.sendMail({
+    from: 'PocketSports <pocketsportsteam@gmail.com>',
+    to: user.email,
+    subject: 'Reset Your PocketSports Password',
+    html: `
+      <p>Hello ${user.fname},</p>
+      <p>You requested to reset your password. Click the link below to set a new password:</p>
+      <p><a href="${resetLink}">${resetLink}</a></p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you didn’t request this, you can safely ignore this email.</p>
+    `
+  });
+  
+
+  res.status(200).json({ message: 'Password reset email sent.' });
+});
+
+
+app.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  console.log("🔐 Reset Token Received:", token);
+  console.log("🔑 New Password:", password);
+
+  const user = await RegisterModel.findOne({
+    resetToken: token,
+    resetTokenExpiry: { $gt: Date.now() }
+  });
+
+  console.log("User found:", user);
+
+  if (!user) {
+    console.log("❌ No user found with that reset token.");
+    return res.status(400).json({ message: 'Invalid or expired token (user not found)' });
+  }
+
+  console.log("🕒 Stored expiry:", user.resetTokenExpiry);
+  console.log("⏳ Current time:", Date.now());
+
+  if (Date.now() > user.resetTokenExpiry) {
+    console.log("❌ Token has expired.");
+    return res.status(400).json({ message: 'Token expired' });
+  }
+  
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  user.password = hashedPassword;
+  user.resetToken = undefined;
+  user.resetTokenExpiry = undefined;
+  await user.save();
+
+  res.status(200).json({ message: 'Password reset successful.' });
+});
+
+
+
 
 
 // POST route for contact form
@@ -360,13 +452,14 @@ app.delete('/events/:eventId', async (req, res) => {
     }
 
     try {
-        const { title, description, createdBy, teamId, targetNumber } = req.body;
+        const { title, description, createdBy, teamId, targetNumber, isTeamGoal} = req.body;
         const newGoal = new GoalModel({ 
             title,
             description, 
             createdBy, 
             teamId, 
-            targetNumber
+            targetNumber,
+            isTeamGoal: isTeamGoal ?? false
         });
         
         await newGoal.save();
