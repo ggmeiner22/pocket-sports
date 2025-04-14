@@ -419,6 +419,28 @@ app.put('/goals/:goalId', async (req, res) => {
     }
 });
 
+app.put('/events/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+  const { selectedCategory, eventName, eventLocation, drills, time  } = req.body;
+
+  try {
+      const updatedEvent = await EventsModel.findByIdAndUpdate(
+          eventId, { 
+              selectedCategory, 
+              eventName, 
+              eventLocation, 
+              drills, 
+              time
+          }, 
+          { new: true}
+      );
+      res.status(200).json(updatedEvent);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating event" });
+  }
+});
+
 app.delete('/goals/:goalId', async (req, res) => {
     const { goalId } = req.params;
 
