@@ -394,31 +394,35 @@ function TeamsPage() {
 
         <ul className="teamsList">
           {teams.map((team, index) => (
-            <li key={index}>
-              <div>
+            <li key={index} onClick={() => goToTeamPage(team)} className="team-card">
+              <div className="team-info">
                 <div className="teamName"><strong>{team.teamName}</strong></div>
                 <div className="organizationName">{team.organizationName}</div>
-                {/* Display the selected sport */}
                 <div className="selectedSport">
                   Sport: <strong>{team.selectedSport}</strong>
                 </div>
               </div>
-              <button className='topButtons' onClick={() => goToTeamPage(team)}>
-                Select Team +
-              </button>
-
-              <button
-                className="delete-team-x"
-                onClick={() => handleDeleteTeam(team._id, team.createdBy)}
-                title="Delete team"
-              >
-                ❌
-              </button>
-
-
-              
-
-
+              <div className="team-actions">
+                <button
+                  className="topButtons"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToTeamPage(team);
+                  }}
+                >
+                  Select Team +
+                </button>
+                <button
+                  className="delete-team-x"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTeam(team._id, team.createdBy);
+                  }}
+                  title="Delete team"
+                >
+                  ❌
+                </button>
+              </div>
             </li>
           ))}
         </ul>
