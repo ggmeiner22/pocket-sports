@@ -274,12 +274,6 @@ app.post('/teams', async (req, res) => {
     const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
 
     try {
-        // Check if the team already exists
-        const existingTeam = await TeamsModel.findOne({ teamName: teamName, organizationName: organizationName });
-        if (existingTeam) {
-            return res.status(400).json("Team already exists");
-        }
-
         const teamCode = generateTeamCode()
         // Create and save the new team in MongoDB
         const newTeam = new TeamsModel({
