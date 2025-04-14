@@ -160,3 +160,29 @@ flex: 1;
 min-width: 250px;
 margin: 10px 0;
 }
+
+/* Make the entire card a positioning container */
+.user-card {
+  position: relative;
+}
+
+/* Position the three-dots dropdown button */
+.three-dots-dropdown {
+  position: absolute;
+  top: 10px;      /* Adjust as needed for vertical positioning */
+  right: 15px;    /* Adjust as needed for horizontal positioning */
+}
+
+.profile-container {
+  margin-bottom: 10px;
+}
+
+.profile-picture {
+  width: 50px;       /* Adjust as needed */
+  height: 50px;      /* Adjust as needed */
+  object-fit: cover;
+  border-radius: 50%; /* Makes the image circular */
+  margin-right: 10px;
+  border: 2px solid black; /* Optional: to give a border around the photo */
+}
+
