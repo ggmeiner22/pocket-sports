@@ -160,3 +160,16 @@ flex: 1;
 min-width: 250px;
 margin: 10px 0;
 }
+
+/* Make the entire card a positioning container */
+.user-card {
+  position: relative;
+}
+
+/* Position the three-dots dropdown button */
+.three-dots-dropdown {
+  position: absolute;
+  top: 10px;      /* Adjust as needed for vertical positioning */
+  right: 15px;    /* Adjust as needed for horizontal positioning */
+}
+

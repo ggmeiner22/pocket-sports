@@ -280,7 +280,7 @@ function Roster() {
       if (!detail) return;
   
       const card = (
-        <Card key={index} className="card-events">
+        <Card key={index} className="card-events user-card">
           <Card.Header as="h5">{player.role}</Card.Header>
           <Card.Body>
             <Card.Title>
@@ -301,15 +301,8 @@ function Roster() {
                 </>
               )}
             </Card.Text>
-            <Button
-              style={{ backgroundColor: selectedTeam?.teamColors?.[0] || 'gray' }}
-              variant="primary"
-              onClick={() => navigate("/calendarpage")}
-            >
-              Learn More
-            </Button>
             {currentUserRole === "Owner" && (
-              <Dropdown style={{ display: 'inline-block', marginLeft: '10px' }}>
+              <Dropdown className="three-dots-dropdown">
                 <Dropdown.Toggle variant="secondary" id={`dropdown-${index}`}>
                   ⋮
                 </Dropdown.Toggle>
