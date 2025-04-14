@@ -12,11 +12,6 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as fabric from 'fabric';
 
-// Import field images
-import VolleyballField from '/Volleyball.jpg';
-import LacrosseField from '/Lacrosse.jpg';
-import BasketballField from '/Basketball.jpg';
-
 function Drills() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [drillBank, addToDrillBank] = useState([]);
@@ -34,12 +29,18 @@ function Drills() {
       { path: "/homepage", label: "Home" },
       { path: "/roster", label: "Roster" },
       { path: "/calendarpage", label: "Calendar" },
-      { path: "/goalspage", label: "Goals" }
+      { path: "/goalspage", label: "Goals" },
+      { path: "/drills", label: "Drills"}
     ]);
   const navigate = useNavigate();
   const location = useLocation();
   const swiperRef = useRef(null);
   const [isDrillMenuOpen, setIsDrillMenuOpen] = useState(false);
+  const [allStats, setAllStats] = useState([]); // All available stats
+  const [drillStats, setDrillStats] = useState([]); // Selected stats for this drill
+  const [newStat, setNewStat] = useState(""); // Input value for new stat
+  const [dropdownStat, setDropdownStat] = useState("");
+  const [inputStat, setInputStat] = useState("");
 
   const getSport = (selectedTeam) => {
     axios.get('http://localhost:3001/teamsport/:teamId', { teamId: selectedTeam })
@@ -57,25 +58,7 @@ function Drills() {
       const activeSlide = swiperRef.current.swiper.slides[activeIndex];
       const imgSrc = activeSlide.querySelector('img').src;
       console.log("Active Slide:", imgSrc);
-  
-      setModalImage(imgSrc);
-  
-      // FETCH TAGS FOR THIS TEAM
-      if (selectedTeam && selectedTeam._id) {
-        axios.get(`http://localhost:3001/drilltags/team/${selectedTeam._id}`)
-          .then(response => {
-            console.log("Fetched tags:", response.data);  // Debug
-            setAllTags(response.data);                    // Store in state
-            setShowModal(true);                           // Finally, open modal
-          })
-          .catch(err => {
-            console.error("Error fetching tags:", err);
-            setShowModal(true); // Still open the modal, but no tags
-          });
-      } else {
-        // If no team is selected for some reason, just open the modal
-        setShowModal(true);
-      }
+      handleDrillLayoutClick(imgSrc)
     }
   };
   
@@ -89,6 +72,13 @@ function Drills() {
         .catch(err => {
           console.error("Error fetching tags in useEffect:", err);
         });
+        axios.get(`http://localhost:3001/drillStats/team/${selectedTeam._id}`)
+        .then(response => {
+          setAllStats(response.data);
+        })
+        .catch(err => {
+          console.error("Error fetching drill stats:", err);
+        });
     }
   }, [selectedTeam, showModal]);
   
@@ -98,12 +88,16 @@ function Drills() {
         const pdf = new jsPDF('landscape');
         pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); // Adjust dimensions as needed
         const pdfBase64 = pdf.output('datauristring');
+        
+        // Map drillStats array (assumed to be an array of stat objects) to an array of ObjectIds.
+        const statsToSave = drillStats.map(stat => stat._id);
 
         axios.post('http://localhost:3001/drillbank', { 
             pdfB64: pdfBase64, 
             teamId: selectedTeam._id, 
             drillName: drillName, 
-            tags: drillTags
+            tags: drillTags,
+            stats: statsToSave
         })
         .then(result => {
             console.log("Success:", result);
@@ -112,9 +106,8 @@ function Drills() {
             setShowModal(false);        // Close the modal
             setDrillName("");           // Clear drill name
             setDrillTags([]);           // Clear selected drill tags
+            setDrillStats([]);
             setNewTag("");              // Clear the manual tag input
-            setIsDrillMenuOpen(false);  // Close menu (if applicable)
-            setShowModal(false);        // Close the modal after saving
             // Optionally, clear the canvas (if needed)
             if (canvas) {
               canvas.clear();
@@ -126,14 +119,11 @@ function Drills() {
     });
   };
 
-
-
   const handleTagSelection = async (tag) => {
     if (!tag || !selectedTeam) return; // Ensure the tag and team are valid
-  
+
     try {
       const response = await axios.get(`http://localhost:3001/drilltags/${tag}`);
-      
       if (response.data.exists) {
         console.log("Tag already exists in the database:", tag);
       } else {
@@ -143,7 +133,7 @@ function Drills() {
         // Update allTags with the new tag
         setAllTags((prevTags) => [...prevTags, tag]);
       }
-  
+
       // Add to selected tags if not already present
       setDrillTags((prevTags) => {
         if (!prevTags.includes(tag)) {
@@ -153,16 +143,45 @@ function Drills() {
         }
         return prevTags;
       });
-  
     } catch (err) {
       console.error("Error checking or creating tag:", err);
     }
-  
     setNewTag(""); // Clear input field after adding
   };
+
+  const handleStatSelection = async (stat) => {
+    if (!stat || !selectedTeam) return; // Ensure the stat and team are valid
+    try {
+      const response = await axios.get(`http://localhost:3001/drillStats/${stat}`);
+
+      if (response.data.exists) {
+        console.log("Stat already exists in the database:", stat);
+      } else {
+        // If the stat does not exist, create a new one
+        const result = await axios.post('http://localhost:3001/drillStats', { statName: stat, teamId: selectedTeam._id });
+        console.log("Stat created successfully:", result.data);
+        // Update allStats with the new Stat
+        setAllStats((prevStats) => [...prevStats, stat]);
+      }
+
+      // Add to selected stats if not already present
+      setDrillStats((prevStats) => {
+        if (!prevStats.includes(stat)) {
+          const newStat = [...prevStats, stat];
+          console.log("Updated drillTags:", newStat);
+          return newStat;
+        }
+        return prevStats;
+      });
+    } catch (err) {
+      console.error("Error checking or creating stat:", err);
+    }
+    setNewStat(""); // Clear input field after adding
+  };
   
-  
-  
+  const removeStat = (statIdToRemove) => {
+    setDrillStats(prev => prev.filter(stat => stat._id !== statIdToRemove));
+  };
   
   const removeTag = (tagToRemove) => {
     setDrillTags(drillTags.filter(tag => tag !== tagToRemove)); // Remove tag
@@ -177,7 +196,6 @@ function Drills() {
         console.error('Error fetching drills:', err);
       });
   };
-
   
   const fetchDrillPdf = (drillName) => {
     axios.get(`http://localhost:3001/drillbank/${drillName}`, { responseType: 'blob' })
@@ -312,6 +330,60 @@ function Drills() {
     setModalImage(null);
   }
 
+  const renderFieldSlide = () => {
+    if (!selectedTeam || !selectedTeam.selectedSport) return null;
+    
+    const sport = selectedTeam.selectedSport;
+    
+    switch (sport) {
+      case "Volleyball":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Volleyball Court</h2>
+              <img 
+                src="/Volleyball.jpg" 
+                alt="Volleyball Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      case "Lacrosse":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Lacrosse Field</h2>
+              <img 
+                src="/Lacrosse.jpg" 
+                alt="Lacrosse Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      case "Basketball":
+        return (
+          <SwiperSlide>
+            <div className="field-container">
+              <h2>Basketball Court</h2>
+              <img 
+                src="/Basketball.jpg" 
+                alt="Basketball Field" 
+                className="field-image" 
+                onClick={() => handleDrillLayoutClick("/Basketball.jpg")} 
+              />
+            </div>
+          </SwiperSlide>
+        );
+      default:
+        return null;
+    }
+  };
+  
+
   return (
     <div className='App'>
       <header className="landing-page-header1">
@@ -330,7 +402,9 @@ function Drills() {
           ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+          <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+            Contact Us
+          </button>
         </div>
       </header>
 
@@ -343,98 +417,178 @@ function Drills() {
           className="field-slider"
           ref={swiperRef}
         >
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Volleyball Court</h2>
-              <img src="/Volleyball.jpg" alt="Volleyball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Volleyball.jpg")} />
-            </div>
-          </SwiperSlide>
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Lacrosse Field</h2>
-              <img src="/Lacrosse.jpg" alt="Lacrosse Field" className="field-image" onClick={() => handleDrillLayoutClick("/Lacrosse.jpg")} />
-            </div>
-          </SwiperSlide>
-          <SwiperSlide>
-            <div className="field-container">
-              <h2>Basketball Court</h2>
-              <img src="/Basketball.jpg" alt="Basketball Field" className="field-image" onClick={() => handleDrillLayoutClick("/Basketball.jpg")} />
-            </div>
-          </SwiperSlide>
+          {renderFieldSlide()}
         </Swiper>
       </div>
 
-      <Modal show={showModal} onHide={closeModal} dialogClassName="modal-dialog">
-        <Modal.Body className="modal-content">
-          <canvas id="practiceCanvas" ref={canvasRef} width="500" height="400"></canvas>
-          <div className='dragNdrop'>
-            <Button onClick={() => addDraggableElement("O", "blue")}>Add O</Button>
-            <Button onClick={() => addDraggableElement("X", "red")}>Add X</Button>
-            <Button onClick={() => addDraggableElement("→", "black")}>Add →</Button>
+      <Modal 
+        show={showModal} 
+        onHide={closeModal} 
+        size="lg"  // or "xl" if you want an even wider modal
+        dialogClassName="drill-modal" // custom class for additional styling
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Create Drill</Modal.Title>
+        </Modal.Header>
+      
+        <Modal.Body>
+          {/* Use a container that can flex or grid */}
+          <div className="drill-modal-content">
+      
+            {/* Left side: the canvas and draggable element controls */}
+            <div className="canvas-section">
+              <canvas id="practiceCanvas" ref={canvasRef} width="900" height="500"></canvas>
+              <div className='dragNdrop'>
+                <Button onClick={() => addDraggableElement("O", "blue")}>Add O</Button>
+                <Button onClick={() => addDraggableElement("X", "red")}>Add X</Button>
+                <Button onClick={() => addDraggableElement("→", "black")}>Add →</Button>
+              </div>
+              <Button onClick={deleteSelectedElement} className='deleteElement'>Delete Selected</Button>
+            </div>
+      
+            {/* Right side: the form inputs for drill name, tags, and stats */}
+            <div className="form-section">
+              {/* Drill Name */}
+              <div className="form-group">
+                <label htmlFor="drillName">Drill Name:</label>
+                <input
+                  type="text"
+                  placeholder="Enter the drill's name"
+                  id="drillName"
+                  className="form-control"
+                  value={drillName}
+                  onChange={(e) => setDrillName(e.target.value)}
+                />
+              </div>
+              {/* Drill Tags */}
+              <div className="form-group">
+                <label htmlFor="drillTags" style={{ color: 'black' }}>Drill Tags:</label>
+                <div className="tag-inputs">
+                  <select onChange={(e) => setDropdownTag(e.target.value)} value={dropdownTag}>
+                    <option value="">-- Select an Existing Tag --</option>
+                    {allTags.length > 0 ? (
+                      allTags.map((tag, index) => (
+                        <option key={index} value={tag}>{tag}</option>
+                      ))
+                    ) : (
+                      <option disabled>No tags found</option>
+                    )}
+                  </select>
+      
+                  <input
+                    type="text"
+                    placeholder="Enter a new tag"
+                    value={inputTag}
+                    onChange={(e) => setInputTag(e.target.value)}
+                  />
+      
+                  <Button onClick={() => {
+                    const tagToAdd = dropdownTag || inputTag;
+                    handleTagSelection(tagToAdd);
+                    setDropdownTag("");
+                    setInputTag("");
+                  }}>
+                    Add Drill Tag
+                  </Button>
+                </div>
+                <div style={{ color: 'black' }} className="selected-tags">
+                  <h5 >Selected Tags:</h5>
+                  {drillTags.length > 0 ? (
+                    drillTags.map((tag, index) => (
+                      <span key={index} className="tag">
+                        {tag} <button onClick={() => removeTag(tag)}>x</button>
+                      </span>
+                    ))
+                  ) : (
+                    <p>No tags selected.</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Drill Stats */}
+              <div className="form-group">
+                <label htmlFor="drillStats" style={{ color: 'black' }}>Statistics:</label>
+                <div className="stat-inputs">
+                  <select
+                    onChange={(e) => setDropdownStat(e.target.value)}
+                    value={dropdownStat}
+                    style={{ color: 'white' }}
+                  >
+                    <option style={{ color: 'white' }} value="">-- Select an Existing Stat --</option>
+                    {allStats.length > 0 ? (
+                      allStats.map((stat, index) => (
+                        <option key={index} value={stat._id} style={{ color: 'white' }}>
+                          {stat.statName}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No stats found</option>
+                    )}
+                  </select>
+              
+                  <input
+                    type="text"
+                    placeholder="Enter a new stat"
+                    value={inputStat}
+                    onChange={(e) => setInputStat(e.target.value)}
+                    style={{ color: 'black' }}
+                  />
+              
+                  <Button onClick={async () => {
+                    // If a stat is selected from the dropdown, add it
+                    if (dropdownStat) {
+                      const selectedStatObj = allStats.find(s => s._id === dropdownStat);
+                      if (selectedStatObj) {
+                        setDrillStats(prev => {
+                          if (!prev.some(s => s._id === selectedStatObj._id)) {
+                            return [...prev, selectedStatObj];
+                          }
+                          return prev;
+                        });
+                      }
+                      setDropdownStat("");
+                    } else if (inputStat.trim()) {
+                      // If a new stat is typed in, create it
+                      try {
+                        const result = await axios.post('http://localhost:3001/drillStats', {
+                          statName: inputStat,
+                          teamId: selectedTeam._id
+                        });
+                        console.log("Stat created successfully:", result.data);
+                        // Assuming the backend returns the new stat object as result.data.stat
+                        const newStatObj = result.data.stat;
+                        setAllStats(prev => [...prev, newStatObj]);
+                        setDrillStats(prev => [...prev, newStatObj]);
+                      } catch (err) {
+                        console.error("Error creating new drill stat:", err);
+                      }
+                      setInputStat("");
+                    }
+                  }}>
+                    Add Drill Statistic
+                  </Button>
+                </div>
+                <div className="selected-stats" style={{ color: 'black' }}>
+                  <h5>Selected Stats:</h5>
+                  {drillStats.length > 0 ? (
+                    drillStats.map((stat, index) => (
+                      <span key={index} className="stat" style={{ marginRight: '5px' }}>
+                        {stat.statName} <button onClick={() => removeStat(stat._id)}>x</button>
+                      </span>
+                    ))
+                  ) : (
+                    <p>No statistics selected.</p>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
-          <Button onClick={deleteSelectedElement} className='deleteElement'>Delete Selected</Button>
         </Modal.Body>
-        <Modal.Footer className="modal-footer">
-          <div>
-            <label htmlFor="drillName">Drill Name:</label>
-            <input
-              type="text"
-              placeholder = "Enter the drill's name"
-              id="drillName"
-              value={drillName}
-              onChange={(e) => setDrillName(e.target.value)}
-            />
-          </div>
-
-          {/* Drill Tags Section */}
-          <div>
-            <label htmlFor="drillName" style={{ color: 'black' }}>Drill Name:</label>
-
-           {/* Dropdown for existing tags */}
-            <select onChange={(e) => setDropdownTag(e.target.value)} value={dropdownTag}>
-              <option value="">-- Select an Existing Tag --</option>
-              {allTags.length > 0 ? (
-                allTags.map((tag, index) => (
-                  <option key={index} value={tag}>{tag}</option>
-                ))
-              ) : (
-                <option disabled>No tags found</option>
-              )}
-            </select>
-
-            {/* Manual input for new tags */}
-            <input
-              type="text"
-              placeholder="Enter a new tag"
-              value={inputTag}
-              onChange={(e) => setInputTag(e.target.value)}
-            />
-
-            <Button onClick={() => {const tagToAdd = dropdownTag || inputTag;
-              handleTagSelection(tagToAdd);
-              setDropdownTag(""); // Optionally clear the dropdown selection
-              setInputTag("");    // Clear the manual input
-              }}>Add Drill Tag
-            </Button>
-          </div>
-
-          {/* Display added tags */}
-          <div>
-            <h4 style={{ color: 'black' }}>Selected Tags:</h4>
-            {drillTags.length > 0 ? (
-              drillTags.map((tag, index) => (
-                <span key={index} className="tag" style={{ color: 'black', marginRight: '5px' }}>
-                  {tag} <button onClick={() => removeTag(tag)}>x</button>
-                </span>
-              ))
-            ) : (
-              <p style={{ color: 'black' }}>No tags selected.</p>
-            )}
-          </div>
-
-         <Button onClick={saveDrill}> Save Drill</Button>
-         <Button variant='secondary' onClick={closeModal}>Close</Button>
-         
+      
+        <Modal.Footer>
+          <Button onClick={saveDrill} variant="primary">Save Drill</Button>
+          <Button variant='secondary' onClick={closeModal}>Close</Button>
         </Modal.Footer>
       </Modal>
       <p>Choose a template then click the image or the button below to get started!</p>

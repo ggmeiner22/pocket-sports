@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Modal from 'react-bootstrap/Modal';
 import axios from 'axios';
+//import { Dropdown, Form } from 'react-bootstrap';
 
 function Roster() {
   const [selectedTeam, setSelectedTeam] = useState(null);
@@ -18,6 +19,16 @@ function Roster() {
   const [showPosition, setShowPosition] = useState(true);
   const [showHeight, setShowHeight] = useState(true);
   const [showWeight, setShowWeight] = useState(true);
+
+  //const [filterShowPosition, setFilterShowPosition] = useState(true);
+  //const [filterShowHeight, setFilterShowHeight] = useState(true);
+  //const [filterShowWeight, setFilterShowWeight] = useState(true);
+
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("All"); // All, Coach, Player
+
+
+
 
   // Role-change modal state (for non-self role changes)
   const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
@@ -44,7 +55,10 @@ function Roster() {
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
-    { path: "/goalspage", label: "Goals" }
+    { path: "/goalspage", label: "Goals" },
+  
+
+    
   ]);
 
   const currentUserId = localStorage.getItem('userId');
@@ -275,10 +289,16 @@ function Roster() {
   };
 
   const renderRosterCards = () => {
-    return players.map((player, index) => {
+    const coaches = [];
+    const playersList = [];
+  
+    players.forEach((player, index) => {
+      if (roleFilter !== "All" && player.role !== roleFilter) return;
+
       const detail = playerDetails[player.userId];
-      if (!detail) return null;
-      return (
+      if (!detail) return;
+  
+      const card = (
         <Card key={index} className="card-events">
           <Card.Header as="h5">{player.role}</Card.Header>
           <Card.Body>
@@ -332,10 +352,26 @@ function Roster() {
           </Card.Body>
         </Card>
       );
+  
+      if (["Owner", "Coach"].includes(player.role)) {
+        coaches.push(card);
+      } else {
+        playersList.push(card);
+      }
     });
+
+    return (
+      <>
+        <div className="role-divider">Coaches</div>
+        {coaches}
+        <div className="role-divider">Players</div>
+        {playersList}
+      </>
+    );
   };
 
   return (
+    
     <div style={{ backgroundColor: 'whitesmoke' }} className="App">
       <header className="landing-page-header1">
         <div className="logo">
@@ -355,66 +391,61 @@ function Roster() {
           ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+        <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+          Contact Us
+        </button>
         </div>
       </header>
       <strong className="homepage-headers">Your Team</strong>
-      {/* Owner-only toggles for extra info */}
-      {currentUserRole === "Owner" && (
-        <div style={{ margin: '10px', textAlign: 'center' }}>
-          <label>
-          <input
-            type="checkbox"
-            checked={showPosition}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowPosition(newVal);
-              updateTeamSettings({ 
-                showPosition: newVal, 
-                showHeight, 
-                showWeight 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-            Show Position
-          </label>
-          <label style={{ marginLeft: '10px' }}>
-          <input
-            type="checkbox"
-            checked={showHeight}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowHeight(newVal);
-              updateTeamSettings({ 
-                showPosition, 
-                showHeight: newVal, 
-                showWeight 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-          Show Height
-        </label>
-        <label style={{ marginLeft: '10px' }}>
-          <input
-            type="checkbox"
-            checked={showWeight}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowWeight(newVal);
-              updateTeamSettings({ 
-                showPosition, 
-                showHeight, 
-                showWeight: newVal 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-          Show Weight
-        </label>
+
+
+      <div className="filter-container">
+        <div className="filter-popup-toggle" onClick={() => setFilterVisible(!filterVisible)}>
+          ⚙️ Filters
         </div>
-      )}
+      </div>
+        {filterVisible && (
+          <div className="filter-popup">
+             <div style={{ textAlign: "center", fontSize: "18px", fontWeight: "bold", marginBottom: "10px" }}>
+            <strong>Filter Roster</strong><br />
+            </div>
+            <label>
+              Role:
+              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                <option value="All">All</option>
+                <option value="Player">Players</option>
+              </select>
+            </label>
+            <hr />
+            <label>
+              <input type="checkbox" checked={showPosition}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowPosition(newVal);
+                  updateTeamSettings({ showPosition: newVal, showHeight, showWeight });
+                }} /> Show Position
+            </label><br />
+            <label>
+              <input type="checkbox" checked={showHeight}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowHeight(newVal);
+                  updateTeamSettings({ showPosition, showHeight: newVal, showWeight });
+                }} /> Show Height
+            </label><br />
+            <label>
+              <input type="checkbox" checked={showWeight}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowWeight(newVal);
+                  updateTeamSettings({ showPosition, showHeight, showWeight: newVal });
+                }} /> Show Weight
+            </label>
+          </div>
+          )}
+      
+     
+  
 
       <div style={{ backgroundColor: 'whitesmoke' }}>
         {loading ? <p>Loading roster...</p> : renderRosterCards()}

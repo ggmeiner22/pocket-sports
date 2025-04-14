@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt'); // Import bcrypt
@@ -10,7 +13,9 @@ const DrillTagModel = require('./models/DrillTags')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
-const FeedbackModel = require('./models/feedback');
+const FeedbackModel = require('./models/feedback');const DrillStatsModel = require('./models/DrillStats');
+const Contact = require('./models/Contact');
+
 const nodemailer = require('nodemailer')
 const bodyParser = require('body-parser');
 
@@ -19,10 +24,83 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static('uploads'));
+
 
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 const { ObjectId } = require('mongodb');
 
+const fs = require('fs');
+
+
+// POST route for contact form
+app.post('/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    const contactEntry = new Contact({ name, email, message });
+    await contactEntry.save();
+
+    console.log('📨 New contact form submission:', contactEntry);
+
+    res.status(200).json({ message: 'Contact form submitted successfully.' });
+  } catch (error) {
+    console.error('❌ Error submitting contact form:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+const uploadPath = 'uploads';
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+}
+
+// Storage engine for uploaded images
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  },
+});
+
+const upload = multer({ storage });
+
+app.post('/upload-profile/:userId', upload.single('profilePicture'), async (req, res) => {
+  console.log("🚀 Upload endpoint triggered");
+  console.log("📦 File received:", req.file);
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`;
+
+    const updatedUser = await RegisterModel.findByIdAndUpdate(
+      req.params.userId,
+      { profilePicture: filePath },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log("✅ Saved to MongoDB:", updatedUser); // DEBUG LOG
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: 'Failed to upload profile picture' });
+  }
+});
 
 const transporter = nodemailer.createTransport({
     host: 'smtp-relay.brevo.com',
@@ -47,7 +125,7 @@ const generateTeamCode = () => {
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { fname, lname, email, password, password2 } = req.body;
+    const { fname, lname, email, password, password2} = req.body;
 
     try {
         // Check if the user already exists
@@ -358,8 +436,6 @@ app.delete('/goals/:goalId', async (req, res) => {
 });
 
 
-
-
 // Get teams for a user
 app.get('/teams', async (req, res) => {
     console.log("Headers received:", req.headers);
@@ -547,8 +623,8 @@ app.get('/registers/:userId', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      const { fname, lname, email } = user;
-      res.json({ fname, lname, email });
+      const { fname, lname, email, profilePicture } = user;
+      res.json({ fname, lname, email, profilePicture });
     } catch (err) {
       console.error('Error fetching user details:', err);
       res.status(500).json({ message: 'Failed to load user details.' });
@@ -575,32 +651,28 @@ app.get('/registers/:userId', async (req, res) => {
 
 // });
 
-  app.post('/drilltags', async (req, res) => {
-    const { tagName, teamId } = req.body;
-
-    if (!tagName || !teamId) {
-        return res.status(400).json({ message: "Tag name and team ID are required." });
+app.post('/drilltags', async (req, res) => {
+  const { tagName, teamId } = req.body;
+  if (!tagName || !teamId) {
+      return res.status(400).json({ message: "Tag name and team ID are required." });
+  }
+  try {
+    let tag = await DrillTagModel.findOne({ tagName, teamId });
+    if (!tag) {
+      tag = await DrillTagModel.create({ tagName, teamId });
     }
-
-    try {
-        let tag = await DrillTagModel.findOne({ tagName, teamId });
-
-        if (!tag) {
-            tag = await DrillTagModel.create({ tagName, teamId });
-        }
-
-        res.status(201).json({ message: "Tag created successfully", tag });
-    } catch (err) {
-        console.error("Error creating tag:", err);
-        res.status(500).json({ message: "Failed to create tag." });
-    }
+    res.status(201).json({ message: "Tag created successfully", tag });
+  } catch (err) {
+    console.error("Error creating tag:", err);
+    res.status(500).json({ message: "Failed to create tag." });
+  }
 });
 
 app.get('/drilltags/:tag', async (req, res) => {
     const { tag } = req.params;
     const existingTag = await DrillTagModel.findOne({ tagName: tag });
     res.json({ exists: !!existingTag });
-  });
+});
 
 // Fetch tags for a specific team
 app.get('/drilltags/team/:teamId', async (req, res) => {
@@ -613,59 +685,58 @@ app.get('/drilltags/team/:teamId', async (req, res) => {
       console.error("Error fetching tags:", error);
       res.status(500).json({ message: "Failed to fetch drill tags" });
     }
-  });
-
-
-app.post('/drillbank', async (req, res) => {
-    const { pdfB64, teamId, drillName, tags } = req.body;
-
-    if (!pdfB64 || !teamId || !drillName) {
-        return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
-    }
-
-    try {
-        let tagIds = [];
-
-        if (tags && tags.length > 0) {
-            for (let tagName of tags) {
-                let tag = await DrillTagModel.findOne({ tagName, teamId });
-
-                if (!tag) {
-                    tag = await DrillTagModel.create({ tagName, teamId });
-                }
-
-                tagIds.push(tag._id);
-            }
-        }
-
-        await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds });
-
-        res.status(201).json({ message: "Drill saved successfully", tagIds });
-    } catch (err) {
-        console.error("Error saving drill:", err);
-        res.status(500).json({ message: "Failed to save drill" });
-    }
 });
 
 
-/*app.post('/drillbank', async (req, res) => {
-    const { pdfB64, teamId, drillName, tags } = req.body;
+app.post('/drillbank', async (req, res) => {
+  const { pdfB64, teamId, drillName, tags, stats } = req.body;
 
-    console.log('Received data:', {teamId, drillName }); // Log received data
+  if (!pdfB64 || !teamId || !drillName) {
+    return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
+  }
 
-    if (!pdfB64 || !teamId || !drillName) {
-        return res.status(400).json({ message: 'pdf, teamId, and drillName are required.' });
+  try {
+    let tagIds = [];
+    if (tags && tags.length > 0) {
+      for (let tagName of tags) {
+        let tag = await DrillTagModel.findOne({ tagName, teamId });
+        if (!tag) {
+          tag = await DrillTagModel.create({ tagName, teamId });
+        }
+        tagIds.push(tag._id);
+      }
     }
-    try {
-        await DrillBankModel.create({ drillName: drillName, pdfB64: pdfB64, teamId: teamId, tags: tags || [] });
-        res.status(201).json("Practice plan saved to drill bank successfully");
-    } catch (err) {
-        console.error(err);
-        res.status(500).json(err);
-    }
-});*/
 
-app.get('/drillbank/team/:teamId', async (req, res) => {
+    let statIds = [];
+    if (stats && stats.length > 0) {
+      for (let statItem of stats) {
+        // If the statItem is an object with _id, assume it's already a stat object.
+        if (typeof statItem === 'object' && statItem._id) {
+          statIds.push(statItem._id);
+        } else if (typeof statItem === 'string') {
+          // Otherwise, assume statItem is a stat name. Try to find it.
+          let statDoc = await DrillStatsModel.findOne({ statName: statItem, teamId });
+          if (!statDoc) {
+            // Create if not found.
+            statDoc = await DrillStatsModel.create({ statName: statItem, teamId });
+          }
+          statIds.push(statDoc._id);
+        }
+      }
+    }
+
+    await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds, stats: statIds });
+
+    res.status(201).json({ message: "Drill saved successfully", tagIds, statIds });
+  } catch (err) {
+    console.error("Error saving drill:", err);
+    res.status(500).json({ message: "Failed to save drill" });
+  }
+});
+
+
+
+  app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
   
     try {
@@ -806,7 +877,43 @@ app.get('/drillbank/team/:teamId', async (req, res) => {
     }
   });
   
+  app.post('/drillStats', async (req, res) => {
+    const { statName, teamId } = req.body;
+    if (!statName || !teamId) {
+        return res.status(400).json({ message: "Stat name and team ID are required." });
+    }
 
+    try {
+        let stat = await DrillStatsModel.findOne({ statName, teamId });
+
+        if (!stat) {
+            stat = await DrillStatsModel.create({ statName, teamId });
+        }
+
+        res.status(201).json({ message: "Stat created successfully", stat });
+    } catch (err) {
+        console.error("Error creating stat:", err);
+        res.status(500).json({ message: "Failed to create stat." });
+    }
+  });
+
+  app.get('/drillStats/:stat', async (req, res) => {
+    const { stat } = req.params;
+    const existingStat = await DrillStatsModel.findOne({ statName: stat });
+    res.json({ exists: !!existingStat });
+  });
+  
+  app.get('/drillStats/team/:teamId', async (req, res) => {
+    try {
+      // Find all DrillStats documents matching the teamId
+      const drillStats = await DrillStatsModel.find({ teamId: req.params.teamId }).select('_id statName');
+      res.status(200).json(drillStats);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch drill stats." });
+    }
+  });
+  
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });

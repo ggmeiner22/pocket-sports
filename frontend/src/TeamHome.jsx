@@ -9,21 +9,24 @@ import axios from 'axios';
 
 function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState(null);
-    const [teamName, setTeamName] = useState('');
-    const [events, setEvents] = useState({});
+  const [teamName, setTeamName] = useState('');
+  const [events, setEvents] = useState({});
   const [buttons, setButtons] = useState([
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
     { path: "/goalspage", label: "Goals" }
+   
   ]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [userDetails, setUserDetails] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-  });
+  const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [userDetails, setUserDetails] = useState({});
+
+  // Retrieve stored values from localStorage
+  const storedUserId = localStorage.getItem('userId');
+  const storedTeamString = localStorage.getItem('selectedTeam');
+  const storedRole = localStorage.getItem('role');
 
   const getUserDetails = () => {
     const storedUserId = localStorage.getItem('userId');
@@ -32,6 +35,7 @@ function HomePage() {
       console.log('User ID is missing');
       return;
     }
+    getDrillTab()
 
     fetch(`http://localhost:3001/registers/${storedUserId}`)
       .then((response) => response.json())
@@ -48,37 +52,51 @@ function HomePage() {
       });
   };
 
+  // getDrillTab checks the user's role from the roster
+  const getDrillTab = async () => {
+    try {
+      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
+        headers: { teamId: storedTeamId },
+      });
+      const rosterData = rosterRes.data;
+      // Use storedUserId from localStorage
+      const me = rosterData.find((p) => p.userId === storedUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        //alert(`Your role is: ${me.role}`);  // For debugging
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching roster:", error.response || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // On mount, load team info, user details, events, and update header buttons using getDrillTab
   useEffect(() => {
-    // Retrieve the selected team and role from localStorage
-    const storedTeam = localStorage.getItem('selectedTeam');
-    const storedRole = localStorage.getItem('role');
-    if (storedTeam) {
-      setTeamName(storedTeam);
+    if (storedTeamString) {
+      setTeamName(storedTeamString);
+      setSelectedTeam(JSON.parse(storedTeamString));
     }
     getUserDetails();
-    getEvents(); 
-
-    
-    console.log("Stored role:", storedRole); // Check role in localStorage
-
-    if (storedTeam) {
-      setSelectedTeam(JSON.parse(storedTeam)); // Update selected team if available
-    }
-
-    if (storedRole === "Owner") {
-      setButtons((prevButtons) => {
-        // Prevent adding the button twice
-        if (!prevButtons.some(button => button.path === "/drills")) {
-          return [
-            ...prevButtons,
-            { path: "/drills", label: "Drills" }
-          ];
-        }
-        return prevButtons;
-      });
-    }
-
-  }, []); 
+    getEvents();
+    // Call getDrillTab to update header buttons based on the user's role
+    getDrillTab();
+  }, []);
 
   const [goals, setGoals] = useState([]);
   useEffect(() => {
@@ -294,7 +312,9 @@ const renderGoalCards = () => {
           ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+        <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+          Contact Us
+        </button>
         </div>
       </header>
       <div style={{backgroundColor: selectedTeam?.teamColors?.[0] || 'white'}}>

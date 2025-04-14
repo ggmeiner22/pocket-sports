@@ -63,6 +63,49 @@ text-align: center;
 justify-content: center;
 }
 
+.filter-container {
+    position: relative; 
+    display: flex;
+    justify-content: flex-end; 
+    width: 100%;
+    padding-right: 30px;      
+    margin-top: 0px
+}
+  
+
+.filter-popup-toggle {
+    position: relative;
+    background: black;
+    color: white;
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1000;
+    width: fit-content;
+}
+  
+.filter-popup {
+    position: fixed;            
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    background: whitesmoke;
+    border: 2px solid black;
+    padding: 20px;
+    width: 300px;
+    z-index: 1001;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    color: black;
+  }
+
+.filter-popup strong{
+    text-align: center;
+}
+  
+  
+  
 
 .homepage-headers {
 text-align: left;
@@ -70,6 +113,18 @@ margin-left: 50px;
 width: 100vw;
 margin-top: 40px;
 }
+
+.role-divider {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px auto 10px auto;  /* tighter top/bottom, centered left/right */
+    padding-bottom: 5px;          /* less height on underline area */
+    border-bottom: 2px solid black;
+    color: #333;
+    width: 90%;                   /* makes the divider bar wide */
+    text-align: left;
+  }
+  
 
 .card-events {
 width: 90vw;

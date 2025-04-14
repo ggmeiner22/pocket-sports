@@ -9,39 +9,84 @@ function CalendarPage() {
   const [events, setEvents] = useState({}); // Stores events per date
   const [selectedDate, setSelectedDate] = useState(new Date()); // Selected date state
   const [showPopup, setShowPopup] = useState(false); // Popup state for event creation
+  const [showEditPopup, setShowEditPopup] = useState(false); // Popup state for event creation
   const [eventName, setEventName] = useState('');
+  const [eventUpdatedName, setEventUpdatedName] = useState('');
   const [feedbackResponse, setFeedbackResponse] = useState('');
     const [loading, setLoading] = useState(false);  // Loading state
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [updatedCategory, setUpdatedCategory] = useState('');
   const [players, setPlayers] = useState([]);
   const [feedback, setFeedback] = useState(''); // To store user feedback text
   const [eventLocation, setEventLocation] = useState('');
+  const [eventUpdateLocation, setEventUpdateLocation] = useState('');
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(''); // Rename this state to better reflect its purpose, such as `selectedPlayerId`.
   const [drills, setDrills] = useState([]); // initialize drills as an empty array
   const [time, setTime] = useState('');
+  const [updatedtime, setUpdatedTime] = useState('');
   const [playerDetails, setPlayerDetails] = useState({});
   const [practicePlans, setPracticePlans] = useState({});
+  const [updatepracticePlans, setUpdatePracticePlans] = useState({});
   const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const storedRole = localStorage.getItem('role');
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [buttons, setButtons] = useState([
         { path: "/homepage", label: "Home" },
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
         { path: "/goalspage", label: "Goals" },
+
+    
+        
+        
       ]);
 
   const storedUserId = localStorage.getItem('userId');
   const storedTeam = localStorage.getItem('selectedTeam');
 
-
   const handleDrillChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
     setDrills(selectedOptions); 
+  };
+
+  // getDrillTab: checks the user's role and, if Owner, adds the "Drills" button.
+  const getDrillTab = async () => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
+        headers: { teamId: storedTeamId },
+      });
+      const rosterData = rosterRes.data;
+      // Use storedUserId here instead of undefined currentUserId
+      const me = rosterData.find((p) => p.userId === storedUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        //alert(`Your role is: ${me.role}`);  // for debugging only
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching roster:", error.response || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -62,6 +107,7 @@ function CalendarPage() {
       }
     getEvents(selectedDate); // Fetch events for the selected date
     getRoster();
+    getDrillTab();
   }, [selectedDate]);
 
   useEffect(() => {
@@ -87,6 +133,40 @@ function CalendarPage() {
     } catch (error) {
       console.error('Error fetching user details:', error);
       return null;
+    }
+  };
+
+  const updateEvent = async () => {
+  
+    try {
+        await axios.put(`http://localhost:3001/events/${selectedEvent._id}`, {
+            category: updatedCategory,
+            eventName: eventUpdatedName,
+            eventLocation: eventUpdateLocation,
+            drills: updatepracticePlans,
+            time: updatedtime
+
+        });
+  
+        setEvents(prevEvents => {
+            return prevEvents.map(event => {
+                if (event._id === selectedEvent._id) {
+                    const updatedEvent = { ...event, category: updatedCategory,
+                      eventName: eventUpdatedName,
+                      eventLocation: eventUpdateLocation,
+                      drills: updatepracticePlans,
+                      time: updatedtime };
+          
+                    return updatedEvent;
+                }
+                return event;
+            });
+        });
+  
+        setEvents();  // Ensure latest updates are fetched
+        setShowEditPopup(false);
+    } catch (error) {
+        console.error("Error updating event progress:", error);
     }
   };
 
@@ -254,6 +334,10 @@ const handleFetchFeedback = async (userId, event) => {
     setShowPopup(true);
   };
 
+  const editEvent = () => {
+    setShowEditPopup(true);
+  };
+
   const handleEventClick = (event) => {
     const userId = localStorage.getItem('userId');
     setSelectedEvent((prevSelectedEvent) =>
@@ -283,6 +367,7 @@ const handleFetchFeedback = async (userId, event) => {
     axios.post('http://localhost:3001/events', newEvent)
       .then(() => {
         setShowPopup(false);
+        setShowEditPopup(false);
         setSelectedCategory('');
         setEventName('');
         setEventLocation('');
@@ -354,7 +439,10 @@ const handleFetchFeedback = async (userId, event) => {
             ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+        <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+          Contact Us
+        </button>
+
         </div>
       </header>
 
@@ -407,9 +495,9 @@ const handleFetchFeedback = async (userId, event) => {
                   </label>
                   <label style={{ color: 'black' }}>
                 Practice Plans:
-                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}}value={drills} onChange={(e) => setDrills(e.target.value)} required>
+                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}}value={drills} onChange={(e) => setDrills(e.target.value)}>
                 <option value="" disabled>Select a practice plan</option>
-                    {practicePlans.map((plan) => {
+                    {/* {practicePlans.map((plan) => {
                       const planInfo = practicePlans[plan.practicePlanId]; 
                       return planInfo ? (
                         <option key={plan.practicePlanId} value={plan.practicePlanId}>
@@ -418,7 +506,7 @@ const handleFetchFeedback = async (userId, event) => {
                       ) : (
                         <option key={plan.practicePlanId} disabled>No details available</option>
                       );
-                    })}
+                    })} */}
                   </select>
                 </label>
                   <label style={{color: 'black'}}>Time:
@@ -435,6 +523,77 @@ const handleFetchFeedback = async (userId, event) => {
               </div>
             </div>
           )}
+
+    {showEditPopup && (
+      <div className="popupEvent-top">
+        <div className="popupEvent-content">
+          <h2 style={{ color: 'black' }}>Edit Event</h2>
+          <form onSubmit={handleSubmit}>
+            <label style={{ color: 'black' }}>
+              Category:
+              <select
+                style={{ backgroundColor: 'whitesmoke', color: 'black', borderColor: 'black' }}
+                value={updatedCategory}
+                onChange={(e) => setSelectedUpdatedCategory(e.target.value)}
+                required
+              >
+                <option value={selectedEvent.category} disabled>Select a category</option>
+                <option>Practice</option>
+                <option>Game</option>
+              </select>
+            </label>
+
+            <label style={{ color: 'black' }}>
+              Event Name:
+              <input
+                type="text"
+                value={eventUpdatedName}
+                onChange={(e) => setEventUpdatedName(e.target.value)}
+                required
+              />
+            </label>
+
+            <label style={{ color: 'black' }}>
+              Location:
+              <input
+                type="text"
+                value={eventUpdateLocation}
+                onChange={(e) => setEventUpdateLocation(e.target.value)}
+                required
+              />
+            </label>
+
+            <label style={{ color: 'black' }}>
+              Practice Plans:
+              <select
+                style={{ backgroundColor: 'whitesmoke', color: 'black', borderColor: 'black' }}
+                value={drills}
+                onChange={(e) => setDrills(e.target.value)}
+              >
+                <option value="" disabled>Select a practice plan</option>
+                {/* You can map through practicePlans if needed */}
+              </select>
+            </label>
+
+            <label style={{ color: 'black' }}>
+              Time:
+              <input
+                type="time"
+                value={updatedtime}
+                onChange={(e) => setUpdatedTime(e.target.value)}
+                required
+              />
+            </label>
+
+            <button type="button" style={{backgroundColor: 'black', color: 'white', marginRight:'20px'}} onClick={() => setShowEditPopup(false)}>Cancel</button>
+
+            <button onClick={updateEvent} style={{ backgroundColor: 'black', color: 'white' }} type="submit">
+              Update Event
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
           
 
           {/* Display Events for the Selected Date */}
@@ -452,8 +611,17 @@ const handleFetchFeedback = async (userId, event) => {
             </div>
           </div>
         </div>
+        
         {selectedEvent && (
+          
             <div className="event-details">
+              {localStorage.getItem('role') === 'Owner' && (
+                <>
+                  <div className="event-button-container">
+                      <button className="eventButton" onClick={editEvent}>Edit Event</button>
+                  </div>
+                </>
+              )}
             <div className="event-details-card">
                 <h3>Event Details</h3>
                 <p><strong>Event Name:</strong> {selectedEvent.eventName}</p>
