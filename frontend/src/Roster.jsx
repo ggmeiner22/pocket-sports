@@ -44,8 +44,14 @@ function Roster() {
     heightFeet: "",
     heightInches: "",
     weight: "",
-    playerStats: ""
+    playerStats: []
   });
+  const [availableStats, setAvailableStats] = useState([]);  // list from drillStats
+  const [newStat, setNewStat] = useState({ statName: "", statValue: "" });
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [viewStatsData, setViewStatsData] = useState([]);
+
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -238,13 +244,46 @@ function Roster() {
         heightFeet: heightFeet,
         heightInches: heightInches,
         weight: userData.weight || "",
-        playerStats: userData.playerStats ? JSON.stringify(userData.playerStats) : ""
+        playerStats: userData.playerStats || []
       });
+      loadAvailableStats();
       setShowEditUserModal(true);
     } else {
       alert("User data not available.");
     }
   };
+
+  const loadAvailableStats = async () => {
+    if (!selectedTeam || !selectedTeam._id) return;
+    try {
+      const res = await axios.get(`http://localhost:3001/drillStats/team/${selectedTeam._id}`);
+      setAvailableStats(res.data);  // assuming res.data is an array [{ _id, statName }]
+    } catch (err) {
+      console.error("Error loading stats:", err);
+    }
+  };
+
+  const viewStats = async (userId) => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const teamId = storedTeam ? storedTeam._id : null;
+      if (!teamId) {
+        alert("Team not found");
+        return;
+      }
+      // Query the server for the user's current stats
+      const res = await axios.get(`http://localhost:3001/userStats/${userId}`, {
+        headers: { teamid: teamId }
+      });
+      // Update state with the stats from the database
+      setViewStatsData(res.data.playerStats || []);
+      setShowStatsModal(true);
+    } catch (err) {
+      console.error("Error fetching user stats from database", err);
+      alert("Could not load stats from the database.");
+    }
+  };  
 
   const handleEditUserSubmit = async () => {
     try {
@@ -254,7 +293,7 @@ function Roster() {
         playerPosition: editUserData.playerPosition,
         height: combinedHeight,
         weight: editUserData.weight,
-        playerStats: editUserData.playerStats ? JSON.parse(editUserData.playerStats) : []
+        playerStats: editUserData.playerStats
       };
       const response = await axios.put(`http://localhost:3001/useronteams/${userToEdit}`, {
         ...updatedData,
@@ -321,6 +360,9 @@ function Roster() {
                       </Dropdown.Item>
                       <Dropdown.Item onClick={() => openChangeRoleModal(player.userId, player.role)}>
                         Change Role
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => viewStats(player.userId)}>
+                        View Stats
                       </Dropdown.Item>
                     </>
                   )}
@@ -429,10 +471,6 @@ function Roster() {
             </label>
           </div>
           )}
-      
-     
-  
-
       <div style={{ backgroundColor: 'whitesmoke' }}>
         {loading ? <p>Loading roster...</p> : renderRosterCards()}
       </div>
@@ -465,6 +503,32 @@ function Roster() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {showStatsModal && (
+        <Modal show={showStatsModal} onHide={() => setShowStatsModal(false)} dialogClassName="stats-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>User Stats</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {viewStatsData.length > 0 ? (
+              <ul>
+                {viewStatsData.map((stat, idx) => (
+                  <li key={idx}>
+                    {stat.statName}: {stat.statValue}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No stats available.</p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowStatsModal(false)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
 
       {/* Edit User Info Modal */}
       <Modal show={showEditUserModal} onHide={() => setShowEditUserModal(false)}>
@@ -499,9 +563,15 @@ function Roster() {
               type="number"
               placeholder="Inches"
               value={editUserData.heightInches || ""}
-              onChange={(e) =>
-                setEditUserData({ ...editUserData, heightInches: e.target.value })
-              }
+              max="11"
+              onChange={(e) => {
+                const inputVal = Number(e.target.value);
+                if (inputVal > 11) {
+                  setEditUserData({ ...editUserData, heightInches: "11" });
+                } else {
+                  setEditUserData({ ...editUserData, heightInches: e.target.value });
+                }
+              }}
               style={{ marginLeft: '10px', width: '60px' }}
             />
           </label>
@@ -518,16 +588,79 @@ function Roster() {
             />
           </label>
           <br /><br />
-          <label>
-            Stats (JSON format):
-            <textarea
-              value={editUserData.playerStats}
-              onChange={(e) =>
-                setEditUserData({ ...editUserData, playerStats: e.target.value })
-              }
-              style={{ marginLeft: '10px', width: '100%' }}
-            />
-          </label>
+          <div>
+            <h4>Add Stat</h4>
+            <label>
+              Stat:
+              <select
+                value={newStat.statName}
+                onChange={(e) =>
+                  setNewStat({ ...newStat, statName: e.target.value })
+                }
+                style={{ marginLeft: '10px' }}
+              >
+                <option value="" disabled>Select a stat</option>
+                {availableStats.map((s) => (
+                  <option key={s._id} value={s.statName}>
+                    {s.statName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br /><br />
+            <label>
+              Value:
+              <input
+                type="text"
+                value={newStat.statValue}
+                onChange={(e) =>
+                  setNewStat({ ...newStat, statValue: e.target.value })
+                }
+                style={{ marginLeft: '10px' }}
+              />
+            </label>
+            <br /><br />
+            <button
+              type="button"
+              onClick={() => {
+                // Only add if both fields are filled out.
+                if (newStat.statName && newStat.statValue) {
+                  const existingIndex = editUserData.playerStats.findIndex(
+                    (stat) => stat.statName === newStat.statName
+                  );
+                  
+                  if (existingIndex !== -1) {
+                    // Get the current value; assume it's numeric.
+                    const currentVal = Number(editUserData.playerStats[existingIndex].statValue) || 0;
+                    const addedVal = Number(newStat.statValue) || 0;
+                    const total = currentVal + addedVal;
+                    
+                    // Create an updated stats array
+                    const updatedStats = [...editUserData.playerStats];
+                    updatedStats[existingIndex] = { statName: newStat.statName, statValue: total.toString() };
+                    
+                    setEditUserData({
+                      ...editUserData,
+                      playerStats: updatedStats
+                    });
+                  } else {
+                    // The stat is not present—add it.
+                    setEditUserData({
+                      ...editUserData,
+                      playerStats: [...editUserData.playerStats, { ...newStat }]
+                    });
+                  }
+                  // Clear the stat entry fields
+                  setNewStat({ statName: "", statValue: "" });
+                } else {
+                  alert("Please choose a stat and enter a value");
+                }                
+              }}
+              className="topButtons"
+            >
+              Add Stat
+            </button>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEditUserModal(false)}>

@@ -614,25 +614,6 @@ app.get('/registers/:userId', async (req, res) => {
     }
   });
 
-// might need this later
-// app.get('/teamsport', async (req, res) => {
-//     try {
-//         const teamId = req.params.teamId;
-
-//         const team = await TeamsModel.findById(teamId);
-        
-//         if(!team) {
-//             return res.status(404).json({message: "Team not found"});
-//         }
-//         const sport = team.selectedSport;
-//         res.status(200).json(sport);
-//     } catch (err) {
-//         console.error('Error fetching team sport:', err);
-//         res.status(500).json({ message: 'Failed to load team sport.' });
-//     }
-
-
-// });
 
 app.post('/drilltags', async (req, res) => {
   const { tagName, teamId } = req.body;
@@ -896,6 +877,25 @@ app.post('/drillbank', async (req, res) => {
       res.status(500).json({ message: "Failed to fetch drill stats." });
     }
   });
+
+  app.get('/userStats/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const teamId = req.headers['teamid']; // Pass the team ID in the headers
+      if (!teamId) {
+        return res.status(400).json({ message: "Team ID is missing" });
+      }
+      // Find the user document in the UserOnTeam collection
+      const userOnTeam = await UserOnTeamModel.findOne({ userId, teamId });
+      if (!userOnTeam) {
+        return res.status(404).json({ message: "User stats not found" });
+      }
+      res.status(200).json(userOnTeam);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });  
   
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
