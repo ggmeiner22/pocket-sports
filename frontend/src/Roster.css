@@ -193,3 +193,20 @@ margin: 10px 0;
   text-align: center;  /* Optional: Center align the text */
 }
 
+.stats-modal-body {
+  color: black !important;
+}
+
+/* Custom override for our stats modal only */
+.stats-modal .modal-content {
+  background-color: white !important;
+  color: black !important;
+}
+.stats-modal .modal-header,
+.stats-modal .modal-title,
+.stats-modal .modal-body,
+.stats-modal .modal-footer {
+  color: black !important;
+}
+
+
