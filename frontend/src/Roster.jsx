@@ -283,6 +283,13 @@ function Roster() {
         <Card key={index} className="card-events user-card">
           <Card.Header as="h5">{player.role}</Card.Header>
           <Card.Body>
+            <div className="profile-container">
+              <img 
+                src={detail.profilePicture ? `http://localhost:3001${detail.profilePicture}` : '/generic.jpg'}
+                alt={`${detail.fname}'s profile`}
+                className="profile-picture"
+              />
+            </div>
             <Card.Title>
               {detail.fname} {detail.lname}
               {player.userId === currentUserId && (

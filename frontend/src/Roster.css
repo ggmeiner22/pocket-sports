@@ -173,3 +173,16 @@ margin: 10px 0;
   right: 15px;    /* Adjust as needed for horizontal positioning */
 }
 
+.profile-container {
+  margin-bottom: 10px;
+}
+
+.profile-picture {
+  width: 50px;       /* Adjust as needed */
+  height: 50px;      /* Adjust as needed */
+  object-fit: cover;
+  border-radius: 50%; /* Makes the image circular */
+  margin-right: 10px;
+  border: 2px solid black; /* Optional: to give a border around the photo */
+}
+
