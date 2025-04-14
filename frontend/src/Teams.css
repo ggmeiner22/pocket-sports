@@ -25,6 +25,7 @@ body {
     background-color: black;
 }
 
+
 /* Footer Styling */
 .footer {
     background-color: black; 
@@ -135,29 +136,46 @@ input[type="password"]:focus {
     text-align: left;
 }
 
-.teamsList li {
+.teamsList li.team-card {
     display: flex;
-    flex-direction: row; /* Align the content in a row */
-    justify-content: space-between; /* Ensure space between content and button */
-    align-items: center; /* Center align the items vertically */
-    font-size: 16px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5em;
+    margin: 2em;
     border: 2px solid orange;
     border-radius: 20px;
-    margin: 2em;
-    padding: 1.5em;
-    text-align: left;
+    background-color: black;  /* or whatever fits your design */
+    color: white;             /* ensure team info text is white */
+    cursor: pointer;          /* indicate that the card is clickable */
+    transition: border 0.3s ease;
 }
 
 .teamsList li .topButtons {
     align-self: flex-end; /* Button aligned to right */
 }
 
-.teamsList li:hover {
+/* On hover, you can change border color for a visual effect */
+.teamsList li.team-card:hover {
     border: 2px solid white;
-    border-radius: 20px;
-    padding: 1.5em;
-    text-align: left;
-}
+  }
+
+/* Left side: Team details */
+.team-info {
+    flex: 1;
+  }
+  
+  /* Right side: Buttons container */
+  .team-actions {
+    display: flex;
+    gap: 0.5em;
+  }
+  
+  /* Optionally adjust the width of the buttons */
+  .team-actions .topButtons,
+  .team-actions .delete-team-x {
+    font-size: 0.9em;
+    cursor: pointer;
+  }
 
 .teamName {
     font-size: 1.5em;
