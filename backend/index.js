@@ -34,6 +34,34 @@ const { ObjectId } = require('mongodb');
 const fs = require('fs');
 
 
+app.delete('/teams/:teamId', async (req, res) => {
+  const teamId = req.params.teamId;
+  const userId = req.headers['userid']; 
+
+  try {
+    const team = await TeamsModel.findById(teamId);
+
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    if (String(team.createdBy) !== String(userId)) {
+      return res.status(403).json({ message: 'Only the team owner can delete this team.' });
+    }
+
+    await TeamsModel.deleteOne({ _id: teamId });
+    await UserOnTeamModel.deleteMany({ teamId });
+
+    res.status(200).json({ message: 'Team deleted successfully' });
+  } catch (err) {
+    console.error("Error deleting team:", err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
 app.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   const user = await RegisterModel.findOne({ email });
