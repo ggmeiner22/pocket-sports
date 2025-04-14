@@ -258,3 +258,9 @@ h2 {
     border-radius: 4px;
   }
   
+  .selectedSport {
+    font-size: 1em;
+    color: white;
+    margin-top: 0.5em;
+  }
+  

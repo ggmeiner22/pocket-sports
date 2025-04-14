@@ -186,3 +186,10 @@ margin: 10px 0;
   border: 2px solid black; /* Optional: to give a border around the photo */
 }
 
+.team-join-code {
+  font-size: 1.2rem;
+  color: black;       /* Adjust the color as needed */
+  margin: 10px 0;      /* Adds spacing above and below the join code */
+  text-align: center;  /* Optional: Center align the text */
+}
+

@@ -379,6 +379,11 @@ function Roster() {
       </header>
       <strong className="homepage-headers">Your Team</strong>
 
+      {(currentUserRole === "Owner" || currentUserRole === "Coach") && selectedTeam && selectedTeam.teamCode && (
+        <div className="team-join-code">
+          Join Code: <strong>{selectedTeam.teamCode}</strong>
+        </div>
+      )}
 
       <div className="filter-container">
         <div className="filter-popup-toggle" onClick={() => setFilterVisible(!filterVisible)}>
