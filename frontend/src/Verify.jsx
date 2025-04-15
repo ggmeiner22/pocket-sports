@@ -14,10 +14,32 @@ function Verify() {
   const email = location.state?.email;
 
   const handleChange = (e, index) => {
+    const value = e.target.value;
+  
+    // Only allow digits
+    if (!/^[0-9]?$/.test(value)) return;
+  
     const newCode = [...code];
-    newCode[index] = e.target.value;
+    newCode[index] = value;
     setCode(newCode);
+  
+    // Move to next input if value is not empty and it's not the last box
+    if (value && index < code.length - 1) {
+      const nextInput = document.getElementById(`code-${index + 1}`);
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+  
+    // Backspace logic (optional)
+    if (!value && index > 0) {
+      const prevInput = document.getElementById(`code-${index - 1}`);
+      if (prevInput) {
+        prevInput.focus();
+      }
+    }
   };
+  
 
   const landing = () => {
     navigate('/'); // Corrected the route path
@@ -61,6 +83,7 @@ function Verify() {
       {code.map((digit, index) => (
           <input
             key={index}
+            id={`code-${index}`}
             className="code-input"
             maxLength="1"
             value={digit}

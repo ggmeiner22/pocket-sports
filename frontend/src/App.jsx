@@ -14,6 +14,10 @@ import Drills from './drills';
 import GoalsPage from './goals-page';
 import CalendarPage from './calendar';
 import PracticePlans from './practiceplans';
+import ContactPage from './ContactPage';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
+
 
 function App() {
   return (
@@ -30,6 +34,9 @@ function App() {
       <Route path="/goalspage" element={<GoalsPage/>}/>
       <Route path="/homepage" element={<HomePage/>}/>
       <Route path="/calendarpage" element={<CalendarPage/>}/>
+      <Route path="/contactpage" element={<ContactPage/>}/>
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
     </Routes>
   );
 }

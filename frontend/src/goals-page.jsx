@@ -20,8 +20,8 @@ function GoalsPage() {
   const [editedTargetNumber, setEditedTargetNumber] = useState(1);
   const [editedProgress, setEditedProgress] = useState(0);  // Track progress
   const [completedGoals, setCompletedGoals] = useState(new Set());
-  const [isGoalCompleted, setIsGoalCompleted] = useState(false);
-
+  //const [isGoalCompleted, setIsGoalCompleted] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [newGoal, setNewGoal] = useState({ 
         title: "", 
         description: "",
@@ -29,8 +29,6 @@ function GoalsPage() {
   });
   const [showPopup, setShowPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  
-
   const [buttons, setButtons] = useState([
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
@@ -42,45 +40,56 @@ function GoalsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Retrieve stored values from localStorage
+  const storedUserId = localStorage.getItem("userId");
 
-  useEffect(() => {
-    // Retrieve the selected team and role from localStorage
-    const storedTeam = localStorage.getItem('selectedTeam');
-    const storedRole = localStorage.getItem('role');
-
-    console.log("Stored role:", storedRole); // Check role in localStorage
-
-    if (storedTeam) {
-      setSelectedTeam(JSON.parse(storedTeam)); // Update selected team if available
-    }
-
-    if (storedRole === "Owner") {
-      setButtons((prevButtons) => {
-        // Prevent adding the button twice
-        if (!prevButtons.some(button => button.path === "/drills")) {
-          return [
-            ...prevButtons,
-            { path: "/drills", label: "Drills" }
-          ];
-        }
-        return prevButtons;
+  // getDrillTab: Check the roster for the current user’s role.
+  // If the user is an Owner, add the "Drills" button to the header.
+  const getDrillTab = async () => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
+        headers: { teamId: storedTeamId },
       });
+      const rosterData = rosterRes.data;
+      // Use storedUserId from localStorage
+      const me = rosterData.find((p) => p.userId === storedUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching roster:", error.response || error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-  }, []);
-
+  // On mount, retrieve the selected team and call getDrillTab
   useEffect(() => {
-    const storedTeam = localStorage.getItem("selectedTeam");
+    const storedTeam = localStorage.getItem('selectedTeam');
     if (storedTeam) {
-        setSelectedTeam(JSON.parse(storedTeam));
+      setSelectedTeam(JSON.parse(storedTeam));
     }
+    getDrillTab();
   }, []);
 
   useEffect(() => {
       if (selectedTeam && selectedTeam._id) {
           fetchGoals();
-          
-
       }
   }, [selectedTeam]); // Fetch goals when selectedTeam changes
 
@@ -135,6 +144,7 @@ function GoalsPage() {
             createdBy: userId,
             teamId: selectedTeam._id,
             targetNumber: newGoal.targetNumber ?? 1,
+            isTeamGoal: newGoal.isTeamGoal || false,
         });
 
         
@@ -221,7 +231,9 @@ const updateGoalProgress = async () => {
             ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+          <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+            Contact Us
+          </button>
         </div>
       </header>
 
@@ -283,6 +295,18 @@ const updateGoalProgress = async () => {
                     ))}
                   </select>
 
+                  {(currentUserRole === "Owner" || currentUserRole === "Coach") && (
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={newGoal.isTeamGoal || false}
+                        onChange={(e) => setNewGoal({ ...newGoal, isTeamGoal: e.target.checked })}
+                      />
+                      Make this a team-wide goal
+                    </label>
+                  )}
+
+
                 <div className="button-container-2">
                   <button onClick={createGoal} style={{backgroundColor: selectedTeam?.teamColors?.[0], color: 'white'}} >Save Goal</button>
                   <button onClick={() => setShowPopup(false)} style={{backgroundColor: selectedTeam?.teamColors?.[0], color: 'white'}} >Cancel</button>
@@ -296,7 +320,19 @@ const updateGoalProgress = async () => {
                     goals.map((goal) => (
                       
                         <Card key={goal._id} className='card-events'>
-                            <Card.Header as='h5'>{goal.title}</Card.Header>
+                            <Card.Header as='h5'>
+                              {goal.title}
+                              {goal.isTeamGoal && (
+                                <span style={{ 
+                                  marginLeft: '10px', 
+                                  fontSize: '0.8rem', 
+                                  color: 'green', 
+                                  fontWeight: 'bold' 
+                                }}>
+                                  (Team Goal)
+                                </span>
+                              )}
+                            </Card.Header>
                             <Card.Body>
                                 <Card.Text>Description: {goal.description}</Card.Text>
                                 <Card.Text>Goal: {goal.targetNumber}</Card.Text>
@@ -309,6 +345,21 @@ const updateGoalProgress = async () => {
                                     setShowEditPopup(true);
                                     
                                 }}>Update Progress</Button>
+
+                                <Button
+                                  variant="danger"
+                                  style={{ marginTop: '20px', marginLeft: '10px' }}
+                                  onClick={() => {
+                                    if (window.confirm("Are you sure you want to delete this goal?")) {
+                                      deleteGoal(goal._id);
+                                    }
+                                  }}
+                                >
+                                  Delete Goal
+                                </Button>
+
+
+
                             </Card.Body>
                         </Card>
                     ))

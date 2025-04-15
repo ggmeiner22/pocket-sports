@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Modal from 'react-bootstrap/Modal';
 import axios from 'axios';
+//import { Dropdown, Form } from 'react-bootstrap';
 
 function Roster() {
   const [selectedTeam, setSelectedTeam] = useState(null);
@@ -18,6 +19,16 @@ function Roster() {
   const [showPosition, setShowPosition] = useState(true);
   const [showHeight, setShowHeight] = useState(true);
   const [showWeight, setShowWeight] = useState(true);
+
+  //const [filterShowPosition, setFilterShowPosition] = useState(true);
+  //const [filterShowHeight, setFilterShowHeight] = useState(true);
+  //const [filterShowWeight, setFilterShowWeight] = useState(true);
+
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("All"); // All, Coach, Player
+
+
+
 
   // Role-change modal state (for non-self role changes)
   const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
@@ -33,8 +44,14 @@ function Roster() {
     heightFeet: "",
     heightInches: "",
     weight: "",
-    playerStats: ""
+    playerStats: []
   });
+  const [availableStats, setAvailableStats] = useState([]);  // list from drillStats
+  const [newStat, setNewStat] = useState({ statName: "", statValue: "" });
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [viewStatsData, setViewStatsData] = useState([]);
+
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -126,7 +143,7 @@ function Roster() {
       const me = rosterData.find((p) => p.userId === currentUserId);
       if (me) {
         setCurrentUserRole(me.role);
-        if (me.role === "Owner") {
+        if (me.role === "Owner" || me.role === "Coach") {
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
@@ -225,13 +242,46 @@ function Roster() {
         heightFeet: heightFeet,
         heightInches: heightInches,
         weight: userData.weight || "",
-        playerStats: userData.playerStats ? JSON.stringify(userData.playerStats) : ""
+        playerStats: userData.playerStats || []
       });
+      loadAvailableStats();
       setShowEditUserModal(true);
     } else {
       alert("User data not available.");
     }
   };
+
+  const loadAvailableStats = async () => {
+    if (!selectedTeam || !selectedTeam._id) return;
+    try {
+      const res = await axios.get(`http://localhost:3001/drillStats/team/${selectedTeam._id}`);
+      setAvailableStats(res.data);  // assuming res.data is an array [{ _id, statName }]
+    } catch (err) {
+      console.error("Error loading stats:", err);
+    }
+  };
+
+  const viewStats = async (userId) => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const teamId = storedTeam ? storedTeam._id : null;
+      if (!teamId) {
+        alert("Team not found");
+        return;
+      }
+      // Query the server for the user's current stats
+      const res = await axios.get(`http://localhost:3001/userStats/${userId}`, {
+        headers: { teamid: teamId }
+      });
+      // Update state with the stats from the database
+      setViewStatsData(res.data.playerStats || []);
+      setShowStatsModal(true);
+    } catch (err) {
+      console.error("Error fetching user stats from database", err);
+      alert("Could not load stats from the database.");
+    }
+  };  
 
   const handleEditUserSubmit = async () => {
     try {
@@ -241,7 +291,7 @@ function Roster() {
         playerPosition: editUserData.playerPosition,
         height: combinedHeight,
         weight: editUserData.weight,
-        playerStats: editUserData.playerStats ? JSON.parse(editUserData.playerStats) : []
+        playerStats: editUserData.playerStats
       };
       const response = await axios.put(`http://localhost:3001/useronteams/${userToEdit}`, {
         ...updatedData,
@@ -257,13 +307,26 @@ function Roster() {
   };
 
   const renderRosterCards = () => {
-    return players.map((player, index) => {
+    const coaches = [];
+    const playersList = [];
+  
+    players.forEach((player, index) => {
+      if (roleFilter !== "All" && player.role !== roleFilter) return;
+
       const detail = playerDetails[player.userId];
-      if (!detail) return null;
-      return (
-        <Card key={index} className="card-events">
+      if (!detail) return;
+  
+      const card = (
+        <Card key={index} className="card-events user-card">
           <Card.Header as="h5">{player.role}</Card.Header>
           <Card.Body>
+            <div className="profile-container">
+              <img 
+                src={detail.profilePicture ? `http://localhost:3001${detail.profilePicture}` : '/generic.jpg'}
+                alt={`${detail.fname}'s profile`}
+                className="profile-picture"
+              />
+            </div>
             <Card.Title>
               {detail.fname} {detail.lname}
               {player.userId === currentUserId && (
@@ -282,15 +345,8 @@ function Roster() {
                 </>
               )}
             </Card.Text>
-            <Button
-              style={{ backgroundColor: selectedTeam?.teamColors?.[0] || 'gray' }}
-              variant="primary"
-              onClick={() => navigate("/calendarpage")}
-            >
-              Learn More
-            </Button>
             {currentUserRole === "Owner" && (
-              <Dropdown style={{ display: 'inline-block', marginLeft: '10px' }}>
+              <Dropdown className="three-dots-dropdown">
                 <Dropdown.Toggle variant="secondary" id={`dropdown-${index}`}>
                   ⋮
                 </Dropdown.Toggle>
@@ -303,6 +359,9 @@ function Roster() {
                       <Dropdown.Item onClick={() => openChangeRoleModal(player.userId, player.role)}>
                         Change Role
                       </Dropdown.Item>
+                      <Dropdown.Item onClick={() => viewStats(player.userId)}>
+                        View Stats
+                      </Dropdown.Item>
                     </>
                   )}
                   <Dropdown.Item onClick={() => openEditUserModal(player.userId)}>
@@ -314,10 +373,26 @@ function Roster() {
           </Card.Body>
         </Card>
       );
+  
+      if (["Owner", "Coach"].includes(player.role)) {
+        coaches.push(card);
+      } else {
+        playersList.push(card);
+      }
     });
+
+    return (
+      <>
+        <div className="role-divider">Coaches</div>
+        {coaches}
+        <div className="role-divider">Players</div>
+        {playersList}
+      </>
+    );
   };
 
   return (
+    
     <div style={{ backgroundColor: 'whitesmoke' }} className="App">
       <header className="landing-page-header1">
         <div className="logo">
@@ -337,67 +412,63 @@ function Roster() {
           ))}
         </div>
         <div className="button-container">
-          <button className="contactButton1">Contact Us</button>
+        <button className="contactButton1" onClick={() => navigate('/contactpage')}>
+          Contact Us
+        </button>
         </div>
       </header>
       <strong className="homepage-headers">Your Team</strong>
-      {/* Owner-only toggles for extra info */}
-      {currentUserRole === "Owner" && (
-        <div style={{ margin: '10px', textAlign: 'center' }}>
-          <label>
-          <input
-            type="checkbox"
-            checked={showPosition}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowPosition(newVal);
-              updateTeamSettings({ 
-                showPosition: newVal, 
-                showHeight, 
-                showWeight 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-            Show Position
-          </label>
-          <label style={{ marginLeft: '10px' }}>
-          <input
-            type="checkbox"
-            checked={showHeight}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowHeight(newVal);
-              updateTeamSettings({ 
-                showPosition, 
-                showHeight: newVal, 
-                showWeight 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-          Show Height
-        </label>
-        <label style={{ marginLeft: '10px' }}>
-          <input
-            type="checkbox"
-            checked={showWeight}
-            onChange={(e) => {
-              const newVal = e.target.checked;
-              setShowWeight(newVal);
-              updateTeamSettings({ 
-                showPosition, 
-                showHeight, 
-                showWeight: newVal 
-              });
-            }}
-            style={{ marginRight: '5px' }}
-          />
-          Show Weight
-        </label>
+
+      {(currentUserRole === "Owner" || currentUserRole === "Coach") && selectedTeam && selectedTeam.teamCode && (
+        <div className="team-join-code">
+          Join Code: <strong>{selectedTeam.teamCode}</strong>
         </div>
       )}
 
+      <div className="filter-container">
+        <div className="filter-popup-toggle" onClick={() => setFilterVisible(!filterVisible)}>
+          ⚙️ Filters
+        </div>
+      </div>
+        {filterVisible && (
+          <div className="filter-popup">
+             <div style={{ textAlign: "center", fontSize: "18px", fontWeight: "bold", marginBottom: "10px" }}>
+            <strong>Filter Roster</strong><br />
+            </div>
+            <label>
+              Role:
+              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                <option value="All">All</option>
+                <option value="Player">Players</option>
+              </select>
+            </label>
+            <hr />
+            <label>
+              <input type="checkbox" checked={showPosition}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowPosition(newVal);
+                  updateTeamSettings({ showPosition: newVal, showHeight, showWeight });
+                }} /> Show Position
+            </label><br />
+            <label>
+              <input type="checkbox" checked={showHeight}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowHeight(newVal);
+                  updateTeamSettings({ showPosition, showHeight: newVal, showWeight });
+                }} /> Show Height
+            </label><br />
+            <label>
+              <input type="checkbox" checked={showWeight}
+                onChange={(e) => {
+                  const newVal = e.target.checked;
+                  setShowWeight(newVal);
+                  updateTeamSettings({ showPosition, showHeight, showWeight: newVal });
+                }} /> Show Weight
+            </label>
+          </div>
+          )}
       <div style={{ backgroundColor: 'whitesmoke' }}>
         {loading ? <p>Loading roster...</p> : renderRosterCards()}
       </div>
@@ -430,6 +501,32 @@ function Roster() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {showStatsModal && (
+        <Modal show={showStatsModal} onHide={() => setShowStatsModal(false)} dialogClassName="stats-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>User Stats</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {viewStatsData.length > 0 ? (
+              <ul>
+                {viewStatsData.map((stat, idx) => (
+                  <li key={idx}>
+                    {stat.statName}: {stat.statValue}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No stats available.</p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowStatsModal(false)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
 
       {/* Edit User Info Modal */}
       <Modal show={showEditUserModal} onHide={() => setShowEditUserModal(false)}>
@@ -464,9 +561,15 @@ function Roster() {
               type="number"
               placeholder="Inches"
               value={editUserData.heightInches || ""}
-              onChange={(e) =>
-                setEditUserData({ ...editUserData, heightInches: e.target.value })
-              }
+              max="11"
+              onChange={(e) => {
+                const inputVal = Number(e.target.value);
+                if (inputVal > 11) {
+                  setEditUserData({ ...editUserData, heightInches: "11" });
+                } else {
+                  setEditUserData({ ...editUserData, heightInches: e.target.value });
+                }
+              }}
               style={{ marginLeft: '10px', width: '60px' }}
             />
           </label>
@@ -483,16 +586,79 @@ function Roster() {
             />
           </label>
           <br /><br />
-          <label>
-            Stats (JSON format):
-            <textarea
-              value={editUserData.playerStats}
-              onChange={(e) =>
-                setEditUserData({ ...editUserData, playerStats: e.target.value })
-              }
-              style={{ marginLeft: '10px', width: '100%' }}
-            />
-          </label>
+          <div>
+            <h4>Add Stat</h4>
+            <label>
+              Stat:
+              <select
+                value={newStat.statName}
+                onChange={(e) =>
+                  setNewStat({ ...newStat, statName: e.target.value })
+                }
+                style={{ marginLeft: '10px' }}
+              >
+                <option value="" disabled>Select a stat</option>
+                {availableStats.map((s) => (
+                  <option key={s._id} value={s.statName}>
+                    {s.statName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br /><br />
+            <label>
+              Value:
+              <input
+                type="text"
+                value={newStat.statValue}
+                onChange={(e) =>
+                  setNewStat({ ...newStat, statValue: e.target.value })
+                }
+                style={{ marginLeft: '10px' }}
+              />
+            </label>
+            <br /><br />
+            <button
+              type="button"
+              onClick={() => {
+                // Only add if both fields are filled out.
+                if (newStat.statName && newStat.statValue) {
+                  const existingIndex = editUserData.playerStats.findIndex(
+                    (stat) => stat.statName === newStat.statName
+                  );
+                  
+                  if (existingIndex !== -1) {
+                    // Get the current value; assume it's numeric.
+                    const currentVal = Number(editUserData.playerStats[existingIndex].statValue) || 0;
+                    const addedVal = Number(newStat.statValue) || 0;
+                    const total = currentVal + addedVal;
+                    
+                    // Create an updated stats array
+                    const updatedStats = [...editUserData.playerStats];
+                    updatedStats[existingIndex] = { statName: newStat.statName, statValue: total.toString() };
+                    
+                    setEditUserData({
+                      ...editUserData,
+                      playerStats: updatedStats
+                    });
+                  } else {
+                    // The stat is not present—add it.
+                    setEditUserData({
+                      ...editUserData,
+                      playerStats: [...editUserData.playerStats, { ...newStat }]
+                    });
+                  }
+                  // Clear the stat entry fields
+                  setNewStat({ statName: "", statValue: "" });
+                } else {
+                  alert("Please choose a stat and enter a value");
+                }                
+              }}
+              className="topButtons"
+            >
+              Add Stat
+            </button>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEditUserModal(false)}>

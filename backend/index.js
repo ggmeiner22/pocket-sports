@@ -1,4 +1,8 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt'); // Import bcrypt
@@ -10,6 +14,8 @@ const DrillTagModel = require('./models/DrillTags')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
+const DrillStatsModel = require('./models/DrillStats');
+const Contact = require('./models/Contact');
 
 const nodemailer = require('nodemailer')
 const bodyParser = require('body-parser');
@@ -19,10 +25,202 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static('uploads'));
+
 
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 const { ObjectId } = require('mongodb');
 
+const fs = require('fs');
+
+
+app.delete('/teams/:teamId', async (req, res) => {
+  const teamId = req.params.teamId;
+  const userId = req.headers['userid']; 
+
+  try {
+    const team = await TeamsModel.findById(teamId);
+
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    if (String(team.createdBy) !== String(userId)) {
+      return res.status(403).json({ message: 'Only the team owner can delete this team.' });
+    }
+
+    await TeamsModel.deleteOne({ _id: teamId });
+    await UserOnTeamModel.deleteMany({ teamId });
+
+    res.status(200).json({ message: 'Team deleted successfully' });
+  } catch (err) {
+    console.error("Error deleting team:", err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const user = await RegisterModel.findOne({ email });
+
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetToken = token;
+  user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+  try {
+    await user.save();
+    console.log("✅ Token saved to user:", user.email);
+    console.log("🧾 Token:", user.resetToken);
+    console.log("🕒 Expiry:", user.resetTokenExpiry);
+  } catch (err) {
+    console.error("❌ Error saving token:", err);
+    return res.status(500).json({ message: "Failed to save reset token" });
+  }
+
+
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'pocketsportsteam@gmail.com',
+      pass: 'rbgxybnicgzxngic'
+    }
+  });
+
+  const resetLink = `http://localhost:5173/reset-password/${token}`;
+
+  await transporter.sendMail({
+    from: 'PocketSports <pocketsportsteam@gmail.com>',
+    to: user.email,
+    subject: 'Reset Your PocketSports Password',
+    html: `
+      <p>Hello ${user.fname},</p>
+      <p>You requested to reset your password. Click the link below to set a new password:</p>
+      <p><a href="${resetLink}">${resetLink}</a></p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you didn’t request this, you can safely ignore this email.</p>
+    `
+  });
+  
+
+  res.status(200).json({ message: 'Password reset email sent.' });
+});
+
+
+app.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  console.log("🔐 Reset Token Received:", token);
+  console.log("🔑 New Password:", password);
+
+  const user = await RegisterModel.findOne({
+    resetToken: token,
+    resetTokenExpiry: { $gt: Date.now() }
+  });
+
+  console.log("User found:", user);
+
+  if (!user) {
+    console.log("❌ No user found with that reset token.");
+    return res.status(400).json({ message: 'Invalid or expired token (user not found)' });
+  }
+
+  console.log("🕒 Stored expiry:", user.resetTokenExpiry);
+  console.log("⏳ Current time:", Date.now());
+
+  if (Date.now() > user.resetTokenExpiry) {
+    console.log("❌ Token has expired.");
+    return res.status(400).json({ message: 'Token expired' });
+  }
+  
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  user.password = hashedPassword;
+  user.resetToken = undefined;
+  user.resetTokenExpiry = undefined;
+  await user.save();
+
+  res.status(200).json({ message: 'Password reset successful.' });
+});
+
+
+
+
+
+// POST route for contact form
+app.post('/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    const contactEntry = new Contact({ name, email, message });
+    await contactEntry.save();
+
+    console.log('📨 New contact form submission:', contactEntry);
+
+    res.status(200).json({ message: 'Contact form submitted successfully.' });
+  } catch (error) {
+    console.error('❌ Error submitting contact form:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+const uploadPath = 'uploads';
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+}
+
+// Storage engine for uploaded images
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  },
+});
+
+const upload = multer({ storage });
+
+app.post('/upload-profile/:userId', upload.single('profilePicture'), async (req, res) => {
+  console.log("🚀 Upload endpoint triggered");
+  console.log("📦 File received:", req.file);
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`;
+
+    const updatedUser = await RegisterModel.findByIdAndUpdate(
+      req.params.userId,
+      { profilePicture: filePath },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log("✅ Saved to MongoDB:", updatedUser); // DEBUG LOG
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: 'Failed to upload profile picture' });
+  }
+});
 
 const transporter = nodemailer.createTransport({
     host: 'smtp-relay.brevo.com',
@@ -47,7 +245,7 @@ const generateTeamCode = () => {
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { fname, lname, email, password, password2 } = req.body;
+    const { fname, lname, email, password, password2} = req.body;
 
     try {
         // Check if the user already exists
@@ -103,12 +301,6 @@ app.post('/teams', async (req, res) => {
     const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
 
     try {
-        // Check if the team already exists
-        const existingTeam = await TeamsModel.findOne({ teamName: teamName, organizationName: organizationName });
-        if (existingTeam) {
-            return res.status(400).json("Team already exists");
-        }
-
         const teamCode = generateTeamCode()
         // Create and save the new team in MongoDB
         const newTeam = new TeamsModel({
@@ -228,13 +420,14 @@ app.delete('/events/:eventId', async (req, res) => {
     }
 
     try {
-        const { title, description, createdBy, teamId, targetNumber } = req.body;
+        const { title, description, createdBy, teamId, targetNumber, isTeamGoal} = req.body;
         const newGoal = new GoalModel({ 
             title,
             description, 
             createdBy, 
             teamId, 
-            targetNumber
+            targetNumber,
+            isTeamGoal: isTeamGoal ?? false
         });
         
         await newGoal.save();
@@ -302,8 +495,6 @@ app.delete('/goals/:goalId', async (req, res) => {
         res.status(500).json({ message: "Error deleting goal" });
     }
 });
-
-
 
 
 // Get teams for a user
@@ -426,60 +617,37 @@ app.get('/registers/:userId', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      const { fname, lname, email } = user;
-      res.json({ fname, lname, email });
+      const { fname, lname, email, profilePicture } = user;
+      res.json({ fname, lname, email, profilePicture });
     } catch (err) {
       console.error('Error fetching user details:', err);
       res.status(500).json({ message: 'Failed to load user details.' });
     }
   });
 
-// might need this later
-// app.get('/teamsport', async (req, res) => {
-//     try {
-//         const teamId = req.params.teamId;
 
-//         const team = await TeamsModel.findById(teamId);
-        
-//         if(!team) {
-//             return res.status(404).json({message: "Team not found"});
-//         }
-//         const sport = team.selectedSport;
-//         res.status(200).json(sport);
-//     } catch (err) {
-//         console.error('Error fetching team sport:', err);
-//         res.status(500).json({ message: 'Failed to load team sport.' });
-//     }
-
-
-// });
-
-  app.post('/drilltags', async (req, res) => {
-    const { tagName, teamId } = req.body;
-
-    if (!tagName || !teamId) {
-        return res.status(400).json({ message: "Tag name and team ID are required." });
+app.post('/drilltags', async (req, res) => {
+  const { tagName, teamId } = req.body;
+  if (!tagName || !teamId) {
+      return res.status(400).json({ message: "Tag name and team ID are required." });
+  }
+  try {
+    let tag = await DrillTagModel.findOne({ tagName, teamId });
+    if (!tag) {
+      tag = await DrillTagModel.create({ tagName, teamId });
     }
-
-    try {
-        let tag = await DrillTagModel.findOne({ tagName, teamId });
-
-        if (!tag) {
-            tag = await DrillTagModel.create({ tagName, teamId });
-        }
-
-        res.status(201).json({ message: "Tag created successfully", tag });
-    } catch (err) {
-        console.error("Error creating tag:", err);
-        res.status(500).json({ message: "Failed to create tag." });
-    }
+    res.status(201).json({ message: "Tag created successfully", tag });
+  } catch (err) {
+    console.error("Error creating tag:", err);
+    res.status(500).json({ message: "Failed to create tag." });
+  }
 });
 
 app.get('/drilltags/:tag', async (req, res) => {
     const { tag } = req.params;
     const existingTag = await DrillTagModel.findOne({ tagName: tag });
     res.json({ exists: !!existingTag });
-  });
+});
 
 // Fetch tags for a specific team
 app.get('/drilltags/team/:teamId', async (req, res) => {
@@ -492,42 +660,56 @@ app.get('/drilltags/team/:teamId', async (req, res) => {
       console.error("Error fetching tags:", error);
       res.status(500).json({ message: "Failed to fetch drill tags" });
     }
-  });
+});
 
 
 app.post('/drillbank', async (req, res) => {
-    const { pdfB64, teamId, drillName, tags } = req.body;
+  const { pdfB64, teamId, drillName, tags, stats } = req.body;
 
-    if (!pdfB64 || !teamId || !drillName) {
-        return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
-    }
+  if (!pdfB64 || !teamId || !drillName) {
+    return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
+  }
 
-    try {
-        let tagIds = [];
-
-        if (tags && tags.length > 0) {
-            for (let tagName of tags) {
-                let tag = await DrillTagModel.findOne({ tagName, teamId });
-
-                if (!tag) {
-                    tag = await DrillTagModel.create({ tagName, teamId });
-                }
-
-                tagIds.push(tag._id);
-            }
+  try {
+    let tagIds = [];
+    if (tags && tags.length > 0) {
+      for (let tagName of tags) {
+        let tag = await DrillTagModel.findOne({ tagName, teamId });
+        if (!tag) {
+          tag = await DrillTagModel.create({ tagName, teamId });
         }
-
-        await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds });
-
-        res.status(201).json({ message: "Drill saved successfully", tagIds });
-    } catch (err) {
-        console.error("Error saving drill:", err);
-        res.status(500).json({ message: "Failed to save drill" });
+        tagIds.push(tag._id);
+      }
     }
-});
-// Now, add an execute button to each of the practice plans. When this execute button is pressed. It should pull up the pdf in a modal for each of the 
 
-app.get('/drillbank/team/:teamId', async (req, res) => {
+    let statIds = [];
+    if (stats && stats.length > 0) {
+      for (let statItem of stats) {
+        // If the statItem is an object with _id, assume it's already a stat object.
+        if (typeof statItem === 'object' && statItem._id) {
+          statIds.push(statItem._id);
+        } else if (typeof statItem === 'string') {
+          // Otherwise, assume statItem is a stat name. Try to find it.
+          let statDoc = await DrillStatsModel.findOne({ statName: statItem, teamId });
+          if (!statDoc) {
+            // Create if not found.
+            statDoc = await DrillStatsModel.create({ statName: statItem, teamId });
+          }
+          statIds.push(statDoc._id);
+        }
+      }
+    }
+    await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds, stats: statIds });
+
+    res.status(201).json({ message: "Drill saved successfully", tagIds, statIds });
+  } catch (err) {
+    console.error("Error saving drill:", err);
+    res.status(500).json({ message: "Failed to save drill" });
+  }
+});
+
+
+  app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
   
     const drills = await DrillBankModel.find({ teamId: teamId });
@@ -710,6 +892,63 @@ app.get('/drillbank/team/:teamId', async (req, res) => {
           res.status(500).json({ error: 'Failed to delete practice plan' });
       }
   });
+  
+  app.post('/drillStats', async (req, res) => {
+    const { statName, teamId } = req.body;
+    if (!statName || !teamId) {
+        return res.status(400).json({ message: "Stat name and team ID are required." });
+    }
+
+    try {
+        let stat = await DrillStatsModel.findOne({ statName, teamId });
+
+        if (!stat) {
+            stat = await DrillStatsModel.create({ statName, teamId });
+        }
+
+        res.status(201).json({ message: "Stat created successfully", stat });
+    } catch (err) {
+        console.error("Error creating stat:", err);
+        res.status(500).json({ message: "Failed to create stat." });
+    }
+  });
+
+  app.get('/drillStats/:stat', async (req, res) => {
+    const { stat } = req.params;
+    const existingStat = await DrillStatsModel.findOne({ statName: stat });
+    res.json({ exists: !!existingStat });
+  });
+  
+  app.get('/drillStats/team/:teamId', async (req, res) => {
+    try {
+      // Find all DrillStats documents matching the teamId
+      const drillStats = await DrillStatsModel.find({ teamId: req.params.teamId }).select('_id statName');
+      res.status(200).json(drillStats);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch drill stats." });
+    }
+  });
+
+  app.get('/userStats/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const teamId = req.headers['teamid']; // Pass the team ID in the headers
+      if (!teamId) {
+        return res.status(400).json({ message: "Team ID is missing" });
+      }
+      // Find the user document in the UserOnTeam collection
+      const userOnTeam = await UserOnTeamModel.findOne({ userId, teamId });
+      if (!userOnTeam) {
+        return res.status(404).json({ message: "User stats not found" });
+      }
+      res.status(200).json(userOnTeam);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });  
+  
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");
 });

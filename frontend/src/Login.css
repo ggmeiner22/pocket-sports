@@ -15,6 +15,11 @@
     border: 2px solid white; 
 }
 
+  
+.forgot-password-button:hover {
+    color: #0056b3;
+  }
+  
 body {
     background-color: black;
     color: white;

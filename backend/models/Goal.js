@@ -10,6 +10,8 @@ const GoalSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   targetNumber: {type: Number, required: true},
+  isTeamGoal: { type: Boolean, default: false },
+
 });
 
 const Goal = mongoose.model("Goal", GoalSchema);
