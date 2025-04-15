@@ -15,9 +15,6 @@ function HomePage() {
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
-    { path: "/goalspage", label: "Goals" },
-    { path: "/drills", label: "Drills" },
-    { path: "/practiceplans", label: "Practice Plans" }
     { path: "/goalspage", label: "Goals" }
   ]);
   const navigate = useNavigate();
@@ -76,6 +73,9 @@ function HomePage() {
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            if (!prev.some(b => b.path === "/practiceplans")) {
+              return [...prev, { path: "/practiceplans", label: "Practice Plans" }];
             }
             return prev;
           });
