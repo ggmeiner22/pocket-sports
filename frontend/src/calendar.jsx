@@ -40,10 +40,6 @@ function CalendarPage() {
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
         { path: "/goalspage", label: "Goals" },
-
-    
-        
-        
       ]);
 
   const storedUserId = localStorage.getItem('userId');
@@ -54,40 +50,7 @@ function CalendarPage() {
     setDrills(selectedOptions); 
   };
 
-  // getDrillTab: checks the user's role and, if Owner, adds the "Drills" button.
-  const getDrillTab = async () => {
-    try {
-      const storedTeamString = localStorage.getItem("selectedTeam");
-      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
-      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
-      if (!storedTeamId) {
-        console.log("Team ID is missing");
-        return;
-      }
-      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
-        headers: { teamId: storedTeamId },
-      });
-      const rosterData = rosterRes.data;
-      // Use storedUserId here instead of undefined currentUserId
-      const me = rosterData.find((p) => p.userId === storedUserId);
-      if (me) {
-        setCurrentUserRole(me.role);
-        //alert(`Your role is: ${me.role}`);  // for debugging only
-        if (me.role === "Owner" || me.role === "Coach") {
-          setButtons((prev) => {
-            if (!prev.some(b => b.path === "/drills")) {
-              return [...prev, { path: "/drills", label: "Drills" }];
-            }
-            return prev;
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching roster:", error.response || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   useEffect(() => {
     if (storedTeam) {
@@ -107,7 +70,19 @@ function CalendarPage() {
       }
     getEvents(selectedDate); // Fetch events for the selected date
     getRoster();
-    getDrillTab();
+    if (storedRole === "Owner") {
+      console.log("theeee Stored role:", storedRole); 
+      setButtons((prevButtons) => {
+        // Prevent adding the button twice
+        if (!prevButtons.some(button => button.path === "/drills")) {
+          return [
+            ...prevButtons,
+            { path: "/drills", label: "Drills" }
+          ];
+        }
+        return prevButtons;
+      });
+    }
   }, [selectedDate]);
 
   useEffect(() => {
@@ -163,7 +138,6 @@ function CalendarPage() {
             });
         });
   
-        setEvents();  // Ensure latest updates are fetched
         setShowEditPopup(false);
     } catch (error) {
         console.error("Error updating event progress:", error);
@@ -634,7 +608,7 @@ const handleFetchFeedback = async (userId, event) => {
                 {Array.isArray(selectedEvent.drills) && selectedEvent.drills.length > 0 ? (
                 selectedEvent.drills.map((drill, index) => (
                     <li key={index} className="event-box">
-                    <p style={{ color: 'black' }}>{drill}</p>
+                    {/* <p style={{ color: 'black' }}>{drill}</p> */}
                     </li>
                 ))
                 ) : (
