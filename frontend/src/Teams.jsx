@@ -262,6 +262,34 @@ function TeamsPage() {
     setShowJoinPopup(false);
   };
 
+  
+  const handleDeleteTeam = async (teamId, ownerId) => {
+    const currentUserId = localStorage.getItem('userId');
+  
+    if (currentUserId !== ownerId) {
+      alert("You do not have permission to delete this team.");
+      return;
+    }
+  
+    if (!window.confirm("Are you sure you want to delete this team?")) return;
+  
+    try {
+      await axios.delete(`http://localhost:3001/teams/${teamId}`, {
+        headers: {
+          userId: currentUserId
+        }
+      });
+      getTeams();
+    } catch (error) {
+      console.error("Failed to delete team:", error);
+      alert("Error deleting team. Try again.");
+    }
+  };
+  
+  
+  
+  
+
   return (
     <div className="teams-container">
       <header className="landing-page-header">
@@ -366,18 +394,35 @@ function TeamsPage() {
 
         <ul className="teamsList">
           {teams.map((team, index) => (
-            <li key={index}>
-              <div>
+            <li key={index} onClick={() => goToTeamPage(team)} className="team-card">
+              <div className="team-info">
                 <div className="teamName"><strong>{team.teamName}</strong></div>
                 <div className="organizationName">{team.organizationName}</div>
-                {/* Display the selected sport */}
                 <div className="selectedSport">
                   Sport: <strong>{team.selectedSport}</strong>
                 </div>
               </div>
-              <button className='topButtons' onClick={() => goToTeamPage(team)}>
-                Select Team +
-              </button>
+              <div className="team-actions">
+                <button
+                  className="topButtons"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToTeamPage(team);
+                  }}
+                >
+                  Select Team +
+                </button>
+                <button
+                  className="delete-team-x"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTeam(team._id, team.createdBy);
+                  }}
+                  title="Delete team"
+                >
+                  ❌
+                </button>
+              </div>
             </li>
           ))}
         </ul>

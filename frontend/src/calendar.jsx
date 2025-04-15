@@ -15,6 +15,7 @@ function CalendarPage() {
   const [feedbackResponse, setFeedbackResponse] = useState('');
     const [loading, setLoading] = useState(false);  // Loading state
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedPracticePlan, setSelectedPracticePlan] = useState('');
   const [updatedCategory, setUpdatedCategory] = useState('');
   const [players, setPlayers] = useState([]);
   const [feedback, setFeedback] = useState(''); // To store user feedback text
@@ -26,7 +27,8 @@ function CalendarPage() {
   const [time, setTime] = useState('');
   const [updatedtime, setUpdatedTime] = useState('');
   const [playerDetails, setPlayerDetails] = useState({});
-  const [practicePlans, setPracticePlans] = useState({});
+  const [practicePlans, setPracticePlans] = useState([]);
+  const [practicePlansDetails, setPracticePlansDetails] = useState({});
   const [updatepracticePlans, setUpdatePracticePlans] = useState({});
   const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
@@ -45,10 +47,7 @@ function CalendarPage() {
   const storedUserId = localStorage.getItem('userId');
   const storedTeam = localStorage.getItem('selectedTeam');
 
-  const handleDrillChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-    setDrills(selectedOptions); 
-  };
+  
 
   
 
@@ -101,10 +100,28 @@ function CalendarPage() {
     }
   };
 
+  const getDrills = async (practicePlanId) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/practiceplans/${practicePlanId}`);
+      setDrills(response.data.drills); // not setDrills(response.data)
+      console.log(drills); // <- Log the correct value, not outdated state
+    } catch (error) {
+      console.error('Error fetching drills:', error);
+      return null;
+    }
+  };
   const getPlanDetails = async (teamId) => {
     try {
-      const response = await axios.get(`http://localhost:3001/practiceplans/${teamId}`);
-      return response.data;  // Return user details for a specific player
+      const response = await axios.get(`http://localhost:3001/practiceplans?teamId=${teamId}`);
+      console.log("Practice plans", response.data)
+      setPracticePlans(response.data)
+      const planDetails = await Promise.all(practicePlanPromises);
+      const planDetailsMap = planDetails.reduce((acc, practiceDetails, idx) => {
+        acc[response.data[idx].teamId] = practiceDetails;
+        return acc;
+      }, {});
+      
+      setPracticePlansDetails(planDetailsMap);  // Save details in state
     } catch (error) {
       console.error('Error fetching user details:', error);
       return null;
@@ -118,7 +135,7 @@ function CalendarPage() {
             category: updatedCategory,
             eventName: eventUpdatedName,
             eventLocation: eventUpdateLocation,
-            drills: updatepracticePlans,
+            practicePlan: updatepracticePlans,
             time: updatedtime
 
         });
@@ -129,7 +146,7 @@ function CalendarPage() {
                     const updatedEvent = { ...event, category: updatedCategory,
                       eventName: eventUpdatedName,
                       eventLocation: eventUpdateLocation,
-                      drills: updatepracticePlans,
+                      practicePlan: updatepracticePlans,
                       time: updatedtime };
           
                     return updatedEvent;
@@ -162,6 +179,10 @@ function CalendarPage() {
         },
       });
       setPlayers(response.data);
+
+      const practicePlanPromises = response.data.map(plan => getPlanDetails(plan.teamId));  // Assuming `userId` is the field
+
+
       
       // Fetch player details for each player
       const playerDetailsPromises = response.data.map(player => getUserDetails(player.userId));  // Assuming `userId` is the field
@@ -174,15 +195,7 @@ function CalendarPage() {
       
       setPlayerDetails(playerDetailsMap);  // Save details in state
 
-      const practicePlanPromises = response.data.map(plan => getPlanDetails(plan.teamId));  // Assuming `userId` is the field
-      const planDetails = await Promise.all(practicePlanPromises);
-
-      const planDetailsMap = details.reduce((acc, planDetails, idx) => {
-        acc[response.data[idx].teamId] = planDetails;
-        return acc;
-      }, {});
       
-      setPracticePlans(planDetailsMap);  // Save details in state
     } catch (error) {
       console.error("Error fetching players:", error.response || error.message);
     } finally {
@@ -323,6 +336,7 @@ const handleFetchFeedback = async (userId, event) => {
 
   // Handle form submission to create event
   const handleSubmit = (e) => {
+    console.log(selectedPracticePlan)
     e.preventDefault();
     const userId = localStorage.getItem('userId');
     const newEvent = {
@@ -332,9 +346,9 @@ const handleFetchFeedback = async (userId, event) => {
       eventName,
       date: selectedDate,
       eventLocation,
-      drills,
+      selectedPracticePlan,
       time,
-      feedback,
+      feedback: {},
       createdBy: userId,
     };
 
@@ -345,7 +359,7 @@ const handleFetchFeedback = async (userId, event) => {
         setSelectedCategory('');
         setEventName('');
         setEventLocation('');
-        setDrills('');
+        setPracticePlans({});
         setTime('');
         setFeedback('');
 
@@ -392,6 +406,12 @@ const handleFetchFeedback = async (userId, event) => {
       alert("Failed to remove event. Please try again later.");
     }
   };
+
+  useEffect(() => {
+    if (selectedEvent && selectedEvent.selectedPracticePlan) {
+      getDrills(selectedEvent.selectedPracticePlan);
+    }
+  }, [selectedEvent]);
   
   
 
@@ -469,18 +489,14 @@ const handleFetchFeedback = async (userId, event) => {
                   </label>
                   <label style={{ color: 'black' }}>
                 Practice Plans:
-                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}}value={drills} onChange={(e) => setDrills(e.target.value)}>
+                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}} value={selectedPracticePlan} onChange={(e) => setSelectedPracticePlan(e.target.value)}>
                 <option value="" disabled>Select a practice plan</option>
-                    {/* {practicePlans.map((plan) => {
-                      const planInfo = practicePlans[plan.practicePlanId]; 
-                      return planInfo ? (
-                        <option key={plan.practicePlanId} value={plan.practicePlanId}>
-                          {plan.planName}
-                        </option>
-                      ) : (
-                        <option key={plan.practicePlanId} disabled>No details available</option>
-                      );
-                    })} */}
+                  {practicePlans.map((plan) => (
+                    
+                    <option key={plan._id} value={plan._id}>
+                      {plan.planName}
+                    </option>
+                  ))}
                   </select>
                 </label>
                   <label style={{color: 'black'}}>Time:
@@ -538,16 +554,16 @@ const handleFetchFeedback = async (userId, event) => {
             </label>
 
             <label style={{ color: 'black' }}>
-              Practice Plans:
-              <select
-                style={{ backgroundColor: 'whitesmoke', color: 'black', borderColor: 'black' }}
-                value={drills}
-                onChange={(e) => setDrills(e.target.value)}
-              >
+                Practice Plans:
+                <select style={{backgroundColor: 'whitesmoke', color: 'black', borderColor:'black'}} value={selectedPracticePlan} onChange={(e) => setSelectedPracticePlan(e.target.value)}>
                 <option value="" disabled>Select a practice plan</option>
-                {/* You can map through practicePlans if needed */}
-              </select>
-            </label>
+                  {practicePlans.map((plan) => (
+                    <option key={plan._id} value={plan._id}>
+                      {plan.planName}
+                    </option>
+                  ))}
+                  </select>
+                </label>
 
             <label style={{ color: 'black' }}>
               Time:
@@ -587,37 +603,35 @@ const handleFetchFeedback = async (userId, event) => {
         </div>
         
         {selectedEvent && (
-          
-            <div className="event-details">
-              {localStorage.getItem('role') === 'Owner' && (
-                <>
-                  <div className="event-button-container">
-                      <button className="eventButton" onClick={editEvent}>Edit Event</button>
-                  </div>
-                </>
-              )}
-            <div className="event-details-card">
-                <h3>Event Details</h3>
-                <p><strong>Event Name:</strong> {selectedEvent.eventName}</p>
-                <p><strong>Location:</strong> {selectedEvent.eventLocation}</p>
-                <p><strong>Time:</strong> {selectedEvent.time}</p>
-            </div>
-            <div className="drills-container">
-                <h2 style={{color: 'black'}}>Drills</h2>
-                <ul className="drills">
-                {Array.isArray(selectedEvent.drills) && selectedEvent.drills.length > 0 ? (
-                selectedEvent.drills.map((drill, index) => (
-                    <li key={index} className="event-box">
-                    {/* <p style={{ color: 'black' }}>{drill}</p> */}
-                    </li>
-                ))
-                ) : (
-                <p>No drills available</p>
-                )}
-                </ul>
-            </div>
-        </div>
-        
+          <div className="event-buttons-container">
+          {localStorage.getItem('role') === 'Owner' && (
+              <div className="event-button-container">
+                  <button className="eventButton" onClick={editEvent}>Edit Event</button>
+              </div>
+          )}
+          <div className="event-details">
+              <div className="event-details-card">
+                  <h3>Event Details</h3>
+                  <p><strong>Event Name:</strong> {selectedEvent.eventName}</p>
+                  <p><strong>Location:</strong> {selectedEvent.eventLocation}</p>
+                  <p><strong>Time:</strong> {selectedEvent.time}</p>
+              </div>
+              <div className="drills-container">
+                  <h2 style={{color: 'black'}}>Drills</h2>
+                  <ul className="drills">
+                      {drills && drills.length > 0 ? (
+                          drills.map((drill, index) => (
+                              <li key={index} className="event-box">
+                                  <p style={{ color: 'black' }}>{drill.drillName}</p>
+                              </li>
+                          ))
+                      ) : (
+                          <p>No drills available</p>
+                      )}
+                  </ul>
+              </div>
+          </div>
+      </div>
         )}
 
 {selectedEvent && storedRole === "Owner" && (

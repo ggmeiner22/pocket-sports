@@ -34,6 +34,34 @@ const { ObjectId } = require('mongodb');
 const fs = require('fs');
 
 
+app.delete('/teams/:teamId', async (req, res) => {
+  const teamId = req.params.teamId;
+  const userId = req.headers['userid']; 
+
+  try {
+    const team = await TeamsModel.findById(teamId);
+
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    if (String(team.createdBy) !== String(userId)) {
+      return res.status(403).json({ message: 'Only the team owner can delete this team.' });
+    }
+
+    await TeamsModel.deleteOne({ _id: teamId });
+    await UserOnTeamModel.deleteMany({ teamId });
+
+    res.status(200).json({ message: 'Team deleted successfully' });
+  } catch (err) {
+    console.error("Error deleting team:", err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
 app.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   const user = await RegisterModel.findOne({ email });
@@ -262,7 +290,6 @@ app.post('/login', async (req, res) => {
             message: "Login successful",
             userId: user._id.toString(),
         });
-        console.log(user._id.toString())
 
     } catch (err) {
         console.error(err);
@@ -274,12 +301,6 @@ app.post('/teams', async (req, res) => {
     const { teamName, organizationName, teamColors, selectedSport, createdBy } = req.body;
 
     try {
-        // Check if the team already exists
-        const existingTeam = await TeamsModel.findOne({ teamName: teamName, organizationName: organizationName });
-        if (existingTeam) {
-            return res.status(400).json("Team already exists");
-        }
-
         const teamCode = generateTeamCode()
         // Create and save the new team in MongoDB
         const newTeam = new TeamsModel({
@@ -308,8 +329,10 @@ app.post('/teams', async (req, res) => {
 });
 
 app.post('/events', async (req, res) => {
-    const { teamId, teamName, selectedCategory, eventName, date, eventLocation, drills, time, feedback, createdBy } = req.body;
-
+    const { teamId, teamName, selectedCategory, eventName, date, eventLocation, selectedPracticePlan, time, feedback, createdBy } = req.body;
+    if (req.body.feedback === "") {
+      req.body.feedback = {};
+    }
     try {
     
         // Create and save the new event in MongoDB
@@ -320,7 +343,7 @@ app.post('/events', async (req, res) => {
             eventName,
             date,
             eventLocation,
-            drills, 
+            selectedPracticePlan, 
             time,
             feedback,
             createdBy,
@@ -381,7 +404,6 @@ app.post('/feedback', async (req, res) => {
 const router = express.Router();
 
 app.get('/useronteams', async (req, res) => {
-    console.log("Headers received:", req.headers);
     const teamId = req.headers['teamid'];
 
     if (!teamId) {
@@ -439,9 +461,6 @@ app.delete('/events/:eventId', async (req, res) => {
 
   app.post('/goals', async (req, res) => {
     const { title, description, createdBy, teamId, targetNumber} = req.body;
-
-    console.log("Received goal data:", { title, description, createdBy, teamId, targetNumber });
-
 
     if (!title || !createdBy || !teamId || targetNumber === undefined) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -553,10 +572,8 @@ app.delete('/goals/:goalId', async (req, res) => {
 
 // Get teams for a user
 app.get('/teams', async (req, res) => {
-    console.log("Headers received:", req.headers);
     const userId = req.headers['userid'];
     const colors = req.headers['teamColors']
-    console.log("Backend: Received userId:", userId);
 
     if (!userId) {
         return res.status(400).json({ error: "User ID is missing in the request headers." });
@@ -619,16 +636,11 @@ app.post('/verifycode', async (req, res) => {
     const email = req.body.email;
     const code = req.body.code
     
-    console.log(code);
     try {
         const user = await RegisterModel.findOne({email: email});
         if (!user) {
             return res.status(400).json("Account Not Found");
         }
-        
-        console.log(user.verifyCode)
-
-        console.log(user.verifyCode === code);
         if (String(user.verifyCode) !== String(code)) {
             return res.status(400).json("Incorrect Verification Code")
         }
@@ -656,9 +668,6 @@ app.post('/verifycode', async (req, res) => {
 app.post('/joinTeam', async (req, res) => { 
     code = req.body.teamCode;
     id = req.body.userId;
-
-    console.log(code)
-    console.log(id)
     team = await TeamsModel.findOne({teamCode: String(code)})
     if (!team) {
         console.log("Error. No team found with that code");
@@ -730,10 +739,9 @@ app.put('/events/:eventId/feedback', async (req, res) => {
 app.get('/registers/:userId', async (req, res) => {
     try {
       const teamId = req.params.userId;
-        console.log(teamId);
+      console.log(teamId);
       // Fetch user details using the userId
       const user = await RegisterModel.findById(teamId);
-        console.log(user);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -746,25 +754,6 @@ app.get('/registers/:userId', async (req, res) => {
     }
   });
 
-// might need this later
-// app.get('/teamsport', async (req, res) => {
-//     try {
-//         const teamId = req.params.teamId;
-
-//         const team = await TeamsModel.findById(teamId);
-        
-//         if(!team) {
-//             return res.status(404).json({message: "Team not found"});
-//         }
-//         const sport = team.selectedSport;
-//         res.status(200).json(sport);
-//     } catch (err) {
-//         console.error('Error fetching team sport:', err);
-//         res.status(500).json({ message: 'Failed to load team sport.' });
-//     }
-
-
-// });
 
 app.post('/drilltags', async (req, res) => {
   const { tagName, teamId } = req.body;
@@ -839,7 +828,6 @@ app.post('/drillbank', async (req, res) => {
         }
       }
     }
-
     await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds, stats: statIds });
 
     res.status(201).json({ message: "Drill saved successfully", tagIds, statIds });
@@ -850,13 +838,11 @@ app.post('/drillbank', async (req, res) => {
 });
 
 
-
   app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
   
+    const drills = await DrillBankModel.find({ teamId: teamId });
     try {
-      const drills = await DrillBankModel.find({ teamId: teamId });
-  
       if (!drills || drills.length === 0) {
         return res.status(404).json({ message: 'No drills found for this team' });
       }
@@ -991,6 +977,100 @@ app.post('/drillbank', async (req, res) => {
       res.status(500).json({ message: 'Failed to fetch team' });
     }
   });
+
+  app.get('/practiceplans', async (req, res) => {
+    const { teamId } = req.query;
+    try {
+        const practicePlans = await PracticePlanModel.find({ teamId: teamId })
+            .populate('drills.drillId', 'drillName pdfB64');
+
+        console.log("practicePlans", practicePlans[0]);
+        res.status(200).json(practicePlans);
+    } catch (error) {
+        console.error('Error fetching practice plans:', error);
+        res.status(500).json({ message: 'Failed to fetch practice plans' });
+    }
+});
+
+app.get('/practiceplans/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      const practicePlan = await PracticePlanModel.findById(id)
+          .populate('drills.drillId', 'drillName pdfB64');
+
+      if (!practicePlan) {
+          return res.status(404).json({ message: 'Practice plan not found' });
+      }
+
+      res.status(200).json(practicePlan);
+  } catch (error) {
+      console.error('Error fetching practice plan by ID:', error);
+      res.status(500).json({ message: 'Failed to fetch practice plan' });
+  }
+});
+
+app.get('/practiceplans/:teamId', async (req, res) => {
+  const { teamId } = req.params;
+
+  try {
+      const practicePlans = await PracticePlanModel.find({ teamId })
+          .populate('drills.drillId', 'drillName pdfB64');
+
+      if (!practicePlans || practicePlans.length === 0) {
+          return res.status(404).json({ message: 'No practice plans found for this team' });
+      }
+
+      res.status(200).json(practicePlans);
+  } catch (error) {
+      console.error('Error fetching practice plans by teamId:', error);
+      res.status(500).json({ message: 'Failed to fetch practice plans' });
+  }
+});
+
+app.post('/practiceplans', async (req, res) => {
+  try {
+      const { planName, planDate, teamId, drills, type } = req.body;
+
+      // Fetch the drill documents based on the drill IDs (extract only the IDs)
+      const drillDocs = await DrillBankModel.find({ _id: { $in: drills.map(drill => drill.drillId) } });
+
+      // Create formatted drill objects with both drillId and drillName
+      const formattedDrills = drillDocs.map(drill => ({
+          drillId: drill._id,  // Ensure drillId is of type ObjectId
+          drillName: drill.drillName
+      }));
+
+      const newPlan = new PracticePlanModel({
+          planName,
+          planDate,
+          teamId,
+          type,
+          drills: formattedDrills
+      });
+
+      await newPlan.save();
+      res.status(201).json(newPlan);
+  } catch (error) {
+      console.error('Error creating practice plan:', error);
+      res.status(500).json({ error: 'Failed to create practice plan' });
+  }
+});
+
+
+  app.delete('/practiceplans/:planId', async (req, res) => {
+      try {
+          const { planId } = req.params;
+          const deletedPlan = await PracticePlanModel.findByIdAndDelete(planId);
+          if (!deletedPlan) {
+              return res.status(404).json({ error: 'Practice plan not found' });
+          }
+          res.status(200).json({ message: 'Practice plan deleted successfully' });
+      } catch (error) {
+          console.error('Error deleting practice plan:', error);
+          res.status(500).json({ error: 'Failed to delete practice plan' });
+      }
+  });
   
   app.post('/drillStats', async (req, res) => {
     const { statName, teamId } = req.body;
@@ -1028,6 +1108,25 @@ app.post('/drillbank', async (req, res) => {
       res.status(500).json({ message: "Failed to fetch drill stats." });
     }
   });
+
+  app.get('/userStats/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const teamId = req.headers['teamid']; // Pass the team ID in the headers
+      if (!teamId) {
+        return res.status(400).json({ message: "Team ID is missing" });
+      }
+      // Find the user document in the UserOnTeam collection
+      const userOnTeam = await UserOnTeamModel.findOne({ userId, teamId });
+      if (!userOnTeam) {
+        return res.status(404).json({ message: "User stats not found" });
+      }
+      res.status(200).json(userOnTeam);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });  
   
 app.listen(3001, () => {
     console.log("Server is Running on port 3001");

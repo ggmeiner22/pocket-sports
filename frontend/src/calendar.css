@@ -15,19 +15,48 @@
   align-items: flex-start; /* Align everything to the left */
 }
 
+.event-buttons-container {
+  position: relative;
+  width: 100%;
+}
+
 .event-details {
-    display: flex;
-    justify-content: space-between;
-    width:100%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .event-details-card {
-    flex: 1; /* Takes up half of the screen */
-    padding: 20px;
-    background-color: lightgray;
-    color: black;
-    border-radius: 8px;
+  flex: 1;
+  padding: 20px;
+  background-color: lightgray;
+  color: black;
+  border-radius: 8px;
+  font-size: 20px;
 }
+
+.event-button-container {
+  position: relative;
+  top: 0; /* Align the button at the top of the container */
+  right: 0; /* Align the button to the right */
+  z-index: 10; /* Ensure button is on top */
+}
+
+.eventButton {
+  padding: 20px 40px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0px;
+}
+
+.eventButton:hover {
+  background-color: #45a049;
+}
+
+
 
 .drills-dropdown {
     display: flex;

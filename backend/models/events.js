@@ -7,7 +7,7 @@ const EventsSchema = new mongoose.Schema({
     eventName: String,
     date: String,
     eventLocation: String,
-    drills: Array,
+    selectedPracticePlan: { type: mongoose.Schema.Types.ObjectId, ref: 'PracticePlan' },
     time: String,
     feedback: [{ 
         playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, 

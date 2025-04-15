@@ -33,8 +33,7 @@ function GoalsPage() {
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
-    { path: "/goalspage", label: "Goals" },
-    
+    { path: "/goalspage", label: "Goals" }
   ]);
   const navigate = useNavigate();
   const location = useLocation();
