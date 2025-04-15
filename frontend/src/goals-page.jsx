@@ -37,12 +37,12 @@ function GoalsPage() {
   ]);
   const navigate = useNavigate();
   const location = useLocation();
+  const storedRole = localStorage.getItem('role');
+
 
   // Retrieve stored values from localStorage
   const storedUserId = localStorage.getItem("userId");
 
-  // getDrillTab: Check the roster for the current user’s role.
-  // If the user is an Owner, add the "Drills" button to the header.
   const getDrillTab = async () => {
     try {
       const storedTeamString = localStorage.getItem("selectedTeam");
@@ -79,7 +79,6 @@ function GoalsPage() {
     }
   };
 
-  // On mount, retrieve the selected team and call getDrillTab
   useEffect(() => {
     const storedTeam = localStorage.getItem('selectedTeam');
     if (storedTeam) {
@@ -290,6 +289,7 @@ const updateGoalProgress = async () => {
                   <select
                     value={newGoal.targetNumber}
                     onChange={(e) => setNewGoal({ ...newGoal, targetNumber: Number(e.target.value) })}
+                    style={{backgroundColor: 'whitesmoke', color: 'black', borderColor: 'black', width: "calc(100% - 30px)"}}
                   >
                     {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
                       <option key={num} value={num}>{num}</option>

@@ -247,7 +247,7 @@ function PracticePlans() {
                                     value={drill._id}
                                     onChange={(e) => {
                                         if (e.target.checked) {
-                                            setSelectedDrills([...selectedDrills, drill._id]);
+                                            setSelectedDrills([...selectedDrills, { drillId: drill._id, drillName: drill.drillName }]);
                                         } else {
                                             setSelectedDrills(selectedDrills.filter(id => id !== drill._id));
                                         }

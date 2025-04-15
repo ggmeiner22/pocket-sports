@@ -5,6 +5,7 @@ const PracticePlanSchema = new mongoose.Schema({
     planDate: { type: Date, required: true },
     drills: [{
         drillId: { type: mongoose.Schema.Types.ObjectId, ref: 'drillBank', required: true },
+        drillName: String
     }],
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'teams', required: true },
     type: { type: String, required: true }

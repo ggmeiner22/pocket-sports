@@ -11,6 +11,7 @@ function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [teamName, setTeamName] = useState('');
   const [events, setEvents] = useState({});
+  const [practicePlans, setPracticePlans] = useState([]);
   const [buttons, setButtons] = useState([
     { path: "/homepage", label: "Home" },
     { path: "/roster", label: "Roster" },
@@ -34,8 +35,6 @@ function HomePage() {
       console.log('User ID is missing');
       return;
     }
-    getDrillTab()
-
     fetch(`http://localhost:3001/registers/${storedUserId}`)
       .then((response) => response.json())
       .then((data) => {
@@ -111,6 +110,7 @@ function HomePage() {
   useEffect(() => {
       if (selectedTeam && selectedTeam._id) {
           fetchGoals();
+          getPracticePlans();
           
 
       }
@@ -145,7 +145,7 @@ function HomePage() {
           // Take only the top 3 most recent goals
           setGoals(sortedGoals.slice(0, 3));
         }
-        console.log("Goals after update:", res.data[4]);
+        console.log("Goals after update:", response.data[4]);
 
     } catch (error) {
         console.error("Error fetching goals:", error);
@@ -184,6 +184,10 @@ const renderGoalCards = () => {
   const getEvents = async () => {
     try {
       const storedUserId = localStorage.getItem('userId');
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeam ? storedTeam._id : null; // Access _id on the parsed object
+      console.log(storedTeamId);
       if (!storedUserId) {
         console.log("User ID is missing");
         return;
@@ -191,8 +195,7 @@ const renderGoalCards = () => {
   
       const response = await axios.get('http://localhost:3001/events', {
         headers: {
-          userId: storedUserId,
-          teamName: teamName,
+          teamid: storedTeamId,  // Ensure the team ID is passed correctly
         },
       });
   
@@ -256,14 +259,57 @@ const renderGoalCards = () => {
     ));
   };
 
+  const getPracticePlans = async () => {
+    try {
+      const storedUserId = localStorage.getItem('userId');
+      const storedTeamString = localStorage.getItem('selectedTeam');
+      const storedTeam = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeam ? storedTeam._id : null;
+
+      if (!storedUserId || !storedTeamId) {
+        console.log("User ID or Team ID is missing");
+        return;
+      }
+      console.log("stores team id", storedTeamId)
+      const response = await axios.get(`http://localhost:3001/practiceplans?teamId=${storedTeamId}`);
+
+
+      console.log("Practice plans response:", response.data);  // Debugging
+
+
+      if (!response.data || response.data.length === 0) {
+        console.log("No practice plans found.");
+        setPracticePlans([]);  // Set empty array if no practice plans
+        return;
+      }
+
+      // Sort practice plans by createdAt in descending order (most recent first)
+      const sortedPlans = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Take only the top 3 most recent practice plans
+      setPracticePlans(sortedPlans.slice(0, 3));  // Update the state with the most recent practice plans
+    } catch (error) {
+      console.error("Error fetching practice plans:", error.response || error.message);
+      alert("Failed to fetch practice plans. Please try again later.");
+      setPracticePlans([]);  // Set empty array if there's an error
+    }
+  };
+
+  useEffect(() => {
+    getPracticePlans();  // This will call the function when the component mounts
+}, [])
+
+  // Render practice plan cards
   const renderPracticePlanCards = () => (
-    Array.from({ length: 3 }).map((_, index) => (
-      <Card className='teamHome' style={{ width: '18rem' }}>
-        <Card.Img variant="top" src="src\basketball_court.jpg" />
-        <Card.Body>
-        <Button
+    practicePlans.map((plan, index) => (
+      <Card className='teamHome' style={{ width: '20rem', height: '20rem' }} key={index}>
+      <Card.Img variant="top" src="/Basketball.jpg" />
+      <Card.Body>
+          <Card.Title>{plan.planName}</Card.Title>
+          <Button
             style={{ backgroundColor: selectedTeam?.teamColors?.[0], width: '100%' }}
             variant='primary'
+            onClick={() => navigate("/practiceplans")}
           >
             Go to practice plan
           </Button>
@@ -336,8 +382,8 @@ const renderGoalCards = () => {
           <>
             <strong className='homepage-headers'>Your Practice Plans</strong>
             {renderPracticePlanCards()}
-            <strong className='homepage-headers'>Your Top Performers</strong>
-            {renderRosterCards()}
+            {/* <strong className='homepage-headers'>Your Top Performers</strong>
+            {renderRosterCards()} */}
           </>
         )}
         

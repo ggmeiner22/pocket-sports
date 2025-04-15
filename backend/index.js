@@ -14,6 +14,7 @@ const DrillTagModel = require('./models/DrillTags')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
+const FeedbackModel = require('./models/feedback');
 const DrillStatsModel = require('./models/DrillStats');
 const Contact = require('./models/Contact');
 
@@ -329,19 +330,23 @@ app.post('/teams', async (req, res) => {
 });
 
 app.post('/events', async (req, res) => {
-    const { teamName, selectedCategory, eventName, date, eventLocation, drills, time, createdBy } = req.body;
-
+    const { teamId, teamName, selectedCategory, eventName, date, eventLocation, selectedPracticePlan, time, feedback, createdBy } = req.body;
+    if (req.body.feedback === "") {
+      req.body.feedback = {};
+    }
     try {
     
         // Create and save the new event in MongoDB
         const newEvent = new EventsModel({
+            teamId,
             teamName,
             selectedCategory,
             eventName,
             date,
             eventLocation,
-            drills, 
+            selectedPracticePlan, 
             time,
+            feedback,
             createdBy,
         });
         await newEvent.save();
@@ -353,6 +358,49 @@ app.post('/events', async (req, res) => {
         res.status(500).json(err);
     }
 });
+
+app.get('/feedback/:playerId/:eventId', async (req, res) => {
+  const { playerId, eventId } = req.params;
+
+  try {
+      // Find feedback that matches both playerId and eventId
+      const feedbacks = await FeedbackModel.find({ playerId, eventId });
+
+      if (feedbacks.length === 0) {
+          return res.status(404).json({ message: "No feedback found for this player and event." });
+      }
+
+      res.status(200).json({ feedbacks });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Error retrieving feedback" });
+  }
+});
+
+
+app.post('/feedback', async (req, res) => {
+  const { teamId, eventId, playerId, comment} = req.body;
+
+  try {
+  
+      // Create and save the new event in MongoDB
+      const newFeedback = new FeedbackModel({
+          teamId,
+          eventId, 
+          playerId,
+          comment
+      });
+      await newFeedback.save();
+
+     
+      res.status(201).json("Feedback created successfully");
+  } catch (err) {
+      console.error(err);
+      res.status(500).json(err);
+  }
+});
+
+ 
 
 const router = express.Router();
 
@@ -374,19 +422,23 @@ app.get('/useronteams', async (req, res) => {
 
 // Get events for a specific user and team
 app.get('/events', async (req, res) => {
-    const userId = req.headers['userid'];
+  console.log("Headers received:", req.headers);
 
-    if (!userId) {
-        return res.status(400).json({ error: "Missing userId or teamNameee" });
-    }
+  // Extract teamId from headers
+  const teamId = req.headers['teamid'];  // Ensure lowercase 'teamid' is used in headers
 
-    try {
-        const events = await EventsModel.find({ createdBy: userId});
-        res.status(200).json(events);
-    } catch (err) {
-        console.error("Error fetching events:", err);
-        res.status(500).json({ error: "Internal server error" });
-    }
+  if (!teamId) {
+      return res.status(400).json({ error: "Missing teamId" });
+  }
+
+  try {
+      // Query the database for events based on teamId
+      const events = await EventsModel.find({ teamId: teamId });
+      res.status(200).json(events);
+  } catch (err) {
+      console.error("Error fetching events:", err);
+      res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.delete('/events/:eventId', async (req, res) => {
@@ -478,6 +530,28 @@ app.put('/goals/:goalId', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Error updating goal" });
     }
+});
+
+app.put('/events/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+  const { selectedCategory, eventName, eventLocation, drills, time  } = req.body;
+
+  try {
+      const updatedEvent = await EventsModel.findByIdAndUpdate(
+          eventId, { 
+              selectedCategory, 
+              eventName, 
+              eventLocation, 
+              drills, 
+              time
+          }, 
+          { new: true}
+      );
+      res.status(200).json(updatedEvent);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating event" });
+  }
 });
 
 app.delete('/goals/:goalId', async (req, res) => {
@@ -605,6 +679,62 @@ app.post('/joinTeam', async (req, res) => {
     }
 
 })
+
+app.put('/events/:eventId/feedback', async (req, res) => {
+  const { eventId } = req.params;
+  const { playerId, feedbackText } = req.body;
+
+  console.log("Received playerId:", playerId);
+  console.log("Received feedbackText:", feedbackText);
+
+  // Check if feedback data is valid
+  if (!playerId || !feedbackText || typeof feedbackText !== 'string' || !feedbackText.trim()) {
+    return res.status(400).send('Player ID or feedback text is missing or invalid');
+  }
+
+  // Check if the playerId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    return res.status(400).send('Invalid Player ID');
+  }
+
+  try {
+    const event = await EventsModel.findById(eventId);
+    if (!event) {
+      return res.status(404).send('Event not found');
+    }
+
+    // Ensure feedback is an array
+    if (!Array.isArray(event.feedback)) {
+      event.feedback = [];
+    }
+
+    // Log the current feedback array
+    console.log("Current Feedback Array before update:", event.feedback);
+
+    // Push the new feedback into the feedback array
+    const newFeedback = {
+      playerId: playerId, // Directly use the playerId string if it is already valid
+      comment: feedbackText.trim(),
+    };
+
+    // Log the new feedback to be pushed
+    console.log("New Feedback to be added:", newFeedback);
+
+    event.feedback.push(newFeedback);
+
+    // Log feedback after update
+    console.log("Updated Feedback Array:", event.feedback);
+
+    // Save the updated event
+    await event.save();
+
+    res.status(200).send('Feedback submitted successfully');
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    res.status(500).send('Failed to update feedback');
+  }
+});
+
 
 
 app.get('/registers/:userId', async (req, res) => {
@@ -863,21 +993,71 @@ app.post('/drillbank', async (req, res) => {
     }
 });
 
-  app.post('/practiceplans', async (req, res) => {
-      try {
-          const { planName, planDate, teamId, drills, type } = req.body;
+app.get('/practiceplans/:id', async (req, res) => {
+  const { id } = req.params;
 
-          // Map the array of drill IDs to the expected format
-          const formattedDrills = drills.map(drillId => ({ drillId }));
+  try {
+      const practicePlan = await PracticePlanModel.findById(id)
+          .populate('drills.drillId', 'drillName pdfB64');
 
-          const newPlan = new PracticePlanModel({ planName, planDate, drills: formattedDrills, teamId, type });
-          await newPlan.save();
-          res.status(201).json(newPlan);
-      } catch (error) {
-          console.error('Error creating practice plan:', error);
-          res.status(500).json({ error: 'Failed to create practice plan' });
+      if (!practicePlan) {
+          return res.status(404).json({ message: 'Practice plan not found' });
       }
-  });
+
+      res.status(200).json(practicePlan);
+  } catch (error) {
+      console.error('Error fetching practice plan by ID:', error);
+      res.status(500).json({ message: 'Failed to fetch practice plan' });
+  }
+});
+
+app.get('/practiceplans/:teamId', async (req, res) => {
+  const { teamId } = req.params;
+
+  try {
+      const practicePlans = await PracticePlanModel.find({ teamId })
+          .populate('drills.drillId', 'drillName pdfB64');
+
+      if (!practicePlans || practicePlans.length === 0) {
+          return res.status(404).json({ message: 'No practice plans found for this team' });
+      }
+
+      res.status(200).json(practicePlans);
+  } catch (error) {
+      console.error('Error fetching practice plans by teamId:', error);
+      res.status(500).json({ message: 'Failed to fetch practice plans' });
+  }
+});
+
+app.post('/practiceplans', async (req, res) => {
+  try {
+      const { planName, planDate, teamId, drills, type } = req.body;
+
+      // Fetch the drill documents based on the drill IDs (extract only the IDs)
+      const drillDocs = await DrillBankModel.find({ _id: { $in: drills.map(drill => drill.drillId) } });
+
+      // Create formatted drill objects with both drillId and drillName
+      const formattedDrills = drillDocs.map(drill => ({
+          drillId: drill._id,  // Ensure drillId is of type ObjectId
+          drillName: drill.drillName
+      }));
+
+      const newPlan = new PracticePlanModel({
+          planName,
+          planDate,
+          teamId,
+          type,
+          drills: formattedDrills
+      });
+
+      await newPlan.save();
+      res.status(201).json(newPlan);
+  } catch (error) {
+      console.error('Error creating practice plan:', error);
+      res.status(500).json({ error: 'Failed to create practice plan' });
+  }
+});
+
 
   app.delete('/practiceplans/:planId', async (req, res) => {
       try {

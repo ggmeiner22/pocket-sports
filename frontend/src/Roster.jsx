@@ -65,16 +65,31 @@ function Roster() {
   ]);
 
   const currentUserId = localStorage.getItem('userId');
+  const storedRole = localStorage.getItem('role');
+
 
   // Load team from localStorage and fetch roster
+
   useEffect(() => {
+    const storedRole = localStorage.getItem('role');
+    if (storedRole === null) {
+      console.log("No role found in localStorage.");
+    } else {
+      console.log("the Stored role:", storedRole);  // Log if it's Owner
+    }
+  }, []);
+  
+  
+  useEffect(() => {
+    
     const storedTeamString = localStorage.getItem('selectedTeam');
     if (storedTeamString) {
       const team = JSON.parse(storedTeamString);
       setSelectedTeam(team);
     }
     getRoster();
-  }, []);
+  }, []);  // Add role as dependency
+  
 
   // When selectedTeam is loaded, fetch its extra info visibility settings from the backend
   useEffect(() => {
@@ -154,6 +169,7 @@ function Roster() {
           });
         }
       }
+      
       const detailPromises = rosterData.map((p) => getUserDetails(p.userId));
       const details = await Promise.all(detailPromises);
       const detailsMap = details.reduce((acc, userObj, idx) => {

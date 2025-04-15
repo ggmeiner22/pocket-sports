@@ -3,6 +3,7 @@
     height: auto; 
     padding: 20px; 
     background-color: black;
+    flex: 1;
 }
 
 .App {
@@ -23,6 +24,9 @@ body {
     border-radius: 8px;
     color: white;
     background-color: black;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 
@@ -71,6 +75,10 @@ body {
     max-height: 90%; 
     padding: 20px;
     border: 2px solid orange;
+}
+
+.popup-content.label {
+    color: white;
 }
 
 .popup-buttons button {
