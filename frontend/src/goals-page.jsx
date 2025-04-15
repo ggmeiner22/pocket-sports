@@ -43,24 +43,48 @@ function GoalsPage() {
   // Retrieve stored values from localStorage
   const storedUserId = localStorage.getItem("userId");
 
+  const getDrillTab = async () => {
+    try {
+      const storedTeamString = localStorage.getItem("selectedTeam");
+      const storedTeamObj = storedTeamString ? JSON.parse(storedTeamString) : null;
+      const storedTeamId = storedTeamObj ? storedTeamObj._id : null;
+      if (!storedTeamId) {
+        console.log("Team ID is missing");
+        return;
+      }
+      const rosterRes = await axios.get('http://localhost:3001/useronteams', {
+        headers: { teamId: storedTeamId },
+      });
+      const rosterData = rosterRes.data;
+      // Use storedUserId from localStorage
+      const me = rosterData.find((p) => p.userId === storedUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            if (!prev.some(b => b.path === "/practiceplans")) {
+              return [...prev, { path: "/practiceplans", label: "Practice Plans" }];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching roster:", error.response || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const storedTeam = localStorage.getItem('selectedTeam');
     if (storedTeam) {
       setSelectedTeam(JSON.parse(storedTeam));
     }
-    if (storedRole === "Owner") {
-      console.log("theeee Stored role:", storedRole); 
-      setButtons((prevButtons) => {
-        // Prevent adding the button twice
-        if (!prevButtons.some(button => button.path === "/drills")) {
-          return [
-            ...prevButtons,
-            { path: "/drills", label: "Drills" }
-          ];
-        }
-        return prevButtons;
-      });
-    }
+    getDrillTab();
   }, []);
 
   useEffect(() => {

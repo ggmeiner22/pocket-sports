@@ -14,7 +14,8 @@ const DrillTagModel = require('./models/DrillTags')
 const PracticePlanModel = require('./models/PracticePlan')
 const EventsModel = require('./models/events')
 const GoalModel = require('./models/Goal');
-const FeedbackModel = require('./models/feedback');const DrillStatsModel = require('./models/DrillStats');
+const FeedbackModel = require('./models/feedback');
+const DrillStatsModel = require('./models/DrillStats');
 const Contact = require('./models/Contact');
 
 const nodemailer = require('nodemailer')

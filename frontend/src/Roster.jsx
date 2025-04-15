@@ -77,20 +77,6 @@ function Roster() {
     } else {
       console.log("the Stored role:", storedRole);  // Log if it's Owner
     }
-  
-    if (storedRole === "Owner") {
-      console.log("theeee Stored role:", storedRole); 
-      setButtons((prevButtons) => {
-        // Prevent adding the button twice
-        if (!prevButtons.some(button => button.path === "/drills")) {
-          return [
-            ...prevButtons,
-            { path: "/drills", label: "Drills" }
-          ];
-        }
-        return prevButtons;
-      });
-    }
   }, []);
   
   
@@ -169,6 +155,20 @@ function Roster() {
       const rosterData = rosterRes.data;
       setPlayers(rosterData);
       const me = rosterData.find((p) => p.userId === currentUserId);
+      if (me) {
+        setCurrentUserRole(me.role);
+        if (me.role === "Owner" || me.role === "Coach") {
+          setButtons((prev) => {
+            if (!prev.some(b => b.path === "/drills")) {
+              return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            if (!prev.some(b => b.path === "/practiceplans")) {
+              return [...prev, { path: "/practiceplans", label: "Practice Plans" }];
+            }
+            return prev;
+          });
+        }
+      }
       
       const detailPromises = rosterData.map((p) => getUserDetails(p.userId));
       const details = await Promise.all(detailPromises);
