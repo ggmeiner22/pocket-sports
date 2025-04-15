@@ -35,7 +35,6 @@ function HomePage() {
       console.log('User ID is missing');
       return;
     }
-    getDrillTab()
     fetch(`http://localhost:3001/registers/${storedUserId}`)
       .then((response) => response.json())
       .then((data) => {
