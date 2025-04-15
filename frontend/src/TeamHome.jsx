@@ -97,7 +97,7 @@ function HomePage() {
     getUserDetails();
     getEvents();
     // Call getDrillTab to update header buttons based on the user's role
-    getDrillTab()
+    getDrillTab();
   }, []);
 
   const [goals, setGoals] = useState([]);
