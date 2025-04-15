@@ -290,7 +290,6 @@ app.post('/login', async (req, res) => {
             message: "Login successful",
             userId: user._id.toString(),
         });
-        console.log(user._id.toString())
 
     } catch (err) {
         console.error(err);
@@ -358,7 +357,6 @@ app.post('/events', async (req, res) => {
 const router = express.Router();
 
 app.get('/useronteams', async (req, res) => {
-    console.log("Headers received:", req.headers);
     const teamId = req.headers['teamid'];
 
     if (!teamId) {
@@ -376,7 +374,6 @@ app.get('/useronteams', async (req, res) => {
 
 // Get events for a specific user and team
 app.get('/events', async (req, res) => {
-    console.log("Headers received:", req.headers);
     const userId = req.headers['userid'];
 
     if (!userId) {
@@ -413,9 +410,6 @@ app.delete('/events/:eventId', async (req, res) => {
 
   app.post('/goals', async (req, res) => {
     const { title, description, createdBy, teamId, targetNumber} = req.body;
-
-    console.log("Received goal data:", { title, description, createdBy, teamId, targetNumber });
-
 
     if (!title || !createdBy || !teamId || targetNumber === undefined) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -505,10 +499,8 @@ app.delete('/goals/:goalId', async (req, res) => {
 
 // Get teams for a user
 app.get('/teams', async (req, res) => {
-    console.log("Headers received:", req.headers);
     const userId = req.headers['userid'];
     const colors = req.headers['teamColors']
-    console.log("Backend: Received userId:", userId);
 
     if (!userId) {
         return res.status(400).json({ error: "User ID is missing in the request headers." });
@@ -571,16 +563,11 @@ app.post('/verifycode', async (req, res) => {
     const email = req.body.email;
     const code = req.body.code
     
-    console.log(code);
     try {
         const user = await RegisterModel.findOne({email: email});
         if (!user) {
             return res.status(400).json("Account Not Found");
         }
-        
-        console.log(user.verifyCode)
-
-        console.log(user.verifyCode === code);
         if (String(user.verifyCode) !== String(code)) {
             return res.status(400).json("Incorrect Verification Code")
         }
@@ -608,9 +595,6 @@ app.post('/verifycode', async (req, res) => {
 app.post('/joinTeam', async (req, res) => { 
     code = req.body.teamCode;
     id = req.body.userId;
-
-    console.log(code)
-    console.log(id)
     team = await TeamsModel.findOne({teamCode: String(code)})
     if (!team) {
         console.log("Error. No team found with that code");
@@ -626,10 +610,9 @@ app.post('/joinTeam', async (req, res) => {
 app.get('/registers/:userId', async (req, res) => {
     try {
       const teamId = req.params.userId;
-        console.log(teamId);
+      console.log(teamId);
       // Fetch user details using the userId
       const user = await RegisterModel.findById(teamId);
-        console.log(user);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -716,7 +699,6 @@ app.post('/drillbank', async (req, res) => {
         }
       }
     }
-
     await DrillBankModel.create({ drillName, pdfB64, teamId, tags: tagIds, stats: statIds });
 
     res.status(201).json({ message: "Drill saved successfully", tagIds, statIds });
@@ -727,13 +709,11 @@ app.post('/drillbank', async (req, res) => {
 });
 
 
-
   app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
   
+    const drills = await DrillBankModel.find({ teamId: teamId });
     try {
-      const drills = await DrillBankModel.find({ teamId: teamId });
-  
       if (!drills || drills.length === 0) {
         return res.status(404).json({ message: 'No drills found for this team' });
       }
@@ -867,6 +847,50 @@ app.post('/drillbank', async (req, res) => {
       console.error('Error fetching team:', error);
       res.status(500).json({ message: 'Failed to fetch team' });
     }
+  });
+
+  app.get('/practiceplans', async (req, res) => {
+    const { teamId } = req.query;
+    try {
+        const practicePlans = await PracticePlanModel.find({ teamId: teamId })
+            .populate('drills.drillId', 'drillName pdfB64');
+
+        console.log("practicePlans", practicePlans[0]);
+        res.status(200).json(practicePlans);
+    } catch (error) {
+        console.error('Error fetching practice plans:', error);
+        res.status(500).json({ message: 'Failed to fetch practice plans' });
+    }
+});
+
+  app.post('/practiceplans', async (req, res) => {
+      try {
+          const { planName, planDate, teamId, drills, type } = req.body;
+
+          // Map the array of drill IDs to the expected format
+          const formattedDrills = drills.map(drillId => ({ drillId }));
+
+          const newPlan = new PracticePlanModel({ planName, planDate, drills: formattedDrills, teamId, type });
+          await newPlan.save();
+          res.status(201).json(newPlan);
+      } catch (error) {
+          console.error('Error creating practice plan:', error);
+          res.status(500).json({ error: 'Failed to create practice plan' });
+      }
+  });
+
+  app.delete('/practiceplans/:planId', async (req, res) => {
+      try {
+          const { planId } = req.params;
+          const deletedPlan = await PracticePlanModel.findByIdAndDelete(planId);
+          if (!deletedPlan) {
+              return res.status(404).json({ error: 'Practice plan not found' });
+          }
+          res.status(200).json({ message: 'Practice plan deleted successfully' });
+      } catch (error) {
+          console.error('Error deleting practice plan:', error);
+          res.status(500).json({ error: 'Failed to delete practice plan' });
+      }
   });
   
   app.post('/drillStats', async (req, res) => {

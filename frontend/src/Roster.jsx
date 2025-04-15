@@ -62,9 +62,7 @@ function Roster() {
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
     { path: "/goalspage", label: "Goals" },
-  
-
-    
+    { path: "/practiceplans", label: "Practice Plans" }
   ]);
 
   const currentUserId = localStorage.getItem('userId');

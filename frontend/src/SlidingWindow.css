@@ -1,0 +1,78 @@
+.sliding-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.sliding-window.open {
+    display: block;
+}
+
+.sliding-window-content {
+    padding: 20px;
+    color: black;
+}
+
+.close-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.drill-slider {
+    width: 100%;
+    height: 100%;
+}
+
+.drill-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-bottom: 20px;
+}
+
+.drill-name {
+    margin-top: 10px;
+    text-align: center;
+}
+.pdf-embed {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+}
+
+/* Swiper navigation arrows */
+.swiper-button-next,
+.swiper-button-prev {
+    color: black;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
+    background-size: 44px 44px;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 10;
+}
+
+.swiper-button-next {
+    right: 10px;
+}
+
+.swiper-button-prev {
+    left: 10px;
+}
