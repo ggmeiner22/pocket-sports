@@ -37,8 +37,8 @@ function PracticePlans() {
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
         { path: "/goalspage", label: "Goals" },
-        { path: "/practiceplans", label: "Practice Plans" },
-        { path: "/drills", label: "Drills" }
+        { path: "/drills", label: "Drills" },
+        { path: "/practiceplans", label: "Practice Plans" }
     ]);
 
     useEffect(() => {

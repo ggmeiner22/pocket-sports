@@ -62,7 +62,6 @@ function Roster() {
     { path: "/roster", label: "Roster" },
     { path: "/calendarpage", label: "Calendar" },
     { path: "/goalspage", label: "Goals" },
-    { path: "/practiceplans", label: "Practice Plans" }
   ]);
 
   const currentUserId = localStorage.getItem('userId');
@@ -147,6 +146,9 @@ function Roster() {
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
+            }
+            if (!prev.some(b => b.path === "/practiceplans")) {
+              return [...prev, { path: "/practiceplans", label: "Practice Plans" }];
             }
             return prev;
           });

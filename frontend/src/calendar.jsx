@@ -31,9 +31,7 @@ function CalendarPage() {
         { path: "/homepage", label: "Home" },
         { path: "/roster", label: "Roster" },
         { path: "/calendarpage", label: "Calendar" },
-        { path: "/goalspage", label: "Goals" },
-        { path: "/drills", label: "Drills" },
-        { path: "/practiceplans", label: "Practice Plans" },
+        { path: "/goalspage", label: "Goals" }
       ]);
 
   const storedUserId = localStorage.getItem('userId');
@@ -68,6 +66,9 @@ function CalendarPage() {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
             }
+            if (!prev.some(b => b.path === "/practiceplans")) {
+              return [...prev, { path: "/practiceplans", label: "Practice Plans" }];
+            }
             return prev;
           });
         }
@@ -80,21 +81,6 @@ function CalendarPage() {
   };
 
   useEffect(() => {
-    if (storedTeam) {
-      setTeamName(storedTeam);
-    }
-    if (storedRole === "Owner") {
-        setButtons((prevButtons) => {
-          // Prevent adding the button twice
-          if (!prevButtons.some(button => button.path === "/drills")) {
-            return [
-              ...prevButtons,
-              { path: "/drills", label: "Drills" }
-            ];
-          }
-          return prevButtons;
-        });
-      }
     getEvents(selectedDate); // Fetch events for the selected date
     getRoster();
     getDrillTab();
