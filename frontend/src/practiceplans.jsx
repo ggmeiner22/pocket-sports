@@ -175,10 +175,13 @@ function PracticePlans() {
                 </div>
             </header>
             <h2 className="homepage-headers">Practice Plans</h2>
+
             <div className="practiceplans-container">
+            <Button style={{backgroundColor: 'black', color: 'white', padding: '30px'}} variant="primary" onClick={() => setShowModal(true)}>Create Practice Plan</Button>
+
                 {practicePlans.length === 0 ? (
-                    <h3>No current practice plans</h3>
-                ) : (
+            <p style={{color: 'black', alignSelf:'center', width: '100%', fontSize: '5vw', margin: '40px'}}>No current practice plans!</p> // Display a message when no events are available
+    ) : (
                     practicePlans.map((plan) => (
                         <Card key={plan._id} className='card-events'>
                             <Card.Header as='h5'>{plan.planName}</Card.Header>
@@ -186,17 +189,16 @@ function PracticePlans() {
                                 <Card.Text>Type: {plan.type}</Card.Text>
                                 {/* <Card.Text>Drills: {plan.drills.map(drill => drill.drillId.drillName).join(', ')}</Card.Text> */}
                                 <Card.Text>Plan Date: {new Date(plan.planDate).toLocaleDateString()}</Card.Text>
+                                <Button style={{marginRight:'10px'}}variant="primary" onClick={() => handleExecutePlan(plan.drills)}>Execute</Button>
                                 <Button variant="danger" onClick={() => handleDeletePlan(plan._id)}>Delete</Button>
-                                <Button variant="primary" onClick={() => handleExecutePlan(plan.drills)}>Execute</Button>
                             </Card.Body>
                         </Card>
                     ))
                 )}
-                <Button variant="primary" onClick={() => setShowModal(true)}>Create Practice Plan</Button>
             </div>
             <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-dialog">
                 <Modal.Header closeButton>
-                    <Modal.Title>Create Practice Plan</Modal.Title>
+                    <Modal.Title >Create Practice Plan</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="modal-content">
                     <Form>

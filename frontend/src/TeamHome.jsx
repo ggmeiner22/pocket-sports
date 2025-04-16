@@ -277,11 +277,19 @@ const renderGoalCards = () => {
 }, [])
 
   // Render practice plan cards
-  const renderPracticePlanCards = () => (
-    practicePlans.map((plan, index) => (
+  const renderPracticePlanCards = () => {
+    if (practicePlans.length === 0) {
+      return (
+        <p style={{ color: 'black', alignSelf: 'center', width: '100%', fontSize: '5vw', margin: '40px' }}>
+          No current practice plans!
+        </p>
+      );
+    }
+  
+    return practicePlans.map((plan, index) => (
       <Card className='teamHome' style={{ width: '20rem', height: '20rem' }} key={index}>
-      <Card.Img variant="top" src="/Basketball.jpg" />
-      <Card.Body>
+        <Card.Img variant="top" src="/Basketball.jpg" />
+        <Card.Body>
           <Card.Title>{plan.planName}</Card.Title>
           <Button
             style={{ backgroundColor: selectedTeam?.teamColors?.[0], width: '100%' }}
@@ -292,8 +300,9 @@ const renderGoalCards = () => {
           </Button>
         </Card.Body>
       </Card>
-    ))
-  );
+    ));
+  };
+  
 
   const renderRosterCards = () => (
     Array.from({ length: 3 }).map((_, index) => (
