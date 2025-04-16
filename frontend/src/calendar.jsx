@@ -212,9 +212,14 @@ function CalendarPage() {
 
     const handleFeedbackSubmit = async (playerId, feedbackText) => {
         const userId = localStorage.getItem('userId');
+
+        if (!userId || !selectedTeam?._id || !selectedEvent?._id || !playerId || !feedbackText.trim()) {
+          alert('Missing required information to submit feedback.');
+          return;
+        }
         const newFeedback = {
           teamId: selectedTeam?._id, // Ensure this is included
-          eventId: selectedEvent._id, 
+          eventId: selectedEvent?._id, 
           playerId: playerId,
           comment: feedbackText,
         };
@@ -304,7 +309,7 @@ const handleFetchFeedback = async (userId, event) => {
 
   // Ensure that feedbacks exist and there's at least one item
   if (feedbacks.length > 0) {
-      setFeedbackResponse(feedbacks[1].comment);  // Assuming the first feedback has the comment
+      setFeedbackResponse(feedbacks[0].comment);  // Assuming the first feedback has the comment
       console.log("Fetched feedback:", feedbackResponse);
   } else {
       console.log("No feedback available.");
