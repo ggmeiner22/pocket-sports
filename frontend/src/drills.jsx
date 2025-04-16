@@ -487,19 +487,20 @@ function Drills() {
           <Modal.Title>Create Drill</Modal.Title>
         </Modal.Header>
       
-        <Modal.Body>
+        <Modal.Body >
           {/* Use a container that can flex or grid */}
-          <div className="drill-modal-content">
+          
+          <div className="drill-modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
       
             {/* Left side: the canvas and draggable element controls */}
             <div className="canvas-section">
               <canvas id="practiceCanvas" ref={canvasRef} width="900" height="500"></canvas>
-              <div className='dragNdrop'>
-                <Button onClick={() => addDraggableElement("O", "blue")}>Add O</Button>
+              <div style={{ marginTop: '20px'}} className='dragNdrop'>
+                <Button  onClick={() => addDraggableElement("O", "blue")}>Add O</Button>
                 <Button onClick={() => addDraggableElement("X", "red")}>Add X</Button>
                 <Button onClick={() => addDraggableElement("→", "black")}>Add →</Button>
               </div>
-              <Button onClick={deleteSelectedElement} className='deleteElement'>Delete Selected</Button>
+              <Button style={{marginTop: '20px', borderRadius:'10px'}}onClick={deleteSelectedElement} className='deleteElement'>Delete Selected</Button>
             </div>
       
             {/* Right side: the form inputs for drill name, tags, and stats */}
@@ -543,7 +544,7 @@ function Drills() {
                     handleTagSelection(tagToAdd);
                     setDropdownTag("");
                     setInputTag("");
-                  }}>
+                  }} style={{width: '20vw'}}>
                     Add Drill Tag
                   </Button>
                 </div>
@@ -620,7 +621,7 @@ function Drills() {
                       }
                       setInputStat("");
                     }
-                  }}>
+                  }} style={{width: '20vw'}}>
                     Add Drill Statistic
                   </Button>
                 </div>
@@ -649,15 +650,15 @@ function Drills() {
       </Modal>
       <p>Choose a template then click the image or the button below to get started!</p>
       <button className="contactButton1" onClick={handleCreateDrill}>Create Drill</button>
-      <button onClick={handleDrillBank}>Go to Drill Bank</button>
+      <button style={{marginLeft: '30px', borderRadius:'10px'}}onClick={handleDrillBank}>Go to Drill Bank</button>
 
       <div className="drill-list">
-      <h3>Drill Bank</h3>
-      <ul>
+      <h3 style={{marginTop: '30px', padding:' 20px', borderTop: '2px solid white'}}>Drill Bank</h3>
+      <ul style={{listStyleType: 'none'}}>
         {drillBank.map((drill) => (
           <li key={drill._id}>
             {drill.drillName}
-            <button onClick={() => fetchDrillPdf(drill.drillName)}>Download</button>
+            <button style={{ margin:'20px'}} onClick={() => fetchDrillPdf(drill.drillName)}>Download</button>
             <button onClick={() => deleteDrill(drill._id)}>Delete</button>
           </li>
         ))}
