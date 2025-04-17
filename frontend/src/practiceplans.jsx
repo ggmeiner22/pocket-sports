@@ -177,7 +177,7 @@ function PracticePlans() {
             <h2 className="homepage-headers">Practice Plans</h2>
             <div className="practiceplans-container">
                 {practicePlans.length === 0 ? (
-                    <h3>No current practice plans</h3>
+                    <h3 style={{ color: 'black' }}>No current practice plans</h3>
                 ) : (
                     practicePlans.map((plan) => (
                         <Card key={plan._id} className='card-events'>
