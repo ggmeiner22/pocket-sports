@@ -180,7 +180,7 @@ function PracticePlans() {
             <Button style={{backgroundColor: 'black', color: 'white', padding: '30px'}} variant="primary" onClick={() => setShowModal(true)}>Create Practice Plan</Button>
 
                 {practicePlans.length === 0 ? (
-                    <h3>No current practice plans</h3>
+                    <h3 style= {{ color: "black" }}>No current practice plans</h3>
                 ) : (
                     practicePlans.map((plan) => (
                         <Card key={plan._id} className='card-events'>
