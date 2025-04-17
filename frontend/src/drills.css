@@ -140,4 +140,56 @@
   border-radius: 4px;
   display: inline-block;
 }
+ 
+.pdf-upload {
+  .upload-drill-input {
+    width: 50%
+  }
+}
 
+.upload-drill-button {
+  background-color: white;
+  color: black;
+  margin-left: 30px;
+  border-radius: 10px;
+}
+
+
+
+/* Drill Bank List Styling */
+.drill-list {
+  margin-top: 20px;
+}
+
+.drill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ccc; /* Optional: Add a divider between items */
+}
+
+.drill-name {
+  flex: 1; /* Allow the name to take up available space */
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.drill-actions {
+  display: flex;
+  gap: 10px; /* Add spacing between the buttons */
+}
+
+.drill-actions button {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.drill-actions button:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+}

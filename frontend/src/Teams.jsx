@@ -11,7 +11,10 @@ function TeamsPage() {
   const [organizationName, setOrganizationName] = useState('');
   const [teamColors, setTeamColors] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [teamId, setTeamId] = useState('');
+  const [showInviteToTeamPopup, setInviteToTeamPopup] = useState(false);
   const [userId, setUserId] = useState('');  // userId state
+  const [inviteEmail, setEmailInvite] = useState(''); // State for email invite
   const [joinCode, setJoinCode] = useState('')
 
   const [selectedSport, setSelectedSport] = useState('');
@@ -63,6 +66,49 @@ function TeamsPage() {
       console.error("Upload error:", error);
     }
   };
+
+
+  const seedDefaultDrills = async (teamId) => {
+    let defaultDrill;
+
+    if (selectedSport === 'Lacrosse') {
+      defaultDrill = { drillName: 'Shuttle Drill', pdfPath: '/uploads/Shuttle Drill.pdf', teamId: teamId };
+    } else if (selectedSport === 'Basketball') {
+      defaultDrill = { drillName: 'Layup Drill', pdfPath: '/uploads/Layup Drill.pdf', teamId: teamId };
+    } else if (selectedSport === 'Volleyball') {
+      defaultDrill = { drillName: 'Net Dig Drill', pdfPath: '/uploads/Net Dig Drill.pdf', teamId: teamId };
+    }
+  
+    try {
+       
+      const response = await fetch(`http://localhost:3001${defaultDrill.pdfPath}`);
+      const blob = await response.blob();
+
+      // Convert the Blob to a Base64 string
+      const base64String = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64 string
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    
+      const drill = base64String;
+      const params = {
+        teamId: teamId,
+        drillName: defaultDrill.drillName,
+        pdfB64: base64String
+      }
+
+      console.log(params);
+      await axios.post('http://localhost:3001/drillbank', params);
+  
+      // Send the drills with Base64 strings to the backend
+      // await axios.post('http://localhost:3001/drills', drillsWithBase64);
+      console.log('Default drills seeded successfully.');
+    } catch (error) {
+      console.error('Error seeding default drills:', error);
+    }
+  };
   
 
   // Handle profile modal visibility
@@ -74,6 +120,10 @@ function TeamsPage() {
   const closeProfileModal = () => {
     setShowProfileModal(false);
   };
+
+  const handleInviteClosePopup = () => {
+    setInviteToTeamPopup(false);
+  }
   
 
   const login = () => {
@@ -188,38 +238,46 @@ function TeamsPage() {
   }, [userId]);
 
   // Handle the "Create Team" form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
+  
+    const userId = localStorage.getItem('userId'); // Retrieve userId from localStorage
     const newTeam = {
       teamName,
       organizationName,
       teamColors,
       selectedSport,
-      createdBy: userId,  // Pass userId to associate the team with the logged-in user
-      joinCode
+      createdBy: userId, // Pass userId to associate the team with the logged-in user
+      joinCode,
     };
+  
+    try {
+      const response = await axios.post('http://localhost:3001/teams', newTeam);
+      console.log("Response from /teams endpoint:", response); // Log the full response
+      const newTeamId = response.data; // Access the teamId from the response
 
-    axios.post('http://localhost:3001/teams', newTeam)
-      .then(() => {
-        getTeams();  // Fetch updated list of teams
-        setShowPopup(false);  // Close the popup
-        setTeamName('');
-        setOrganizationName('');
-        setTeamColors('');
-        setSelectedSport('');
-        setJoinCode('');
-      })
-      .catch((err) => {
-        console.log(err);
-        alert(err + 'Error creating team');
-      });
+      // Fetch updated list of teams
+      getTeams();
+      setShowPopup(false); // Close the popup
+      setTeamName('');
+      setOrganizationName('');
+      setTeamColors('');
+      setSelectedSport('');
+      setJoinCode('');
+  
+      // Optionally seed default drills for the new team
+      console.log("Seeding default drills for team ID:", newTeamId);
+      seedDefaultDrills(newTeamId);
+    } catch (err) {
+      console.error("Error creating team:", err);
+      alert("Error creating team. Please try again.");
+    }
   };
-
+    
 
   const handleJoinSubmit = async (e) => {
     e.preventDefault();
+    console.log('made it to handler');
     
     const storedUserId = localStorage.getItem('userId');  // Get userId
     // Make a POST request to join the team
@@ -238,6 +296,49 @@ function TeamsPage() {
       alert("Failed to join the team. Please try again.");
     }
   };
+
+  const handleLeaveSubmit = async (e) => {
+    e.preventDefault();
+    console.log('made it to handler');
+    
+    const storedUserId = localStorage.getItem('userId');  // Get userId
+    
+    // Make a POST request to leave the team
+    try {
+      const response = await axios.post('http://localhost:3001/leaveTeam', {
+        teamId: teamId,
+        userId: storedUserId
+      });
+      console.log(response.data);
+      // Refresh teams list
+      getTeams();
+    } catch (error) {
+      console.error("Error leaving team:", error);
+      alert("Failed to leave the team. Please try again.");
+    }
+  }
+
+  const handleInviteToTeamSubmit = async (e) => {
+    // Prevent default form submission
+    e.preventDefault();
+    console.log("📧 Invite email:", inviteEmail);
+
+    // Make a POST request to invite to the team
+    try {
+      const response = await axios.post('http://localhost:3001/invite-to-team', {
+        email: inviteEmail,
+        teamId: teamId,
+      });
+      console.log(response.data);
+      alert("Successfully invited to the team!");
+      // Refresh teams list
+      handleInviteClosePopup();
+      getTeams();
+    } catch (error) {
+      console.error("Error inviting to team:", error);
+      alert("Failed to invite to the team. Please try again.");
+    }
+  }
 
 
   // Show popup to create a new team
@@ -371,6 +472,7 @@ function TeamsPage() {
           </div>
         )}
 
+
         {showJoinPopup && (
           <div className="popup-top">
           <div className="popup-content">
@@ -383,15 +485,39 @@ function TeamsPage() {
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
                     required
-                  />
+                    />
               </label>
               <button className="topButtons" type="button" onClick={handleCloseJoinPopup}>Cancel</button>
-              <button className="topButtons" type='submit'>Submit Team Code</button>
+              <button className="topButtons" type='submit' onClick={handleJoinSubmit}>Submit Team Code</button>
             </form>
           </div>
           </div>
         )}
 
+        {showInviteToTeamPopup && (
+          <div className="popup-top">
+            <div className="popup-content" style={{ backgroundColor: 'black', color:'white'}}>
+              <h2>Invite to Team</h2>
+              <form onSubmit={handleInviteToTeamSubmit}>
+                <label style={{ color:'white'}}>
+                  Invite Code:
+                  <input
+                    type="text"
+                    id="email"
+                    placeholder='Enter the email of the person you want to invite'
+                    onChange={(e) => setEmailInvite(e.target.value)}
+                    required
+                  />
+                </label>
+                <br />
+                <div className="popup-buttons">
+                  <button className="topButtons" type="button" onClick={handleInviteClosePopup}>Cancel</button>
+                  <button className="topButtons" type="submit"onClick={handleInviteToTeamSubmit}>Send Invite</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
         <ul className="teamsList">
           {teams.map((team, index) => (
             <li key={index} onClick={() => goToTeamPage(team)} className="team-card">
@@ -403,13 +529,37 @@ function TeamsPage() {
                 </div>
               </div>
               <div className="team-actions">
+              {team.createdBy !== userId && (
+                <button
+                  className="topButtons"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTeamId(team._id);
+                    handleLeaveSubmit(e);
+                  }}
+                  >
+                  Leave Team -
+                </button>
+                )}
+                {team.createdBy === userId && (
+                  <button
+                    className="topButtons"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTeamId(team._id);
+                      setInviteToTeamPopup(true);
+                    }}
+                  >
+                    Invite to Team +
+                  </button>
+                )}
                 <button
                   className="topButtons"
                   onClick={(e) => {
                     e.stopPropagation();
                     goToTeamPage(team);
                   }}
-                >
+                  >
                   Select Team +
                 </button>
                 <button
@@ -419,7 +569,7 @@ function TeamsPage() {
                     handleDeleteTeam(team._id, team.createdBy);
                   }}
                   title="Delete team"
-                >
+                  >
                   ❌
                 </button>
               </div>
