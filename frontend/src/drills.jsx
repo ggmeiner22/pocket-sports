@@ -24,6 +24,8 @@ function Drills() {
   const [modalImage, setModalImage] = useState(null);
   const [canvas, setCanvas] = useState(null);
   const canvasRef = useRef(null);
+  const [uploadDrillName, setUploadDrillName] = useState("");
+  const [uploadDrillFile, setUploadDrillFile] = useState(null);
   const [drillName, setDrillName] = useState('');
   const [buttons, setButtons] = useState([
       { path: "/homepage", label: "Home" },
@@ -82,9 +84,45 @@ function Drills() {
         });
     }
   }, [selectedTeam, showModal]);
+
+  const uploadDrill = async () => {
+    if (!uploadDrillName || !uploadDrillFile || !selectedTeam) {
+      alert("Please provide a drill name, select a file, and ensure a team is selected.");
+      return;
+    }
   
-  const saveDrill = () => {
-    html2canvas(canvasRef.current).then((canvas) => {
+    const reader = new FileReader();
+  
+    reader.onload = async () => {
+      const pdfBase64 = reader.result.split(',')[1]; // Extract the Base64 string
+      console.log(pdfBase64);
+      try {
+        const response = await axios.post('http://localhost:3001/drillbank', {
+          pdfB64: pdfBase64,
+          teamId: selectedTeam._id,
+          drillName: uploadDrillName,
+        });
+        console.log("Drill uploaded successfully:", response.data);
+        alert("Drill uploaded successfully!");
+        setUploadDrillName("");
+        setUploadDrillFile(null);
+        fetchDrills(); // Refresh the drill bank
+      } catch (err) {
+        console.error("Error uploading drill:", err);
+        alert("Failed to upload drill. Please try again.");
+      }
+    };
+  
+    reader.onerror = () => {
+      console.error("Error reading file");
+      alert("Failed to process the file. Please try again.");
+    };
+  
+    reader.readAsDataURL(uploadDrillFile); // Read the file as a Base64 encoded string
+  };
+  
+  const saveDrill = async () => {
+    await html2canvas(canvasRef.current).then((canvas) => {
         const imgData = canvas.toDataURL('image/jpeg', 0.5);
         const pdf = new jsPDF('landscape');
         pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); // Adjust dimensions as needed
@@ -93,6 +131,10 @@ function Drills() {
         // Map drillStats array (assumed to be an array of stat objects) to an array of ObjectIds.
         const statsToSave = drillStats.map(stat => stat._id);
 
+        if (!drillName) {
+            alert("Please enter a drill name.");
+            return;
+        }
         axios.post('http://localhost:3001/drillbank', { 
             pdfB64: pdfBase64, 
             teamId: selectedTeam._id, 
@@ -110,11 +152,12 @@ function Drills() {
             setDrillStats([]);
             setNewTag("");              // Clear the manual tag input
             // Optionally, clear the canvas (if needed)
-            if (canvas) {
-              canvas.clear();
-            }
+            // if (canvas) {
+            //   canvas.clear();
+            // }
         })
         .catch(err => {
+            alert(err);
             console.log(err);
         });
     });
@@ -488,11 +531,9 @@ function Drills() {
         </Modal.Header>
       
         <Modal.Body >
-          {/* Use a container that can flex or grid */}
           
           <div className="drill-modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
       
-            {/* Left side: the canvas and draggable element controls */}
             <div className="canvas-section">
               <canvas id="practiceCanvas" ref={canvasRef} width="900" height="500"></canvas>
               <div style={{ marginTop: '20px'}} className='dragNdrop'>
@@ -503,7 +544,6 @@ function Drills() {
               <Button style={{marginTop: '20px', borderRadius:'10px'}}onClick={deleteSelectedElement} className='deleteElement'>Delete Selected</Button>
             </div>
       
-            {/* Right side: the form inputs for drill name, tags, and stats */}
             <div className="form-section">
               {/* Drill Name */}
               <div className="form-group">
@@ -638,7 +678,6 @@ function Drills() {
                   )}
                 </div>
               </div>
-
             </div>
           </div>
         </Modal.Body>
@@ -651,17 +690,90 @@ function Drills() {
       <p>Choose a template then click the image or the button below to get started!</p>
       <button className="contactButton1" onClick={handleCreateDrill}>Create Drill</button>
       <button style={{marginLeft: '30px', borderRadius:'10px'}}onClick={handleDrillBank}>Go to Drill Bank</button>
-
+      <div className="pdf-upload">
+        <label htmlFor="uploadDrillName">Upload Drill Name:</label>
+        <h3 style={{marginTop: '30px', padding:' 20px', borderTop: '2px solid white'}}>Upload Your Own Drill PDF</h3>
+        <input
+          type="text"
+          placeholder="Enter the drill's name"
+          id="uploadDrillName"
+          className="upload-drill-input"
+          value={uploadDrillName}
+          onChange={(e) => setUploadDrillName(e.target.value)}
+        />
+        <label htmlFor="uploadDrillPdf">Upload Drill PDF:</label>
+        <input
+          type="file"
+          id="uploadDrillPdf"
+          className="upload-input"
+          accept="application/pdf"
+          onChange={(e) => setUploadDrillFile(e.target.files[0])}
+          />
+        <button
+          onClick={uploadDrill}
+          className="upload-drill-button"
+          disabled={!uploadDrillName || !uploadDrillFile}
+          >
+          Upload Drill
+        </button>
+      </div>
       <div className="drill-list">
       <h3 style={{marginTop: '30px', padding:' 20px', borderTop: '2px solid white'}}>Drill Bank</h3>
-      <ul style={{listStyleType: 'none'}}>
-        {drillBank.map((drill) => (
-          <li key={drill._id}>
-            {drill.drillName}
-            <button style={{ margin:'20px'}} onClick={() => fetchDrillPdf(drill.drillName)}>Download</button>
-            <button onClick={() => deleteDrill(drill._id)}>Delete</button>
-          </li>
-        ))}
+      <ul 
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 0.3fr 0.3fr',
+          gap: '0.5rem 0.2rem', // tighter horizontal gap
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '0',
+          marginTop: '2rem',
+        }}
+      >
+
+      {drillBank.map((drill) => (
+      <React.Fragment key={drill._id}>
+      <li style={{ listStyleType: 'none', paddingLeft: '1em' }}>
+        {drill.drillName}
+      </li>
+    
+      <button 
+        onClick={() => fetchDrillPdf(drill.drillName)} 
+        style={{
+          fontSize: '0.85em',
+          padding: '0.3em 0.8em',
+          borderRadius: '0.6em',
+          backgroundColor: '#f1f1f1',
+          border: 'none',
+          cursor: 'pointer',
+          width: '100%',
+          maxWidth: '8em'
+        }}
+      >
+        Download
+      </button>
+    
+      <button 
+        onClick={() => deleteDrill(drill._id)} 
+        style={{
+          fontSize: '0.85em',
+          padding: '0.2em 0.5em',
+          borderRadius: '999px',
+          backgroundColor: '#8b0000',
+          color: 'white',
+          border: 'none',
+          cursor: 'pointer',
+          width: '100%',
+          maxWidth: '3em'
+        }}
+        aria-label={`Delete ${drill.drillName}`}
+        title="Delete"
+      >
+        X
+      </button>
+    </React.Fragment>
+      
+      ))}
       </ul>
     </div>
 

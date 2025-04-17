@@ -10,6 +10,7 @@ import axios from 'axios';
 function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [teamName, setTeamName] = useState('');
+  const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState({});
   const [practicePlans, setPracticePlans] = useState([]);
   const [buttons, setButtons] = useState([

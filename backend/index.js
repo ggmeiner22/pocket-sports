@@ -32,8 +32,17 @@ app.use('/uploads', express.static('uploads'));
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 const { ObjectId } = require('mongodb');
 
-const fs = require('fs');
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+      user: '7f84c7001@smtp-brevo.com',  // Or use SMTP key as user
+      pass: 'vtMBydKCIRqfmnk8',  // SMTP password or API key
+  },
+});
 
+const fs = require('fs');
 
 app.delete('/teams/:teamId', async (req, res) => {
   const teamId = req.params.teamId;
@@ -60,7 +69,34 @@ app.delete('/teams/:teamId', async (req, res) => {
   }
 });
 
+app.post('/invite-to-team', async (req, res) => {
+  const email = req.body.email;
+  const teamId = req.body.teamId;
+  const expiryTime = Date.now() + 15 * 60 * 1000;
+  const teamCode = 0
 
+  try {
+      const team = await TeamsModel.findById(teamId);
+      if(!team) { 
+        res.status(400).json("Team not found");
+        return;
+      }
+      const teamCode = team.teamCode;
+      const info = await transporter.sendMail({
+          from: '"Pocket Sports Team" pocketsportsteam@gmail.com',
+          to: email,  // List of receivers
+          subject: 'You\'ve been invited!', // Subject line
+          text: `You've been invited to join a team on PocketSports.`, // Plain text body
+          html: `<b>Register or login and join the team with this code: ${teamCode}</b>`, // HTML body
+      });
+
+      res.status(200).json("Email invite sent")
+  } catch (err){
+      console.error(err);
+      res.status(201).json("Email invite sent")
+  }
+
+})
 
 
 app.post('/forgot-password', async (req, res) => {
@@ -83,15 +119,6 @@ app.post('/forgot-password', async (req, res) => {
     return res.status(500).json({ message: "Failed to save reset token" });
   }
 
-
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'pocketsportsteam@gmail.com',
-      pass: 'rbgxybnicgzxngic'
-    }
-  });
 
   const resetLink = `http://localhost:5173/reset-password/${token}`;
 
@@ -223,16 +250,6 @@ app.post('/upload-profile/:userId', upload.single('profilePicture'), async (req,
   }
 });
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: '7f84c7001@smtp-brevo.com',  // Or use SMTP key as user
-        pass: 'vtMBydKCIRqfmnk8',  // SMTP password or API key
-    },
-});
-
 const generateTeamCode = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -322,7 +339,8 @@ app.post('/teams', async (req, res) => {
             
         });
         await newTeamMember.save(); 
-        res.status(201).json("Team created successfully");
+        res.status(201).json(newTeam._id);
+        
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
@@ -422,7 +440,6 @@ app.get('/useronteams', async (req, res) => {
 
 // Get events for a specific user and team
 app.get('/events', async (req, res) => {
-  console.log("Headers received:", req.headers);
 
   // Extract teamId from headers
   const teamId = req.headers['teamid'];  // Ensure lowercase 'teamid' is used in headers
@@ -628,7 +645,7 @@ app.post('/verifyemail', async (req, res) => {
         res.status(200).json("Verification email sent")
     } catch (err){
         console.error(err);
-        res.status(201).json("Email verified")
+        res.status(400).json("Email not verified. Error:" + err);
     }
 });
 
@@ -669,7 +686,8 @@ app.post('/verifycode', async (req, res) => {
 app.post('/joinTeam', async (req, res) => { 
     code = req.body.teamCode;
     id = req.body.userId;
-    team = await TeamsModel.findOne({teamCode: String(code)})
+    console.log('code:', code.toUpperCase());
+    team = await TeamsModel.findOne({teamCode: String(code.toUpperCase())});
     if (!team) {
         console.log("Error. No team found with that code");
     } else {
@@ -680,12 +698,26 @@ app.post('/joinTeam', async (req, res) => {
 
 })
 
+app.post('/leaveTeam', async (req, res) => {
+    const { userId, teamId } = req.body;
+
+    try {
+        const userOnTeam = await UserOnTeamModel.findOne({ userId, teamId });
+        if (!userOnTeam) {
+            return res.status(404).json({ message: "User not found on this team" });
+        }
+
+        await UserOnTeamModel.deleteOne({ _id: userOnTeam._id });
+        res.status(200).json({ message: "User removed from team successfully" });
+    } catch (error) {
+        console.error("Error removing user from team:", error);
+        res.status(500).json({ message: "Failed to remove user from team" });
+    }
+});
+
 app.put('/events/:eventId/feedback', async (req, res) => {
   const { eventId } = req.params;
   const { playerId, feedbackText } = req.body;
-
-  console.log("Received playerId:", playerId);
-  console.log("Received feedbackText:", feedbackText);
 
   // Check if feedback data is valid
   if (!playerId || !feedbackText || typeof feedbackText !== 'string' || !feedbackText.trim()) {
@@ -795,7 +827,7 @@ app.get('/drilltags/team/:teamId', async (req, res) => {
 
 app.post('/drillbank', async (req, res) => {
   const { pdfB64, teamId, drillName, tags, stats } = req.body;
-
+  
   if (!pdfB64 || !teamId || !drillName) {
     return res.status(400).json({ message: "pdf, teamId, and drillName are required." });
   }
@@ -842,10 +874,11 @@ app.post('/drillbank', async (req, res) => {
   app.get('/drillbank/team/:teamId', async (req, res) => {
     const { teamId } = req.params;
   
-    const drills = await DrillBankModel.find({ teamId: teamId });
+    let drills = await DrillBankModel.find({ teamId: teamId });
     try {
       if (!drills || drills.length === 0) {
-        return res.status(404).json({ message: 'No drills found for this team' });
+        drills = []
+        // return res.status(404).json({ message: 'No drills found for this team' });
       }
   
       res.status(200).json(drills);
@@ -1012,8 +1045,8 @@ app.get('/practiceplans/:id', async (req, res) => {
 });
 
 app.get('/practiceplans/:teamId', async (req, res) => {
+  console.log("Received teamId in the backend:", req.params.teamId);
   const { teamId } = req.params;
-
   try {
       const practicePlans = await PracticePlanModel.find({ teamId })
           .populate('drills.drillId', 'drillName pdfB64');
