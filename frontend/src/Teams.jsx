@@ -408,7 +408,7 @@ function TeamsPage() {
       <div className="bodyHome">
         {showPopup && (
           <div className="popup-top">
-            <div className="popup-content" style={{ backgroundColor: 'black', color:'white'}}>
+            <div className="popup-content" style={{border: "2px solid white", backgroundColor: 'black', color:'white'}}>
               <h2>Create a New Team</h2>
               <form onSubmit={handleSubmit}>
                 <label style={{ color:'white'}}>
@@ -475,9 +475,9 @@ function TeamsPage() {
 
         {showJoinPopup && (
           <div className="popup-top">
-          <div className="popup-content">
+          <div className="popup-content" style={{border: "2px solid white", backgroundColor: 'black', color:'white'}}>
             <form onSubmit={handleJoinSubmit}>
-              <label>
+              <label style={{color: 'white'}}>
                   Enter the 4-digit Team Code:
                   <input
                     type="text"
@@ -496,7 +496,7 @@ function TeamsPage() {
 
         {showInviteToTeamPopup && (
           <div className="popup-top">
-            <div className="popup-content" style={{ backgroundColor: 'black', color:'white'}}>
+            <div className="popup-content" style={{border: "2px solid white", backgroundColor: 'black', color:'white'}}>
               <h2>Invite to Team</h2>
               <form onSubmit={handleInviteToTeamSubmit}>
                 <label style={{ color:'white'}}>

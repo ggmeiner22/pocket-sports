@@ -30,12 +30,12 @@ function CalendarPage() {
   const [practicePlans, setPracticePlans] = useState([]);
   const [practicePlansDetails, setPracticePlansDetails] = useState({});
   const [updatepracticePlans, setUpdatePracticePlans] = useState({});
+  const [storedRole, setStoredRole] = useState("Player");
   const [userId, setUserId] = useState(''); // userId state
   const [teamName, setTeamName] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const storedRole = localStorage.getItem('role');
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [buttons, setButtons] = useState([
         { path: "/homepage", label: "Home" },
@@ -67,6 +67,7 @@ function CalendarPage() {
         setCurrentUserRole(me.role);
         //alert(`Your role is: ${me.role}`);  // for debugging only
         if (me.role === "Owner" || me.role === "Coach") {
+          setStoredRole("Owner");
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
@@ -84,7 +85,7 @@ function CalendarPage() {
       setLoading(false);
     }
   };
-
+  console.log("Calendar ", storedRole)
   useEffect(() => {
     if (storedTeam) {
       setTeamName(storedTeam);
@@ -150,20 +151,20 @@ function CalendarPage() {
 
         });
   
-        setEvents(prevEvents => {
-            return prevEvents.map(event => {
-                if (event._id === selectedEvent._id) {
-                    const updatedEvent = { ...event, category: updatedCategory,
-                      eventName: eventUpdatedName,
-                      eventLocation: eventUpdateLocation,
-                      practicePlan: updatepracticePlans,
-                      time: updatedtime };
+        // setEvents(prevEvents => {
+        //     return prevEvents.map(event => {
+        //         if (event._id === selectedEvent._id) {
+        //             const updatedEvent = { ...event, category: updatedCategory,
+        //               eventName: eventUpdatedName,
+        //               eventLocation: eventUpdateLocation,
+        //               practicePlan: updatepracticePlans,
+        //               time: updatedtime };
           
-                    return updatedEvent;
-                }
-                return event;
-            });
-        });
+        //             return updatedEvent;
+        //         }
+        //         return event;
+        //     });
+        // });
   
         setShowEditPopup(false);
     } catch (error) {
@@ -257,6 +258,8 @@ function CalendarPage() {
         console.log("User ID is missing");
         return;
       }
+
+   
   
       const formattedDate = date.toDateString();  // Get the string representation of the date
   
@@ -456,7 +459,7 @@ const handleFetchFeedback = async (userId, event) => {
       </header>
 
       {/* Add Event Button */}
-      {localStorage.getItem('role') === 'Owner' && (
+      {storedRole === 'Owner' && (
           <>
             <div className="event-button-container">
                 <button className="eventButton" onClick={addEvent}>Add Event</button>
@@ -486,10 +489,11 @@ const handleFetchFeedback = async (userId, event) => {
                     <option>Game</option>
                   </select>
                   </label>
-                  <label style={{color: 'black'}}>Event Name:
+                  <label style={{borderColor: 'black'}}>Event Name:
                     <input
                       type="text"
                       value={eventName}
+                      style={{borderColor: 'black'}}
                       onChange={(e) => setEventName(e.target.value)}
                       required
                     />
@@ -497,6 +501,7 @@ const handleFetchFeedback = async (userId, event) => {
                   <label style={{color: 'black'}}>Location:
                     <input
                       type="text"
+                      style={{borderColor: 'black'}}
                       value={eventLocation}
                       onChange={(e) => setEventLocation(e.target.value)}
                       required
@@ -533,7 +538,7 @@ const handleFetchFeedback = async (userId, event) => {
       <div className="popupEvent-top">
         <div className="popupEvent-content">
           <h2 style={{ color: 'black' }}>Edit Event</h2>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={updateEvent}>
             <label style={{ color: 'black' }}>
               Category:
               <select
@@ -552,6 +557,7 @@ const handleFetchFeedback = async (userId, event) => {
               Event Name:
               <input
                 type="text"
+                style={{ borderColor: 'black' }}
                 value={eventUpdatedName}
                 onChange={(e) => setEventUpdatedName(e.target.value)}
                 required
@@ -561,6 +567,7 @@ const handleFetchFeedback = async (userId, event) => {
             <label style={{ color: 'black' }}>
               Location:
               <input
+              style={{ borderColor: 'black' }}
                 type="text"
                 value={eventUpdateLocation}
                 onChange={(e) => setEventUpdateLocation(e.target.value)}
@@ -619,7 +626,7 @@ const handleFetchFeedback = async (userId, event) => {
         
         {selectedEvent && (
           <div className="event-buttons-container">
-          {localStorage.getItem('role') === 'Owner' && (
+          {storedRole === 'Owner' && (
               <div className="event-button-container">
                   <button className="eventButton" onClick={editEvent}>Edit Event</button>
               </div>

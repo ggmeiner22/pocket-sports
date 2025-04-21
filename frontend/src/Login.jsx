@@ -137,7 +137,7 @@ function Login() {
 
           <button
               type="button"
-              className="forgot-password-button"
+              className="register-button"
               onClick={() => navigate('/forgot-password')}
             >
               Forgot Password?

@@ -551,7 +551,7 @@ function Roster() {
         <Modal.Header closeButton>
           <Modal.Title>Edit User Info</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ width: '90vh', overflowY: 'auto' }} >
           <label>
             Position:
             <input
