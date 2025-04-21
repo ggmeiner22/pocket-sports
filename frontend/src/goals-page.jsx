@@ -273,6 +273,7 @@ const updateGoalProgress = async () => {
                 <label>Title:
                   <input
                     type="text"
+                    style={{borderColor:'black'}}
                     value={newGoal.title}
                     onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
                   />
@@ -280,6 +281,7 @@ const updateGoalProgress = async () => {
                 <label>Description:
                   <input
                     type="text"
+                    style={{borderColor:'black'}}
                     value={newGoal.description}
                     onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
                   />
