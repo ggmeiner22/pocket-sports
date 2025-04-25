@@ -582,22 +582,20 @@ function TeamsPage() {
       {showProfileModal && (
         <div className="profile-modal">
           <div className="profile-modal-content">
-            <h2>Profile</h2>
+            <h2 style={{color: 'black'}}>Profile</h2>
             <div className="profile-info">
-              <div className="profile-picture">
                 <img
                   src={userDetails?.profilePicture || 'https://via.placeholder.com/150'}
-                  alt="Profile"
                   className="profile-img"
                 />
-                <input
+                
+              <input
                   type="file"
                   onChange={handleFileChange}
                   accept="image/*"
                   ref={fileInputRef}
                   className="file-input"
                 />
-              </div>
               <div className="profile-details">
                 <p><strong>First Name:</strong> {userDetails.firstName}</p>
                 <p><strong>Last Name:</strong> {userDetails.lastName}</p>

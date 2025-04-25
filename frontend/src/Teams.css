@@ -240,9 +240,9 @@ h2 {
   
   .profile-modal-content {
     background: white;
-    padding: 20px;
+    padding: 30px;
     border-radius: 8px;
-    width: 300px;
+    width: 400px;
     text-align: center;
   }
   
@@ -266,8 +266,7 @@ h2 {
   }
   
   .file-input {
-    margin-left: 20px; /* Adjust this to move it more to the right */
-    padding-left: 10px;
+    color: black
   }
   
   .profile-details {
