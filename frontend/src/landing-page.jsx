@@ -9,6 +9,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Login from './Login';
+import contactpage from './ContactPage'
 
 function LandingPage() {
 
@@ -20,6 +21,10 @@ function LandingPage() {
 
   const login = () => {
     navigate('/login');
+  }
+
+  const contact = () => {
+    navigate('/ContactPage');
   }
 
   const [circleSize, setCircleSize] = useState(100); // Initial size of the bottom half-circle
@@ -57,7 +62,7 @@ function LandingPage() {
         </div>
         <div className="button-container">
           <button onClick={login} className="coachButton">Login</button>
-          <button className="contactButton">Contact Us</button>
+          <button onClick={contact} className="contactButton">Contact Us</button>
         </div>
       </header>
       <div className="App">
