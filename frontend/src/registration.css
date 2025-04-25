@@ -1,0 +1,210 @@
+/* Global App styling */
+.registration-container {
+    text-align: center;
+    overflow: hidden; /* Prevent any unwanted scrolling */
+    border-radius: 8px;
+    color: white;
+}
+
+body {
+    background-color: black;
+    color: white;
+  }
+
+/* Header Styling */
+.registration-page-header {
+    top: 0;
+    width: 100%;
+    background-color: black;
+    min-height: 10vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow under the header */
+    z-index: 1000; /* Ensures the header stays above other elements */
+}
+
+.registration-page-header .logo {
+    margin-left: 20px; /* Adjust as needed */
+}
+.logo {
+    font-size: 2em;
+    font-weight: bold;
+    color: white;
+}
+
+.card {
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background for the card */
+    border: 2px solid orange; /* Border to match buttons */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    width: 50%;
+    margin: 0 auto;
+    margin-bottom: 100px;
+
+}
+
+.registration-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between form groups */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.card label {
+    margin-bottom: 5px;
+    color: white; /* Label color */
+    font-size: 1.1em; /* Slightly larger font size */
+    text-align: left; /* Ensure text is aligned to the left */
+    width: 100%; /* Make label take full width to align with input */
+    padding-left: 1em;
+}
+
+.card input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 10px;
+    border: 2px solid white; /* White border for inputs */
+    border-radius: 25px; /* Match button style */
+    width: 100%;
+    font-size: 1em;
+    background-color: black; /* Match input background to page */
+    color: white; /* Input text color */
+    transition: border-color 0.3s ease; /* Smooth border color transition */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: orange; /* Change border color on focus */
+    outline: none; /* Remove outline */
+}
+
+.password-container {
+    position: relative;
+}
+
+input[type="password"],
+input[type="text"] {
+    /*width: calc(100% - 30px); /* Adjust width to fit icon */
+    padding-right: 30px; /* Padding for the icon */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: white;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px; /* Match button style */
+    background-color: orange; /* Match landing page button color */
+    color: black;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: black; /* Change background color on hover */
+    color: orange; /* Change text color on hover */
+    border: 2px solid orange; /* Optional border on hover */
+}
+
+.footer {
+    background-color: black; 
+    color: #f8f9fa;
+    padding: 40px 20px;
+    border-top: 2px solid orange;
+
+  }
+  
+  .footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .footer-column {
+    flex: 1;
+    min-width: 250px;
+    margin: 10px 0;
+  }
+
+  .background-video {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw; /* Set the width to the full viewport width */
+    height: 100vh; /* Set the height to the full viewport height */
+    object-fit: cover; /* Ensures the video covers the entire area without distortion */
+    z-index: -1; /* Pushes the video behind the content */
+    overflow: hidden; /* Prevent any unwanted scrolling */
+}
+
+.password-standards ul {
+  color: white;
+  list-style-type: none; 
+  padding-left: 0;
+  text-align: left;
+  margin-left: 1em;
+}
+
+.password-standards li {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.password-standards .invalid{
+  margin-right: 8px; 
+  color: red; 
+}
+
+.password-standards li.valid  {
+  color: green;
+}
+
+.code-input {
+    width: 5%;
+    height: 40px;
+    text-align: center;
+    font-size: 24px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.code-input:focus {
+    border-color: #007BFF;
+}
+
+.code-submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px; /* Match button style */
+    background-color: orange; /* Match landing page button color */
+    color: black;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.code-submit-button:hover {
+    background-color: black; /* Change background color on hover */
+    color: orange; /* Change text color on hover */
+    border: 2px solid orange; /* Optional border on hover */
+}

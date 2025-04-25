@@ -1,0 +1,195 @@
+/* Field Slider Container */
+.field-slider-container {
+    width: 80%;
+    margin: 20px auto;
+}
+
+/* Swiper General Styling */
+.field-slider {
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+
+/* Field Container */
+.field-container {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Field Image */
+.field-image {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+/* Navigation Buttons */
+.swiper-button-next, .swiper-button-prev {
+    color: black;
+    font-size: 20px;
+}
+
+/* Pagination Dots */
+.swiper-pagination-bullet {
+    background: black;
+}
+
+/* PDF Export Button */
+.pdf-button {
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.pdf-button:hover {
+    background-color: #45a049;
+}
+
+.modal-dialog {
+    .modal-header {
+        align-items: right;
+        justify-content: right;
+    }
+    max-width: 90%;
+    margin: 0 auto;
+    .modal-footer .btn{
+        justify-content: center;
+        margin: 0 20px;
+    }
+  }
+  
+  .modal-content {
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .dragNdrop {
+        display: flex;  
+        gap: 20px;
+    }
+    .deleteElement {
+        background-color: red;
+    }
+  }
+  
+  .modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
+
+  /* Increase the overall size of the modal if needed */
+.drill-modal .modal-dialog {
+  max-width: 100vw; /* or use a fixed width like 1000px */
+}
+
+/* Container that holds both the canvas and the form side-by-side */
+.drill-modal-content {
+  display: flex;
+  flex-wrap: wrap; /* Wrap on smaller screens */
+  gap: 20px;       /* Space between sections */
+}
+
+/* Left side: the canvas and button controls */
+.canvas-section {
+  flex: 1 1 300px;    /* Grow to fill space, minimum 300px wide */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Right side: form fields for drill name, tags, stats, etc. */
+.form-section {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Optional styling for inputs, tags, etc. */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag-inputs, .stat-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.selected-tags, .selected-stats {
+  margin-top: 10px;
+}
+
+.selected-tags .tag, .selected-stats .stat {
+  background-color: #f2f2f2;
+  margin-right: 5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+ 
+.pdf-upload {
+  .upload-drill-input {
+    width: 50%
+  }
+}
+
+.upload-drill-button {
+  background-color: white;
+  color: black;
+  margin-left: 30px;
+  border-radius: 10px;
+}
+
+
+
+/* Drill Bank List Styling */
+.drill-list {
+  margin-top: 20px;
+}
+
+.drill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ccc; /* Optional: Add a divider between items */
+}
+
+.drill-name {
+  flex: 1; /* Allow the name to take up available space */
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.drill-actions {
+  display: flex;
+  gap: 10px; /* Add spacing between the buttons */
+}
+
+.drill-actions button {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.drill-actions button:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+}

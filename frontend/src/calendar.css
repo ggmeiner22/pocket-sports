@@ -1,0 +1,283 @@
+
+
+/* Main container for side-by-side layout */
+.calendar-container {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+.main-class {
+    padding: 20px;
+  display: flex;
+  flex-direction: column; /* Arrange calendar and event details in a vertical stack */
+  align-items: flex-start; /* Align everything to the left */
+}
+
+.event-buttons-container {
+  position: relative;
+  width: 100%;
+}
+
+.event-details {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.event-details-card {
+  flex: 1;
+  padding: 20px;
+  background-color: lightgray;
+  color: black;
+  border-radius: 8px;
+  font-size: 20px;
+}
+
+.event-button-container {
+  position: relative;
+  top: 0; /* Align the button at the top of the container */
+  right: 0; /* Align the button to the right */
+  z-index: 10; /* Ensure button is on top */
+}
+
+.eventButton {
+  padding: 20px 40px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0px;
+}
+
+
+
+.drills-dropdown {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  
+  .drill-option {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+  }
+  
+  .drill-option input {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+  
+  /* Highlight checked checkboxes with a green background and checkmark */
+  .drill-option input:checked {
+    background-color: green;
+    border: 2px solid green;
+    position: relative;
+  }
+  
+  /* Add checkmark inside the checkbox */
+  .drill-option input:checked::after {
+    content: '✔';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 18px;
+  }
+  
+  .drill-option label {
+    color: black;
+    font-size: 16px;
+  }
+
+.drills-container {
+    flex: 1; /* Takes up the other half of the screen */
+    padding: 20px;
+    background-color: lightgray;
+    color: black;
+    border-radius: 8px;
+    margin-left: 20px;
+    overflow-y: auto; /* In case the list of drills is long */
+}
+
+.drills {
+    list-style: none;
+    padding: 0;
+    color: black;
+}
+
+/* Left side: Calendar */
+.calendar-half {
+    flex: 1; /* Take up half the screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+.calendar-wrapper {
+    width: 100%; /* Full width of the parent */
+    height: 100%; /* Full height of the parent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-items: flex-start;
+}
+
+/* Custom Calendar Styling */
+.custom-calendar {
+    width: 100%; /* Full width of the parent container */
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+.calendar-half .react-calendar {
+    width: 100% !important;
+}
+
+/* Right side: Event Input */
+.event-input-half {
+    flex: 1; /* Take up the other half of the screen */
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+.event-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px; /* Adjust the height to your preference */
+    overflow-y: auto;  /* Enable vertical scrolling if content exceeds max-height */
+    padding-right: 10px; /* Optional: Adds space on the right if the scrollbar appears */
+  }
+
+/* Event Section */
+.event-section {
+    width: 100%;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+/* Event Input Styling */
+.event-input-half {
+    flex: 1;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .event-cards-container {
+    width: 100%;
+    max-height: 300px;  /* Adjust based on your desired height */
+    overflow-y: auto;   /* Enable vertical scrolling */
+    margin-top: 10px;   /* Optional, adds space between title and cards */
+  }
+  
+  .event-cards {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .event-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+  }
+  
+  .remove-btn {
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .event-button-container {
+    display: flex;
+    justify-content: flex-end; /* Aligns items to the right */
+    padding: 20px;
+    background-color: whitesmoke;
+  }
+  
+  .eventButton {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+/* Popup Event Styling */
+.popupEvent-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; 
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000;
+}
+
+.popupEvent-content {
+    background-color: whitesmoke;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%; 
+    max-height: 90%; 
+    padding: 20px;
+    border: 2px solid black;
+}
+
+.popupEvent-buttons button {
+    margin-right: 10px;
+    background-color: black;
+    color: white;
+}
+
+/* Input fields */
+input[type="text"],
+input[type="time"] {
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 25px;
+    width: 100%;
+    font-size: 1em;
+    background-color: whitesmoke;
+    color: black;
+    transition: border-color 0.3s ease;
+}

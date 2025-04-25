@@ -1,10 +1,18 @@
 const mongoose = require('mongoose')
 
 const RegisterSchema = new mongoose.Schema({
-    name: String,
+    fname: String,
+    lname: String,
     email: String,
-    password: String
-})
+    password: String,
+    password2: String,
+    verified: { type: Boolean, default: false },
+    verifyCode: String,
+    profilePicture: { type: String },
+    resetToken: String,
+    resetTokenExpiry: Date,
+    verifyExpiration: Date
+}, { collection: 'registers' });
 
-const RegisterModel = mongoose.model("register", RegisterSchema);
+const RegisterModel = mongoose.model("Register", RegisterSchema);
 module.exports = RegisterModel;
