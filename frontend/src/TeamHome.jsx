@@ -23,11 +23,12 @@ function HomePage() {
   const location = useLocation();
   const [currentUserRole, setCurrentUserRole] = useState(null);
   const [userDetails, setUserDetails] = useState({});
+  const [storedRole, setStoredRole] = useState(""); // State for storing the role
+
 
   // Retrieve stored values from localStorage
   const storedUserId = localStorage.getItem('userId');
   const storedTeamString = localStorage.getItem('selectedTeam');
-  const storedRole = localStorage.getItem('role');
 
   const getUserDetails = () => {
     const storedUserId = localStorage.getItem('userId');
@@ -70,6 +71,7 @@ function HomePage() {
         setCurrentUserRole(me.role);
         //alert(`Your role is: ${me.role}`);  // For debugging
         if (me.role === "Owner" || me.role === "Coach") {
+          setStoredRole("Owner"); // Update storedRole to "Owner"
           setButtons((prev) => {
             if (!prev.some(b => b.path === "/drills")) {
               return [...prev, { path: "/drills", label: "Drills" }];
@@ -79,6 +81,8 @@ function HomePage() {
             }
             return prev;
           });
+        } else {
+          setStoredRole("Player"); 
         }
       }
     } catch (error) {
@@ -380,7 +384,7 @@ const renderGoalCards = () => {
       </div>
       <div className="home-cards">
       <div className='home-cards'>
-        {localStorage.getItem('role') === 'Player' && (
+        {storedRole === 'Player' && (
           <>
             <strong className='homepage-headers'>Top Goals</strong>
             {renderGoalCards()}
@@ -388,7 +392,7 @@ const renderGoalCards = () => {
         )}
         <strong className='homepage-headers'>Upcoming Events</strong>
         {renderEventCards()}
-        {localStorage.getItem('role') === 'Owner' && (
+        {storedRole === 'Owner' && (
           <>
             <strong className='homepage-headers'>Your Practice Plans</strong>
             {renderPracticePlanCards()}

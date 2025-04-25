@@ -9,6 +9,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Login from './Login';
+import contactpage from './ContactPage'
 
 function LandingPage() {
 
@@ -20,6 +21,10 @@ function LandingPage() {
 
   const login = () => {
     navigate('/login');
+  }
+
+  const contact = () => {
+    navigate('/ContactPage');
   }
 
   const [circleSize, setCircleSize] = useState(100); // Initial size of the bottom half-circle
@@ -57,7 +62,7 @@ function LandingPage() {
         </div>
         <div className="button-container">
           <button onClick={login} className="coachButton">Login</button>
-          <button className="contactButton">Contact Us</button>
+          <button onClick={contact} className="contactButton">Contact Us</button>
         </div>
       </header>
       <div className="App">
@@ -187,12 +192,104 @@ function LandingPage() {
           </div>  
           
               
-        <p style={{ fontSize: '40px' }}>DEMO</p>
-        <img src="logo512.png" alt="img"></img>
-        {/* <video autoPlay loop muted className="demo">
-          <source src="/Arrows.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video> */}
+        <p style={{ fontSize: '40px' }}>DEMOS</p>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Team Creation</p>
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <iframe
+            style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+            src="https://www.youtube.com/embed/7_D9hrbDE1s"
+            title="YouTube video player"
+            frameBorder="0"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            className="demo"
+          />
+        </div>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Roster Page</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <iframe
+          style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+          src="https://www.youtube.com/embed/8lPy4nq6gZk"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="demo"
+        />
+         </div>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Goal Page</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <iframe
+          style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+          src="https://www.youtube.com/embed/QcD5SfO5p9I"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="demo"
+        />
+         </div>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Calendar Page</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <iframe
+          style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+          src="https://www.youtube.com/embed/J-pELWBW2e0"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="demo"
+        />
+        </div>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Practice Plan and Execution</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <iframe
+          style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+          src="https://www.youtube.com/embed/2Cf99BpcO8A"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="demo"
+        />
+        </div>
+        <p style={{ fontSize: '30px', borderTop: "2px white solid" }}>Drill Creation</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <iframe
+          style={{ width: "50vw", height: "50vh", marginBottom: '40px' }}
+          src="https://www.youtube.com/embed/7p_9DWOCOLs"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="demo"
+        />
+        </div>
       </div>
 
       <footer className="footer">

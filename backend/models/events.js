@@ -7,8 +7,11 @@ const EventsSchema = new mongoose.Schema({
     eventName: String,
     date: String,
     eventLocation: String,
-    selectedPracticePlan: { type: mongoose.Schema.Types.ObjectId, ref: 'PracticePlan' },
-    time: String,
+    selectedPracticePlan: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'PracticePlan',
+      default: null // Allow null values
+  },    time: String,
     feedback: [{ 
         playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, 
         comment: String

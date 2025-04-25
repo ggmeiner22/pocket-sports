@@ -132,8 +132,8 @@ function PracticePlans() {
         } = useTimer({ expiryTimestamp, autoStart: false, onExpire: () => console.warn('Timer expired') });
 
         return (
-            <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '20px' }}>
+            <div style={{ textAlign: 'center', overflowY: 'auto' }}>
+                <div style={{ fontSize: '20px', margin: '30px', overflowY: 'auto' }}>
                     <span>{minutes}</span>:<span>{seconds}</span>
                 </div>
                 {!isRunning ? (
@@ -171,7 +171,7 @@ function PracticePlans() {
                     ))}
                 </div>
                 <div className="button-container">
-                    <button className="contactButton1">Contact Us</button>
+                    <button className="contactButton1" onClick={() => navigate('/contactpage')}>Contact Us</button>
                 </div>
             </header>
             <h2 className="homepage-headers">Practice Plans</h2>
@@ -180,8 +180,8 @@ function PracticePlans() {
             <Button style={{backgroundColor: 'black', color: 'white', padding: '30px'}} variant="primary" onClick={() => setShowModal(true)}>Create Practice Plan</Button>
 
                 {practicePlans.length === 0 ? (
-            <p style={{color: 'black', alignSelf:'center', width: '100%', fontSize: '5vw', margin: '40px'}}>No current practice plans!</p> // Display a message when no events are available
-    ) : (
+                    <h3 style= {{ color: "black" }}>No current practice plans</h3>
+                ) : (
                     practicePlans.map((plan) => (
                         <Card key={plan._id} className='card-events'>
                             <Card.Header as='h5'>{plan.planName}</Card.Header>
@@ -265,7 +265,7 @@ function PracticePlans() {
                 </Modal.Footer>
             </Modal>
             {showSlidingWindow && (
-                <div className="sliding-window open">
+                <div className="sliding-window open" style={{overflowY: 'auto' }}>
                     <div className="sliding-window-content">
                         <button className="close-button" onClick={() => setShowSlidingWindow(false)}>Close</button>
                         <h3>Drills</h3>

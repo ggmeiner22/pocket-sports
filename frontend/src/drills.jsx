@@ -682,7 +682,7 @@ function Drills() {
           </div>
         </Modal.Body>
       
-        <Modal.Footer>
+        <Modal.Footer style={{marginBottom: '20px'}}>
           <Button onClick={saveDrill} variant="primary">Save Drill</Button>
           <Button variant='secondary' onClick={closeModal}>Close</Button>
         </Modal.Footer>
