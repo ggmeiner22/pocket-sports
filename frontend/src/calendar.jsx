@@ -124,20 +124,33 @@ function CalendarPage() {
   const getPlanDetails = async (teamId) => {
     try {
       const response = await axios.get(`http://localhost:3001/practiceplans?teamId=${teamId}`);
-      console.log("Practice plans", response.data)
-      setPracticePlans(response.data)
+      console.log("Practice plans", response.data);
+  
+      // If the practicePlans array is empty, set an empty state
+      if (response.data.length === 0) {
+        setPracticePlans([]);  // Empty state for practice plans
+        setPracticePlansDetails({});  // Empty details map
+        return; // Exit early if there are no practice plans
+      }
+  
+      // Proceed with the rest of the logic if there are practice plans
+      setPracticePlans(response.data);
+      
+      // Assuming practicePlanPromises is already populated based on `response.data`
       const planDetails = await Promise.all(practicePlanPromises);
       const planDetailsMap = planDetails.reduce((acc, practiceDetails, idx) => {
         acc[response.data[idx].teamId] = practiceDetails;
         return acc;
       }, {});
-      
+  
       setPracticePlansDetails(planDetailsMap);  // Save details in state
+  
     } catch (error) {
       console.error('Error fetching user details:', error);
       return null;
     }
   };
+  
 
   const updateEvent = async () => {
   
@@ -357,6 +370,8 @@ const handleFetchFeedback = async (userId, event) => {
     console.log(selectedPracticePlan)
     e.preventDefault();
     const userId = localStorage.getItem('userId');
+        const sanitizedPracticePlan = selectedPracticePlan === "" ? null : selectedPracticePlan;
+
     const newEvent = {
       teamId: selectedTeam?._id, // Ensure this is included
       teamName,

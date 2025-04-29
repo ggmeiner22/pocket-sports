@@ -1,7 +1,10 @@
 body {
-  background-color: white;
   margin: 0;
   padding: 0;
+}
+
+.contactApp {
+  background-color: white;
 }
 
 .contact-page {
@@ -55,10 +58,6 @@ body {
   margin-top: 20px;
   margin-left: auto;
   margin-right: 20px;
-}
-
-.contact-form button:hover {
-  background-color: #0056b3;
 }
 
 .success-message {
